@@ -1,0 +1,13 @@
+# Foreword
+
+RPL was conceived in the summer of 2024. At that time, I was conducting research and experimentation with various static analysis tools based on code pattern declarations, aiming to model and detect memory safety vulnerabilities in Rust. These tools exhibited varying degrees of complexity in their pattern declaration syntax, yet all operated on the abstract syntax tree. This led to a frustrating predicament: after spending hours crafting patterns and debugging toolchains, the slightest perturbation to the target code's AST—be it reordering statements or consolidating expressions—would render the patterns ineffective. After enduring this cycle repeatedly, I resolved to create a novel DSL that would preserve the strengths of existing tools (such as declaring patterns akin to writing Rust code) while addressing their shortcomings by enhancing pattern generalization. Furthermore, I planned to implement a self-contained parser and matcher for this DSL, building upon @TheVeryDarkness's enhanced `pest-typed` parser-generator framework. This vision swiftly garnered support from Professor @Colligence.
+
+Through discussions with @Colligence, @shigma, and @TheVeryDarkness, RPL's syntactic design progressed smoothly. However, on the engineering front, I remained entangled in the labyrinthine branches of ASTs, pinning hopes on custom predicates (like `#without` and `#unordered`) and the capabilities of data flow analysis algorithms—a domain in which I possessed scant familiarity—to minimize the impact of syntactic noise on patterns. Additionally, my procrastination resulted in a project inception marked solely by documentation updates rather than code commits, let alone a rudimentary prototype.
+
+Subsequent exchanges with @frank-king proved enlightening, as I gradually came to understand that declaring and matching patterns at Rust's distinctive MIR (Mid-Level Intermediate Representation) layer could effectively circumvent syntactic noise, thereby enabling more fundamental code pattern modeling. Over the ensuing ten months, with contributions from several fellow students, the RPL toolchain evolved into a functionally viable state. It became capable of scanning and analyzing open-source repositories based on existing patterns, yielding preliminary yet promising results.
+
+@shigma inscribed in the "About" section of his open-source project Koishi: "Cross-platform chatbot framework made with love." To me, RPL resembles more the Bloodhound's Fang wielded by a wandering knight—an instrument that has spared me from numerous potential tribulations in life.
+
+_Carefully we wipe them hour by hour, And let no dust alight._
+
+— stuuupidcat, 2025-04-24, Beijing

@@ -3,11 +3,11 @@ on:
   pull_request:
     branches: [ master ]
     paths: 
-      - 'docs/reference/**'
+      - 'docs/book/**'
   push:
     branches: [ dev ]
     paths:
-      - 'docs/reference/**'
+      - 'docs/book/**'
 
 jobs:
   deploy:
@@ -30,7 +30,7 @@ jobs:
       run: |
         # This assumes your book is in the root of your repository.
         # Just add a `cd` here if you need to change to another directory.
-        cd docs/reference
+        cd docs/book
         mdbook build
         git worktree add gh-pages
         git config user.name "Deploy from CI"
