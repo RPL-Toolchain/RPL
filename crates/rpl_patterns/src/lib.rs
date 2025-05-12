@@ -17,6 +17,7 @@ extern crate rustc_span;
 extern crate rustc_trait_selection;
 #[macro_use]
 extern crate tracing;
+extern crate either;
 extern crate rpl_macros;
 
 use rpl_context::PatCtxt;
@@ -66,22 +67,21 @@ static ALL_PATTERNS: &[fn(TyCtxt<'_>, PatCtxt<'_>, ItemId)] = &[
     normal::cve_2022_23639::check_item,
     inline::cve_2024_27284::check_item,
     others::private_or_generic_function_marked_inline::check_item,
+    inline::transmute_type_to_bool::check_item,
     // FIXME: Too loose
-    // inline::transmute_type_to_bool::check_item,
-    // FIXME: Too loose
-    // inline::transmute_int_to_ptr::check_item,s
+    inline::transmute_int_to_ptr::check_item,
     normal::manually_drop::check_item,
     inline::alloc_unchecked::check_item,
     normal::alloc_unchecked::check_item,
 ];
 
 #[allow(unused)]
-static DEBUG_PATTERN: &[fn(TyCtxt<'_>, PatCtxt<'_>, ItemId)] = &[inline::cve_2020_35888::check_item];
+static DEBUG_PATTERN: &[fn(TyCtxt<'_>, PatCtxt<'_>, ItemId)] = &[inline::transmute_type_to_bool::check_item];
 
 #[instrument(level = "info", skip_all, fields(item = ?item.owner_id.def_id))]
 pub fn check_item(tcx: TyCtxt<'_>, pcx: PatCtxt<'_>, item: ItemId) {
-    rustc_data_structures::sync::par_for_each_in(ALL_PATTERNS, |check| check(tcx, pcx, item))
-    // rustc_data_structures::sync::par_for_each_in(DEBUG_PATTERN, |check| check(tcx, pcx, item));
+    // rustc_data_structures::sync::par_for_each_in(ALL_PATTERNS, |check| check(tcx, pcx, item))
+    rustc_data_structures::sync::par_for_each_in(ALL_PATTERNS, |check| check(tcx, pcx, item));
 }
 
 #[allow(unused)]

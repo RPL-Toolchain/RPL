@@ -357,11 +357,12 @@ pub struct GenericFunctionMarkedInline {
 #[diag(rpl_patterns_transmuting_type_to_bool)]
 #[help]
 #[note]
-pub struct TransmutingTypeToBool {
+pub struct TransmutingTypeToBool<'tcx> {
     #[label(rpl_patterns_from_label)]
     pub from: Span,
     #[label(rpl_patterns_to_label)]
     pub to: Span,
+    pub ty: Ty<'tcx>,
 }
 
 // for std::mem::transmute: transmuting an integer_type to a pointer_type
@@ -369,11 +370,13 @@ pub struct TransmutingTypeToBool {
 #[diag(rpl_patterns_transmuting_int_to_ptr)]
 #[help]
 #[note]
-pub struct TransmutingIntToPtr {
+pub struct TransmutingIntToPtr<'tcx> {
     #[label(rpl_patterns_from_label)]
     pub from: Span,
     #[label(rpl_patterns_to_label)]
     pub to: Span,
+    pub int_ty: Ty<'tcx>,
+    pub ptr_ty: Ty<'tcx>,
 }
 
 /// Bad operation sequence to [`std::mem::ManuallyDrop`].

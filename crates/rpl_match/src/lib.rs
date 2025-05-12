@@ -17,7 +17,7 @@ mod adt;
 mod counted;
 mod fns;
 mod place;
-pub(crate) mod resolve;
+pub mod resolve;
 mod ty;
 
 pub use adt::{AdtMatch, Candidates, MatchAdtCtxt};
