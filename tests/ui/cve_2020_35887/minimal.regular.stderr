@@ -11,5 +11,27 @@ LL |     let ptr = unsafe { alloc(layout) as *mut T };
    = note: `-D rpl::misaligned-pointer` implied by `-D warnings`
    = help: to override `-D warnings` add `#[allow(rpl::misaligned_pointer)]`
 
-error: aborting due to 1 previous error
+error: resulting pointer `*mut Align32` has a different alignment than the original alignment that the pointer was created with
+  --> tests/ui/cve_2020_35887/minimal.rs:28:24
+   |
+LL |     let ptr = unsafe { alloc(layout) as *mut Align32 };
+   |                        -------------^^^^^^^^^^^^^^^^
+   |                        |
+   |                        pointer created here
+   |                        pointer casted here
+   |
+   = note: See https://doc.rust-lang.org/std/alloc/fn.alloc.html and https://doc.rust-lang.org/std/alloc/trait.GlobalAlloc.html#tymethod.alloc
+
+error: resulting pointer `*mut u64` has a different alignment than the original alignment that the pointer was created with
+  --> tests/ui/cve_2020_35887/minimal.rs:42:24
+   |
+LL |     let ptr = unsafe { alloc(layout) as *mut u64 };
+   |                        -------------^^^^^^^^^^^^
+   |                        |
+   |                        pointer created here
+   |                        pointer casted here
+   |
+   = note: See https://doc.rust-lang.org/std/alloc/fn.alloc.html and https://doc.rust-lang.org/std/alloc/trait.GlobalAlloc.html#tymethod.alloc
+
+error: aborting due to 3 previous errors
 
