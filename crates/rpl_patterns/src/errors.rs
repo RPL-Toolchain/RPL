@@ -60,6 +60,17 @@ pub struct UncheckedAllocatedPointer<'tcx> {
 }
 
 #[derive(LintDiagnostic)]
+#[diag(rpl_patterns_misaligned_pointer)]
+#[note]
+pub struct MisalignedPointer<'tcx> {
+    #[label(rpl_patterns_alloc_label)]
+    pub alloc: Span,
+    #[label(rpl_patterns_write_label)]
+    pub write: Span,
+    pub ty: Ty<'tcx>,
+}
+
+#[derive(LintDiagnostic)]
 #[diag(rpl_patterns_use_after_realloc)]
 #[note]
 pub struct UseAfterRealloc<'tcx> {

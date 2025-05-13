@@ -1,0 +1,15 @@
+error: resulting pointer `*mut T` has a different alignment than the original alignment that the pointer was created with
+  --> tests/ui/cve_2020_35887/cve_2020_35887.rs:38:28
+   |
+LL |         let ptr = unsafe { alloc(layout) as *mut T };
+   |                            -------------^^^^^^^^^^
+   |                            |
+   |                            pointer created here
+   |                            pointer casted here
+   |
+   = note: See https://doc.rust-lang.org/std/alloc/fn.alloc.html and https://doc.rust-lang.org/std/alloc/trait.GlobalAlloc.html#tymethod.alloc
+   = note: `-D rpl::misaligned-pointer` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::misaligned_pointer)]`
+
+error: aborting due to 1 previous error
+

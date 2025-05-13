@@ -1,4 +1,7 @@
-use std::alloc::{alloc, alloc_zeroed, dealloc, Layout};
+//@ revisions: inline regular
+//@[inline] compile-flags: -Z inline-mir=true
+//@[regular] compile-flags: -Z inline-mir=false
+use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
 use std::ops::{Index, IndexMut, Range};
 
 pub struct Array<T> {
@@ -28,10 +31,12 @@ where
     T: Default + Copy,
 {
     /// Easy initialization if all you want is your T's default instantiation
+    // #[rpl::dump_mir(dump_cfg, dump_ddg)]
     pub fn new(size: usize) -> Self {
         let objsize = std::mem::size_of::<T>();
         let layout = Layout::from_size_align(size * objsize, 8).unwrap();
         let ptr = unsafe { alloc(layout) as *mut T };
+        //~[regular]^ ERROR: resulting pointer `*mut T` has a different alignment than the original alignment that the pointer was created with
         let default: T = Default::default();
         for i in 0..size {
             unsafe {
@@ -47,14 +52,15 @@ where
     T: Clone,
 {
     /// More generic initialization instantiating all elements as copies of some template
-    pub fn new_from_template(size: usize, template: &T) -> Self {
+    // #[rpl::dump_mir(dump_cfg, dump_ddg)]
+    pub unsafe fn new_from_template(size: usize, template: &T) -> Self {
         let objsize = std::mem::size_of::<T>();
         let layout = Layout::from_size_align(size * objsize, 8).unwrap();
         let ptr = unsafe { alloc(layout) as *mut T };
         for i in 0..size {
             unsafe {
                 (*(ptr.wrapping_offset(i as isize))) = template.clone();
-                //~^ ERROR: dropped an possibly-uninitialized value
+                //~[inline]^ ERROR: dropped an possibly-uninitialized value
                 // Not a false positive
             }
         }

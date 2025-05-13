@@ -1,3 +1,5 @@
+use std::ops::Not as _;
+
 use rustc_hir as hir;
 use rustc_hir::def_id::LocalDefId;
 use rustc_hir::intravisit::{self, Visitor};
@@ -8,7 +10,7 @@ use rustc_span::{Span, Symbol};
 use rpl_context::{PatCtxt, pat};
 use rpl_mir::CheckMirCtxt;
 
-use crate::lints::{UNCHECKED_ALLOCATED_POINTER, USE_AFTER_REALLOC};
+use crate::lints::{MISALIGNED_POINTER, USE_AFTER_REALLOC};
 
 #[instrument(level = "info", skip_all)]
 pub fn check_item(tcx: TyCtxt<'_>, pcx: PatCtxt<'_>, item_id: hir::ItemId) {
@@ -60,19 +62,21 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
         if self.tcx.is_mir_available(def_id) {
             let body = self.tcx.optimized_mir(def_id);
 
-            let pattern = alloc_misaligned_cast(self.pcx);
+            if kind.header().is_none_or(|header| header.is_unsafe().not()) {
+                let pattern = alloc_misaligned_cast(self.pcx);
 
-            for matches in CheckMirCtxt::new(self.tcx, self.pcx, body, pattern.pattern, pattern.fn_pat).check() {
-                let alloc = matches[pattern.alloc].span_no_inline(body);
-                let write = matches[pattern.cast].span_no_inline(body);
-                let ty = matches[pattern.ty.idx];
+                for matches in CheckMirCtxt::new(self.tcx, self.pcx, body, pattern.pattern, pattern.fn_pat).check() {
+                    let alloc = matches[pattern.alloc].span_no_inline(body);
+                    let write = matches[pattern.cast].span_no_inline(body);
+                    let ty = matches[pattern.ty.idx];
 
-                self.tcx.emit_node_span_lint(
-                    UNCHECKED_ALLOCATED_POINTER,
-                    self.tcx.local_def_id_to_hir_id(def_id),
-                    write,
-                    crate::errors::UncheckedAllocatedPointer { alloc, write, ty },
-                );
+                    self.tcx.emit_node_span_lint(
+                        MISALIGNED_POINTER,
+                        self.tcx.local_def_id_to_hir_id(def_id),
+                        write,
+                        crate::errors::MisalignedPointer { alloc, write, ty },
+                    );
+                }
             }
 
             for pattern in [
@@ -125,10 +129,13 @@ fn alloc_misaligned_cast(pcx: PatCtxt<'_>) -> Pattern2<'_> {
                 _,
                 const $alignment
             );
-            let $layout: core::alloc::Layout = _;
+            let $layout: core::alloc::Layout = core::result::Result::unwrap(move $layout_result);
             #[export(alloc)]
-            let $ptr_1: *mut u8 = alloc::alloc::alloc(move $layout);
+            // let $ptr_1: *mut u8 = _;
+            // let $ptr_1: *mut u8 = alloc::alloc::alloc(_);
+            let $ptr_1: *mut u8 = alloc::alloc::alloc(copy $layout);
             #[export(cast)]
+            // let $ptr_2: *mut $T = _;
             let $ptr_2: *mut $T = move $ptr_1 as *mut $T (PtrToPtr);
         }
     };

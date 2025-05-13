@@ -1,5 +1,5 @@
 error: dropped an possibly-uninitialized value
-  --> tests/ui/cve_2020_35887/cve_2020_35887.rs:56:17
+  --> tests/ui/cve_2020_35887/cve_2020_35887.rs:62:17
    |
 LL |         let ptr = unsafe { alloc(layout) as *mut T };
    |                            ------------- memory allocated here

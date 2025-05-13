@@ -880,6 +880,35 @@ declare_tool_lint! {
 }
 
 declare_tool_lint! {
+    /// The `rpl::misaligned_pointer` lint detects that a pointer allocated with an alignment that is not suitable for the type.
+    ///
+    /// ### Example
+    ///
+    /// ```rust
+    /// use std::{alloc::{alloc, dealloc, Layout}, mem::size_of};
+    ///
+    /// fn alloc_unchecked<T>() {
+    ///     let layout = Layout::from_size_align(size_of::<T>(), 8).unwrap();
+    ///     unsafe {
+    ///         let ptr = alloc(layout) as *mut T;
+    ///         dealloc(ptr as *mut u8, layout);
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// {{produces}}
+    ///
+    /// ### Explanation
+    ///
+    /// The `alloc` function returns a pointer to the allocated memory,
+    /// whose alignment is from the `layout`,
+    /// and please check the alignment of the pointer before using it.
+    pub rpl::MISALIGNED_POINTER,
+    Warn,
+    "detects that a pointer allocated with an alignment that is not suitable for the type"
+}
+
+declare_tool_lint! {
     /// The `rpl::use_after_realloc` lint detects using a pointer after it has been reallocated.
     ///
     /// ### Example
