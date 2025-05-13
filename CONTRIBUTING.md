@@ -97,7 +97,7 @@ When use the debug mode in VSCode, you may encounter the following error:
 
 ```
 dyld[18303]: Library not loaded: @rpath/librustc_driver-c038cb8a39fd51a8.dylib
-  Referenced from: <3AB4A695-133F-36BC-90CA-8C8D77B22C5E> /Users/stuuupidcat/home/code/projects/RPL/target/debug/rpl-driver
+  Referenced from: <3AB4A695-133F-36BC-90CA-8C8D77B22C5E> /path/to/RPL/target/debug/rpl-driver
   Reason: no LC_RPATH's found
 ```
 

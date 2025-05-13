@@ -25,7 +25,7 @@ The toolchain of RPL, which is a custom configuration of Rust compiler, enables 
 
 ## Quick Start
 
--   Clone the repository and enter the directory: `git clone https://github.com/stuuupidcat/RPL.git && cd RPL`
+-   Clone the repository and enter the directory: `git clone https://github.com/RPL-Toolchain/RPL.git && cd RPL`
 
 -   Install RPL as a cargo subcommand: `cargo install --path .`
 
@@ -37,7 +37,7 @@ The toolchain of RPL, which is a custom configuration of Rust compiler, enables 
 
 ## RPL Language Reference
 
-See [this website](https://stuuupidcat.github.io/RPL/) for the language reference of RPL (Work in progress).
+See [this website](https://rpl-toolchain.github.io/RPL/) for the RPL book (Work in progress).
 
 ## Getting Help
 
@@ -49,4 +49,4 @@ See [this document](./CONTRIBUTING.md) for contribution-related instructions.
 
 ## License
 
-This project is licensed under the [GNU General Public License v3.0](./LICENSE).
+This project is licensed under the [MPL-2.0](./LICENSE).

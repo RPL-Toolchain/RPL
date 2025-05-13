@@ -69,7 +69,7 @@ fn display_help() {
     println!("{}", help_message());
 }
 
-const BUG_REPORT_URL: &str = "https://github.com/stuuupidcat/RPL/issues";
+const BUG_REPORT_URL: &str = "https://github.com/RPL-Toolchain/RPL/issues";
 
 fn logger_config() -> rustc_log::LoggerConfig {
     let mut cfg = rustc_log::LoggerConfig::from_env("RUSTC_LOG");

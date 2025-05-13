@@ -9,9 +9,9 @@ version = "0.1.0"
 edition = "2024"
 description = "Rust Pattern Language"
 publish = false
-license = "MIT OR Apache-2.0"
+license = "MPL-2.0"
 keywords = ["Bug detection"]
-repository = "https://github.com/stuuupidcat/RPL"
+repository = "https://github.com/RPL-Toolchain/RPL"
 
 [workspace.dependencies]
 rpl_context = { path = "./crates/rpl_context" }

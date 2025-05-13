@@ -1,1 +1,0 @@
-# MIR Basics and Integration
