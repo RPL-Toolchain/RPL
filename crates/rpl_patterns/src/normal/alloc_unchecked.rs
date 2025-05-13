@@ -4,8 +4,8 @@ use rustc_hir as hir;
 use rustc_hir::def_id::LocalDefId;
 use rustc_hir::intravisit::{self, Visitor};
 use rustc_middle::hir::nested_filter::All;
-use rustc_middle::ty::TyCtxt;
-use rustc_span::{Span, Symbol};
+use rustc_middle::ty::{self, Ty, TyCtxt};
+use rustc_span::{sym, Span, Symbol};
 
 use rpl_context::{PatCtxt, pat};
 use rpl_mir::CheckMirCtxt;
@@ -164,7 +164,7 @@ fn use_after_realloc_deref_const(pcx: PatCtxt<'_>) -> Pattern3<'_> {
     let deref;
     let ty;
     let pattern = rpl! {
-        #[meta(#[export(ty)] $T:ty)]
+        #[meta(#[export(ty)] $T:ty = is_all_safe_trait)]
         fn $pattern(..) -> _ = mir! {
             let $old_ptr: *const $T = _;
             let $old_ptr_u8: *mut u8 = copy $old_ptr as *mut u8 (PtrToPtr);
@@ -318,4 +318,26 @@ fn use_after_realloc_write_mut(pcx: PatCtxt<'_>) -> Pattern3<'_> {
         deref,
         ty,
     }
+}
+
+#[instrument(level = "debug", skip(tcx), ret)]
+fn is_all_safe_trait<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, self_ty: Ty<'tcx>) -> bool {
+    if self_ty.is_primitive() {
+        return false;
+    }
+    const EXCLUDED_DIAG_ITEMS: &[Symbol] = &[sym::Send, sym::Sync];
+    typing_env
+        .param_env
+        .caller_bounds()
+        .iter()
+        .filter_map(|clause| clause.as_trait_clause())
+        .filter(|clause| clause.self_ty().no_bound_vars().expect("Unhandled bound vars") == self_ty)
+        .map(|clause| clause.def_id())
+        .filter(|&def_id| {
+            tcx.get_diagnostic_name(def_id)
+                .is_none_or(|name| !EXCLUDED_DIAG_ITEMS.contains(&name))
+        })
+        .map(|def_id| tcx.trait_def(def_id))
+        .inspect(|trait_def| debug!(?trait_def))
+        .all(|trait_def| matches!(trait_def.safety, hir::Safety::Safe))
 }
