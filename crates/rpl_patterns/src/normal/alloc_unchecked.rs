@@ -1,5 +1,3 @@
-use std::ops::Not as _;
-
 use rustc_hir as hir;
 use rustc_hir::def_id::LocalDefId;
 use rustc_hir::intravisit::{self, Visitor};
@@ -63,7 +61,7 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
         if self.tcx.is_mir_available(def_id) {
             let body = self.tcx.optimized_mir(def_id);
 
-            if kind.header().is_none_or(|header| header.is_unsafe().not()) {
+            if kind.header().is_none_or(|header| !header.is_unsafe()) {
                 let pattern = alloc_misaligned_cast(self.pcx);
 
                 for matches in CheckMirCtxt::new(self.tcx, self.pcx, body, pattern.pattern, pattern.fn_pat).check() {
@@ -137,11 +135,8 @@ fn alloc_misaligned_cast(pcx: PatCtxt<'_>) -> Pattern2<'_> {
             );
             let $layout: core::alloc::Layout = core::result::Result::unwrap(move $layout_result);
             #[export(alloc)]
-            // let $ptr_1: *mut u8 = _;
-            // let $ptr_1: *mut u8 = alloc::alloc::alloc(_);
             let $ptr_1: *mut u8 = alloc::alloc::alloc(copy $layout);
             #[export(cast)]
-            // let $ptr_2: *mut $T = _;
             let $ptr_2: *mut $T = move $ptr_1 as *mut $T (PtrToPtr);
         }
     };
@@ -159,10 +154,6 @@ fn alloc_misaligned_cast(pcx: PatCtxt<'_>) -> Pattern2<'_> {
 
 #[instrument(level = "debug", skip(tcx), ret)]
 fn is_all_safe_trait<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, self_ty: Ty<'tcx>) -> bool {
-    // if self_ty.is_primitive() {
-    //     return false;
-    // }
-
     // Some unsafe traits that are not related to alignment
     const EXCLUDED_DIAG_ITEMS: &[Symbol] = &[sym::Send, sym::Sync];
     typing_env
