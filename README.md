@@ -37,7 +37,7 @@ The toolchain of RPL, which is a custom configuration of Rust compiler, enables 
 
 ## RPL Language Reference
 
-See [this website](https://rpl-toolchain.github.io/RPL/) for the RPL book (Work in progress).
+See [this website](https://rpl-toolchain.github.io/rpl-book/) for the RPL book (Work in progress).
 
 ## Getting Help
 
