@@ -129,7 +129,6 @@ fn pattern_from_raw_parts_iter_inlined(pcx: PatCtxt<'_>) -> PatternFromRawParts<
     PatternFromRawParts {
         pattern,
         fn_pat,
-
         src,
         ptr,
         slice,

@@ -148,7 +148,6 @@ fn pattern_pass_a_pointer_to_c(pcx: PatCtxt<'_>) -> PatternPointer<'_> {
     PatternPointer {
         pattern,
         fn_pat,
-
         ptr,
         // ty_var: c_char_ty,
     }

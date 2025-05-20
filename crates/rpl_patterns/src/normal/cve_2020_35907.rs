@@ -4,7 +4,7 @@ use rustc_hir::def_id::{CRATE_DEF_ID, LocalDefId};
 use rustc_hir::intravisit::{self, Visitor};
 use rustc_hir::{self as hir};
 use rustc_middle::hir::nested_filter::All;
-use rustc_middle::ty::{self, Ty, TyCtxt, TypingMode};
+use rustc_middle::ty::{self, TyCtxt};
 use rustc_span::{Span, Symbol};
 
 use crate::lints::THREAD_LOCAL_STATIC_REF;
@@ -99,7 +99,7 @@ fn pattern_thread_local_static(pcx: PatCtxt<'_>) -> PatternThreadLocalStatic<'_>
     let ret;
     #[allow(non_snake_case)]
     let pattern = rpl! {
-        #[meta(#[export(ty_var)] $T:ty = is_sync)]
+        #[meta(#[export(ty_var)] $T:ty = rpl_predicates::is_sync)]
         // FIXME: the return type is not actually checked to be matched
         fn $pattern(..) -> &'static $T = mir! {
             #[export(thread_local)]
@@ -118,17 +118,4 @@ fn pattern_thread_local_static(pcx: PatCtxt<'_>) -> PatternThreadLocalStatic<'_>
         ret,
         ty_var,
     }
-}
-
-#[instrument(level = "debug", skip(tcx), ret)]
-fn is_sync<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, ty: Ty<'tcx>) -> bool {
-    use rustc_infer::infer::TyCtxtInferExt;
-    let infcx = tcx.infer_ctxt().build(TypingMode::PostAnalysis);
-    let trait_def_id = tcx.require_lang_item(hir::LangItem::Sync, None);
-    rustc_trait_selection::traits::type_known_to_meet_bound_modulo_regions(
-        &infcx,
-        typing_env.param_env,
-        ty,
-        trait_def_id,
-    )
 }

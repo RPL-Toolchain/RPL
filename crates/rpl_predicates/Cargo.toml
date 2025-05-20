@@ -1,0 +1,17 @@
+[package]
+name = "rpl_predicates"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+publish.workspace = true
+license.workspace = true
+keywords.workspace = true
+repository.workspace = true
+
+[dependencies]
+tracing.workspace = true
+rpl_match.workspace = true
+
+[package.metadata.rust-analyzer]
+# This crate uses #[feature(rustc_private)]
+rustc_private = true

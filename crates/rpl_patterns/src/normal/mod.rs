@@ -1,3 +1,4 @@
+pub(crate) mod alloc_unchecked;
 pub(crate) mod cve_2018_20992;
 pub(crate) mod cve_2018_21000;
 pub(crate) mod cve_2019_15548;
@@ -9,6 +10,4 @@ pub(crate) mod cve_2021_25905;
 pub(crate) mod cve_2021_27376;
 pub(crate) mod cve_2021_29941_2;
 pub(crate) mod cve_2022_23639;
-
-pub(crate) mod alloc_unchecked;
 pub(crate) mod manually_drop;

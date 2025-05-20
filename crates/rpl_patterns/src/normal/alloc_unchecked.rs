@@ -4,7 +4,7 @@ use rustc_hir::intravisit::{self, Visitor};
 use rustc_middle::hir::nested_filter::All;
 use rustc_middle::mir;
 use rustc_middle::ty::{self, Ty, TyCtxt};
-use rustc_span::{Span, Symbol, sym};
+use rustc_span::{Span, Symbol};
 
 use rpl_context::{PatCtxt, pat};
 use rpl_mir::CheckMirCtxt;
@@ -127,7 +127,10 @@ fn alloc_misaligned_cast(pcx: PatCtxt<'_>) -> Pattern2<'_> {
     let ty;
     let alignment;
     let pattern = rpl! {
-        #[meta(#[export(ty)] $T:ty = is_all_safe_trait, #[export(alignment)] $alignment: const(usize))]
+        #[meta(
+            #[export(ty)] $T:ty = rpl_predicates::is_all_safe_trait,
+            #[export(alignment)] $alignment: const(usize)
+        )]
         fn $pattern(..) -> _ = mir! {
             let $layout_result: core::result::Result<core::alloc::Layout, _> = alloc::alloc::Layout::from_size_align(
                 _,
@@ -150,26 +153,6 @@ fn alloc_misaligned_cast(pcx: PatCtxt<'_>) -> Pattern2<'_> {
         ty,
         alignment,
     }
-}
-
-#[instrument(level = "debug", skip(tcx), ret)]
-fn is_all_safe_trait<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, self_ty: Ty<'tcx>) -> bool {
-    // Some unsafe traits that are not related to alignment
-    const EXCLUDED_DIAG_ITEMS: &[Symbol] = &[sym::Send, sym::Sync];
-    typing_env
-        .param_env
-        .caller_bounds()
-        .iter()
-        .filter_map(|clause| clause.as_trait_clause())
-        .filter(|clause| clause.self_ty().no_bound_vars().expect("Unhandled bound vars") == self_ty)
-        .map(|clause| clause.def_id())
-        .filter(|&def_id| {
-            tcx.get_diagnostic_name(def_id)
-                .is_none_or(|name| !EXCLUDED_DIAG_ITEMS.contains(&name))
-        })
-        .map(|def_id| tcx.trait_def(def_id))
-        .inspect(|trait_def| debug!(?trait_def))
-        .all(|trait_def| matches!(trait_def.safety, hir::Safety::Safe))
 }
 
 #[instrument(level = "debug", skip(tcx), ret)]

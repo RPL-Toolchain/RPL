@@ -1149,6 +1149,15 @@ dependencies = [
  "rpl_macros",
  "rpl_match",
  "rpl_mir",
+ "rpl_predicates",
+]
+
+[[package]]
+name = "rpl_predicates"
+version = "0.1.0"
+dependencies = [
+ "rpl_match",
+ "tracing",
 ]
 
 [[package]]

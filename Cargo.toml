@@ -28,6 +28,7 @@ rpl_pat_syntax = { path = "./crates/rpl_pat_syntax" }
 rpl_patterns = { path = "./crates/rpl_patterns" }
 rpl_utils = { path = "./crates/rpl_utils" }
 rpl_parser = { path = "./crates/rpl_parser" }
+rpl_predicates = { path = "./crates/rpl_predicates" }
 rustc_tools_util = "0.3.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
