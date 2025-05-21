@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::iter::zip;
 
+use either::Either;
 use rpl_context::{PatCtxt, pat};
 use rustc_data_structures::fx::{FxHashMap, FxIndexSet};
 use rustc_hir::def::Res;
@@ -50,7 +51,17 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
         let ty_kind = *ty.kind();
         let matched = match (ty_pat_kind, ty_kind) {
             (pat::TyKind::TyVar(ty_var), _)
-                if ty_var.pred.is_none_or(|ty_pred| ty_pred(self.tcx, self.typing_env, ty)) =>
+                // This code implements predicate evaluation in conjunctive normal form (CNF):
+                // - All clauses in the conjunction must be satisfied
+                // - Within each clause, at least one predicate must be satisfied
+                //    - Either::Left represents a positive predicate
+                //    - Either::Right represents a negative predicate
+                if ty_var.pred.iter().all(|clause| {
+                    clause.iter().any(|pred| match pred {
+                        Either::Left(pred) => pred(self.tcx, self.typing_env, ty),
+                        Either::Right(pred) => !pred(self.tcx, self.typing_env, ty),
+                    })
+                }) =>
             {
                 self.ty_vars[ty_var.idx].borrow_mut().insert(ty);
                 true

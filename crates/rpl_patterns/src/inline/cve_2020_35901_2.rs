@@ -95,7 +95,7 @@ struct PatternPin<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     mut_self: pat::Local,
     pin_new: pat::Location,
-    ty_var: pat::TyVar,
+    ty_var: pat::TyVar<'pcx>,
 }
 
 #[rpl_macros::pattern_def]
@@ -110,7 +110,7 @@ fn pattern_pin(pcx: PatCtxt<'_>) -> PatternPin<'_> {
             $field: $S,
         }
 
-        #[meta(#[export(ty_var)] $S:ty = rpl_predicates::is_not_unpin)]
+        #[meta(#[export(ty_var)] $S:ty where rpl_predicates::is_not_unpin)]
         fn $pattern(..) -> _ = mir! {
             #[export(mut_self)]
             let $self: &mut $SizedStream;
@@ -144,7 +144,7 @@ fn pattern_pin_field(pcx: PatCtxt<'_>) -> PatternPin<'_> {
             $field: $T,
         }
 
-        #[meta(#[export(ty_var)] $T:ty = rpl_predicates::is_not_unpin)]
+        #[meta(#[export(ty_var)] $T:ty where rpl_predicates::is_not_unpin)]
         fn $pattern(..) -> _ = mir! {
             #[export(mut_self)]
             let $self: &mut $Framed;

@@ -1,3 +1,4 @@
+use either::Either;
 use rustc_data_structures::fx::FxHashMap;
 use rustc_index::IndexVec;
 use rustc_span::Symbol;
@@ -15,7 +16,7 @@ pub use ty::*;
 
 #[derive(Default)]
 pub struct MetaVars<'pcx> {
-    pub ty_vars: IndexVec<TyVarIdx, TyVar>,
+    pub ty_vars: IndexVec<TyVarIdx, TyVar<'pcx>>,
     pub place_vars: IndexVec<PlaceVarIdx, PlaceVar<'pcx>>,
     pub const_vars: IndexVec<ConstVarIdx, ConstVar<'pcx>>,
 }
@@ -29,7 +30,7 @@ pub struct Pattern<'pcx> {
 }
 
 impl<'pcx> MetaVars<'pcx> {
-    pub fn new_ty_var(&mut self, pred: Option<TyPred>) -> TyVar {
+    pub fn new_ty_var(&mut self, pred: &'pcx [&'pcx [Either<TyPred, TyPred>]]) -> TyVar<'pcx> {
         let idx = self.ty_vars.next_index();
         let ty_var = TyVar { idx, pred };
         self.ty_vars.push(ty_var);

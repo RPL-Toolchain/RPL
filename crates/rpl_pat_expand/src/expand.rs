@@ -605,6 +605,39 @@ impl ToTokens for ExpandPat<'_, &Mir> {
     }
 }
 
+impl ToTokens for ExpandPat<'_, &Predicate> {
+    fn to_tokens(&self, mut tokens: &mut TokenStream) {
+        let Predicate { not, pred } = &self.value;
+        if not.is_some() {
+            quote_each_token!(tokens either::Either::Right(#pred),);
+        } else {
+            quote_each_token!(tokens either::Either::Left(#pred),);
+        }
+    }
+}
+
+impl ToTokens for ExpandPat<'_, &PredicateClause> {
+    fn to_tokens(&self, mut tokens: &mut TokenStream) {
+        let preds = match &self.value {
+            PredicateClause::Paren { preds, .. } | PredicateClause::Predicate { preds } => preds,
+        };
+        let preds = preds.iter().map(|pred| self.ecx.expand(pred));
+        quote_each_token!(tokens &[
+            #(#preds)*
+        ],);
+    }
+}
+
+impl ToTokens for ExpandPat<'_, &PredicateConjunction> {
+    fn to_tokens(&self, mut tokens: &mut TokenStream) {
+        let PredicateConjunction { preds, .. } = &self.value;
+        let preds = preds.iter().map(|pred| self.ecx.expand(pred));
+        quote_each_token!(tokens &[
+            #(#preds)*
+        ]);
+    }
+}
+
 impl ToTokens for ExpandPat<'_, &MetaItem> {
     fn to_tokens(&self, mut tokens: &mut TokenStream) {
         let ExpandPatCtxt { pcx, pat, .. } = self.ecx;
@@ -616,13 +649,20 @@ impl ToTokens for ExpandPat<'_, &MetaItem> {
             MetaKind::Ty(ty_var) => {
                 let ty_ident = ident.as_ty();
                 let ty_var_ident = ident.as_ty_var();
-                let ty_pred = match &ty_var.ty_pred {
-                    Some(syntax::PunctAnd { value: pred, .. }) => quote!(Some(#pred)),
-                    None => quote!(None),
-                };
+
+                if let Some(preds) = &ty_var.preds {
+                    let preds = self.ecx.expand(&preds.value);
+                    quote_each_token!(tokens
+                        #[allow(non_snake_case)]
+                        let #ty_var_ident = #pat.meta.new_ty_var(#preds);
+                    );
+                } else {
+                    quote_each_token!(tokens
+                        #[allow(non_snake_case)]
+                        let #ty_var_ident = #pat.meta.new_ty_var(&[]);
+                    );
+                }
                 quote_each_token!(tokens
-                    #[allow(non_snake_case)]
-                    let #ty_var_ident = #pat.meta.new_ty_var(#ty_pred);
                     #[allow(non_snake_case)]
                     let #ty_ident = #pcx.mk_var_ty(#ty_var_ident);
                 );

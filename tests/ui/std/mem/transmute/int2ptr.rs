@@ -26,4 +26,16 @@ pub fn transmute_u64_to_mut_ptr(x: u64) {
     println!("{}", unsafe { *ptr_u64 });
 }
 
+struct S {
+    s: u64,
+}
+
+impl S {
+    pub fn transmute_u64_to_mut_ptr(x: u64) -> *mut u64 {
+        //~^ERROR: it is unsound to transmute an integer type `u64` to a pointer type `*mut ()`
+        let ptr: *mut () = unsafe { transmute(x) };
+        ptr as *mut u64
+    }
+}
+
 fn main() {}

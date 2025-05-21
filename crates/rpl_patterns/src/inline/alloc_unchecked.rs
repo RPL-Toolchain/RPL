@@ -138,7 +138,7 @@ struct Pattern<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     alloc: pat::Location,
     write: pat::Location,
-    ty: pat::TyVar,
+    ty: pat::TyVar<'pcx>,
 }
 
 #[rpl_macros::pattern_def]

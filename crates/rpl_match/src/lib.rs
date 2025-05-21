@@ -12,6 +12,7 @@ extern crate rustc_middle;
 extern crate rustc_span;
 #[macro_use]
 extern crate tracing;
+extern crate either;
 
 mod adt;
 mod counted;

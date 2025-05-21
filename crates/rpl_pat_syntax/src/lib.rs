@@ -1144,12 +1144,40 @@ pub struct Statement {
     pub kind: StatementKind,
 }
 
-/// A type variable from `#[meta($T:ty)]`, `#[meta($T:ty = pred)]` or other pattern.
+#[derive(ToTokens, Parse)]
+pub struct Predicate {
+    pub not: Option<token::Not>,
+    pub pred: syn::Path,
+}
+
+#[derive(ToTokens, Parse)]
+pub enum PredicateClause {
+    #[parse(peek = token::Paren)]
+    Paren {
+        #[syn(parenthesized)]
+        paren: token::Paren,
+        #[syn(in = paren)]
+        #[parse(Punctuated::parse_terminated)]
+        preds: Punctuated<Predicate, syn::token::OrOr>,
+    },
+    Predicate {
+        #[parse(Punctuated::parse_separated_nonempty)]
+        preds: Punctuated<Predicate, syn::token::OrOr>,
+    },
+}
+
+#[derive(ToTokens, Parse)]
+pub struct PredicateConjunction {
+    #[parse(Punctuated::parse_separated_nonempty)]
+    pub preds: Punctuated<PredicateClause, syn::token::AndAnd>,
+}
+
+/// A type variable from `#[meta($T:ty)]`, `#[meta($T:ty where pred)]` or other pattern.
 #[derive(ToTokens, Parse)]
 pub struct TyVar {
     kw_ty: kw::ty,
     #[parse(PunctAnd::parse_opt)]
-    pub ty_pred: Option<PunctAnd<Token![=], syn::Expr>>,
+    pub preds: Option<PunctAnd<Token![where], PredicateConjunction>>,
 }
 
 /// A type variable from `#[meta($c:const(ty))]`, `#[meta($c:const(ty) = pred)]` or other pattern.
@@ -1161,7 +1189,7 @@ pub struct ConstMetaVar {
     #[syn(in = paren)]
     pub ty: Type,
     #[parse(PunctAnd::parse_opt)]
-    pub const_pred: Option<PunctAnd<Token![=], syn::Expr>>,
+    pub preds: Option<PunctAnd<Token![where], PredicateConjunction>>,
 }
 
 /// A place variable from `#[meta($p:place(ty))]` or other pattern.

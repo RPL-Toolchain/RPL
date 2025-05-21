@@ -116,7 +116,7 @@ struct Pattern2<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     alloc: pat::Location,
     cast: pat::Location,
-    ty: pat::TyVar,
+    ty: pat::TyVar<'pcx>,
     alignment: pat::ConstVar<'pcx>,
 }
 
@@ -128,7 +128,8 @@ fn alloc_misaligned_cast(pcx: PatCtxt<'_>) -> Pattern2<'_> {
     let alignment;
     let pattern = rpl! {
         #[meta(
-            #[export(ty)] $T:ty = rpl_predicates::is_all_safe_trait,
+            #[export(ty)] $T:ty
+                where rpl_predicates::is_all_safe_trait,
             #[export(alignment)] $alignment: const(usize)
         )]
         fn $pattern(..) -> _ = mir! {
@@ -181,7 +182,7 @@ struct Pattern3<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     realloc: pat::Location,
     deref: pat::Location,
-    ty: pat::TyVar,
+    ty: pat::TyVar<'pcx>,
 }
 
 #[rpl_macros::pattern_def]

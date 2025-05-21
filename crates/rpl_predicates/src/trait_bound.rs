@@ -5,9 +5,6 @@ use rustc_span::{Symbol, sym};
 /// Check if self_ty's trait bounds are all safe.
 #[instrument(level = "debug", skip(tcx), ret)]
 pub fn is_all_safe_trait<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, self_ty: Ty<'tcx>) -> bool {
-    if self_ty.is_primitive() {
-        return false;
-    }
     const EXCLUDED_DIAG_ITEMS: &[Symbol] = &[sym::Send, sym::Sync];
     typing_env
         .param_env

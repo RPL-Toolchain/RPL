@@ -63,12 +63,9 @@ impl<'v> Visitor<'v> for FindExprBySpanAndFnPath<'v> {
 pub fn get_body_id_from_hir_node(node: Node<'_>) -> Option<BodyId> {
     match node {
         Node::TraitItem(TraitItem {
-            kind: TraitItemKind::Fn(_fn_sig, trait_fn),
+            kind: TraitItemKind::Fn(_fn_sig, TraitFn::Provided(body_id)),
             ..
-        }) => match trait_fn {
-            TraitFn::Provided(body_id) => Some(*body_id),
-            _ => None,
-        },
+        }) => Some(*body_id),
         Node::ImplItem(ImplItem {
             kind: ImplItemKind::Fn(_fn_sig, body_id),
             ..

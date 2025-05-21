@@ -68,7 +68,6 @@ static ALL_PATTERNS: &[fn(TyCtxt<'_>, PatCtxt<'_>, ItemId)] = &[
     inline::cve_2024_27284::check_item,
     others::private_or_generic_function_marked_inline::check_item,
     inline::transmute_type_to_bool::check_item,
-    // FIXME: Too loose
     inline::transmute_int_to_ptr::check_item,
     normal::manually_drop::check_item,
     inline::alloc_unchecked::check_item,

@@ -121,7 +121,8 @@ fn pattern_cast(pcx: PatCtxt<'_>) -> PatternCast<'_> {
     let cast_from;
     let cast_to;
     let pattern = rpl! {
-        #[meta( #[export(ty_var)] $T:ty = rpl_predicates::is_all_safe_trait)]
+        #[meta( #[export(ty_var)] $T:ty
+            where rpl_predicates::is_all_safe_trait && !rpl_predicates::is_primitive)]
         fn $pattern (..) -> _ = mir! {
             #[export(cast_from)]
             let $from_slice: &[$T] = _;
@@ -154,7 +155,8 @@ fn pattern_cast_mut(pcx: PatCtxt<'_>) -> PatternCast<'_> {
     let cast_from;
     let cast_to;
     let pattern = rpl! {
-        #[meta( #[export(ty_var)] $T:ty = rpl_predicates::is_all_safe_trait)]
+        #[meta( #[export(ty_var)] $T:ty
+            where rpl_predicates::is_all_safe_trait && !rpl_predicates::is_primitive)]
         fn $pattern (..) -> _ = mir! {
 
             #[export(cast_from)]

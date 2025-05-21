@@ -228,10 +228,33 @@ fn test_meta() {
     pass!(Meta!(#[meta($T:ty)]));
     pass!(Meta!(#[meta($T:ty, $U:ty)]));
     pass!(Meta!(#[meta( #[export(ty_var)] $T:ty, )]));
-    pass!(Meta!(#[meta($T:ty = is_all_safe_trait)]));
+    pass!(Meta!(#[meta($T:ty where is_all_safe_trait)]));
+    pass!(Meta!(#[meta($T:ty where is_all_safe_trait && !is_primitive_type)]));
     pass!(Meta!(#[meta($T:ty, $p:place(alloc::vec::Vec<$T>))]));
     pass!(Meta!(#[meta($T:ty, $c:const($T))]));
-    pass!(Meta!(#[meta($T:ty, $c:const(&$T))]));
+    pass!(Meta!(#[meta($T:ty, $c:const(&$T) where (a || b) && c && e)]));
+}
+
+#[test]
+fn test_predicate_conjunction() {
+    pass!(PredicateConjunction!(a && b));
+    pass!(PredicateConjunction!((a || !b) && c));
+    pass!(PredicateConjunction!(a || b || c));
+}
+
+#[test]
+fn test_predicate_clause() {
+    pass!(PredicateClause!(a));
+    pass!(PredicateClause!(!a));
+    pass!(PredicateClause!(a || b));
+    pass!(PredicateClause!((a || b)));
+    pass!(PredicateClause!(a || b || !c));
+}
+
+#[test]
+fn test_predicate() {
+    pass!(Predicate!(!a::b));
+    pass!(Predicate!(a::b));
 }
 
 #[test]

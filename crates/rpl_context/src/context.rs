@@ -146,7 +146,7 @@ impl<'pcx> PatCtxt<'pcx> {
     pub fn mk_fn(self, path_with_args: pat::PathWithArgs<'pcx>) -> Ty<'pcx> {
         self.mk_path_ty(path_with_args)
     }
-    pub fn mk_var_ty(self, ty_var: pat::TyVar) -> Ty<'pcx> {
+    pub fn mk_var_ty(self, ty_var: pat::TyVar<'pcx>) -> Ty<'pcx> {
         self.mk_ty(TyKind::TyVar(ty_var))
     }
     pub fn mk_var_const(self, const_var: pat::ConstVar<'pcx>) -> Const<'pcx> {

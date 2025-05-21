@@ -96,8 +96,8 @@ struct PatternTransmute<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     transmute_from: pat::Location,
     transmute_to: pat::Location,
-    int_ty: pat::TyVar,
-    ptr_ty: pat::TyVar,
+    int_ty: pat::TyVar<'pcx>,
+    ptr_ty: pat::TyVar<'pcx>,
 }
 
 #[rpl_macros::pattern_def]
@@ -108,8 +108,8 @@ fn pattern_transmute_int_to_ptr(pcx: PatCtxt<'_>) -> PatternTransmute<'_> {
     let ptr_ty;
     let pattern = rpl! {
         #[meta(
-            #[export(int_ty)] $INT: ty = rpl_predicates::is_integral,
-            #[export(ptr_ty)] $PTR:ty = rpl_predicates::is_ptr
+            #[export(int_ty)] $INT:ty where rpl_predicates::is_integral,
+            #[export(ptr_ty)] $PTR:ty where rpl_predicates::is_ptr
         )]
         fn $pattern (..) -> _ = mir! {
             #[export(transmute_from)]

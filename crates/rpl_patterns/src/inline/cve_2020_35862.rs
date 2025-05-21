@@ -89,7 +89,7 @@ struct Pattern<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     vec_move: pat::Location,
     ptr_use: pat::Location,
-    ty: pat::TyVar,
+    ty: pat::TyVar<'pcx>,
 }
 
 #[rpl_macros::pattern_def]

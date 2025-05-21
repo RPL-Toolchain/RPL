@@ -88,7 +88,7 @@ struct PatternThreadLocalStatic<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     thread_local: pat::Location,
     ret: pat::Location,
-    ty_var: pat::TyVar,
+    ty_var: pat::TyVar<'pcx>,
 }
 
 #[rpl_macros::pattern_def]
@@ -98,7 +98,7 @@ fn pattern_thread_local_static(pcx: PatCtxt<'_>) -> PatternThreadLocalStatic<'_>
     let ret;
     #[allow(non_snake_case)]
     let pattern = rpl! {
-        #[meta(#[export(ty_var)] $T:ty = rpl_predicates::is_sync)]
+        #[meta(#[export(ty_var)] $T:ty where rpl_predicates::is_sync)]
         // FIXME: the return type is not actually checked to be matched
         fn $pattern(..) -> &'static $T = mir! {
             #[export(thread_local)]

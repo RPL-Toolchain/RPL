@@ -7,6 +7,8 @@ use rustc_middle::mir;
 use rustc_middle::ty::{self, TyCtxt};
 use rustc_span::Symbol;
 
+use either::Either;
+
 use crate::PatCtxt;
 use crate::cvt_prim_ty::CvtPrimTy;
 
@@ -56,7 +58,7 @@ pub enum RegionKind {
 
 #[derive(Clone, Copy)]
 pub enum TyKind<'pcx> {
-    TyVar(TyVar),
+    TyVar(TyVar<'pcx>),
     AdtPat(Symbol),
     Array(Ty<'pcx>, Const<'pcx>),
     Slice(Ty<'pcx>),
@@ -302,9 +304,9 @@ impl<'pcx> From<ConstVar<'pcx>> for Const<'pcx> {
 }
 
 #[derive(Clone, Copy)]
-pub struct TyVar {
+pub struct TyVar<'pcx> {
     pub idx: TyVarIdx,
-    pub pred: Option<TyPred>,
+    pub pred: &'pcx [&'pcx [Either<TyPred, TyPred>]],
 }
 
 #[derive(Clone, Copy)]

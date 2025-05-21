@@ -36,5 +36,17 @@ LL |     let ptr: *mut () = unsafe { transmute(x) };
    = help: See https://doc.rust-lang.org/std/mem/fn.transmute.html#transmutation-between-pointers-and-integers
    = note: transmuting integers to pointers is a largely unspecified operation
 
-error: aborting due to 3 previous errors
+error: it is unsound to transmute an integer type `u64` to a pointer type `*mut ()`
+  --> tests/ui/std/mem/transmute/int2ptr.rs:34:37
+   |
+LL |     pub fn transmute_u64_to_mut_ptr(x: u64) -> *mut u64 {
+   |                                     ^ transmuted from here
+LL |
+LL |         let ptr: *mut () = unsafe { transmute(x) };
+   |                                     ------------ transmuted to here
+   |
+   = help: See https://doc.rust-lang.org/std/mem/fn.transmute.html#transmutation-between-pointers-and-integers
+   = note: transmuting integers to pointers is a largely unspecified operation
+
+error: aborting due to 4 previous errors
 

@@ -94,7 +94,7 @@ struct PatternTransmute<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     transmute_from: pat::Location,
     transmute_to: pat::Location,
-    ty_var: pat::TyVar,
+    ty_var: pat::TyVar<'pcx>,
 }
 
 // The pattern for transmuting a type to a boolean
