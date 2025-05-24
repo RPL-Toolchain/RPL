@@ -10,4 +10,5 @@ pub(crate) mod cve_2021_25905;
 pub(crate) mod cve_2021_27376;
 pub(crate) mod cve_2021_29941_2;
 pub(crate) mod cve_2022_23639;
+pub(crate) mod dynamic;
 pub(crate) mod manually_drop;
