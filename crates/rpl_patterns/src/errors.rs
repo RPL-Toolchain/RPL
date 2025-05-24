@@ -1,4 +1,7 @@
-use rustc_errors::IntoDiagArg;
+use std::borrow::Cow;
+
+use rustc_errors::{DiagArgValue, IntoDiagArg, LintDiagnostic};
+use rustc_lint::Lint;
 use rustc_macros::LintDiagnostic;
 use rustc_middle::ty::{self, Ty};
 use rustc_span::Span;
@@ -396,4 +399,130 @@ pub struct BadManuallyDropOperationSequence {
     pub call_1: Span,
     #[label(rpl_patterns_call_2_label)]
     pub call_2: Span,
+}
+
+/// A dynamic error that can be used to report user-defined errors
+///
+/// See:
+/// - [`rustc_errors::LintDiagnostic`].
+/// - [`rustc_macros::diagnostics::lint_diagnostic_derive`].
+/// - [`rustc_macros::LintDiagnostic`].
+pub struct DynamicError {
+    /// Primary message and its span.
+    ///
+    /// See [`rustc_errors::Diag::primary_message`].
+    /// The primary message is the main error message that will be displayed to the user.
+    primary: (Cow<'static, str>, Span),
+    /// Label description, and the span of the label.
+    ///
+    /// See [`rustc_errors::Diag::span_label`].
+    /// Labels are used to highlight specific parts of the code that are relevant to the error.
+    labels: Vec<(Cow<'static, str>, Span)>,
+    args: Vec<(Cow<'static, str>, DiagArgValue)>,
+    notes: Vec<(Cow<'static, str>, Option<Span>)>,
+    helps: Vec<(Cow<'static, str>, Option<Span>)>,
+}
+
+impl LintDiagnostic<'_, ()> for DynamicError {
+    fn decorate_lint<'b>(self, diag: &'b mut rustc_errors::Diag<'_, ()>) {
+        let primary_message = self.primary.0;
+        diag.primary_message(primary_message);
+        for (label, span) in self.labels {
+            diag.span_label(span, label);
+        }
+        for (name, value) in self.args {
+            diag.arg(name, value);
+        }
+        for (help, span_help) in self.helps {
+            if let Some(span_help) = span_help {
+                diag.span_help(span_help, help);
+            } else {
+                diag.help(help);
+            }
+        }
+        for (note, span_note) in self.notes {
+            if let Some(span_note) = span_note {
+                diag.span_note(span_note, note);
+            } else {
+                diag.note(note);
+            }
+        }
+    }
+}
+
+impl DynamicError {
+    pub(crate) fn primary_span(&self) -> Span {
+        self.primary.1
+    }
+    pub(crate) fn lint(&self) -> &'static Lint {
+        const LINT: Lint = Lint {
+            name: "RPL::DYNAMIC",
+            desc: "dynamic RPL pattern",
+            ..Lint::default_fields_for_macro()
+        };
+        &LINT
+    }
+    const fn attr_error(span: Span) -> DynamicError {
+        DynamicError {
+            primary: (Cow::Borrowed("Ill-formed RPL dynamic attribute"), span),
+            labels: Vec::new(),
+            args: Vec::new(),
+            notes: Vec::new(),
+            helps: Vec::new(),
+        }
+    }
+    pub(crate) fn from_attr(attr: &rustc_hir::Attribute, span: Span) -> DynamicError {
+        fn from_attr(attr: &rustc_hir::Attribute, span: Span) -> Option<DynamicError> {
+            let items = attr.meta_item_list()?;
+            let mut primary_message = None;
+            let mut labels = Vec::new();
+            let mut args = Vec::new();
+            let mut notes = Vec::new();
+            let mut helps = Vec::new();
+            for item in items {
+                match item.name_or_empty().as_str() {
+                    "primary_message" => {
+                        primary_message = Some(Cow::Owned(item.value_str()?.to_string()));
+                    },
+                    "labels" => {
+                        let label_list = item.meta_item_list()?;
+                        for label_item in label_list {
+                            // FIXME: `label_item.span()` is not the actual span it refers to,
+                            labels.push((Cow::Owned(label_item.value_str()?.to_string()), label_item.span()));
+                        }
+                    },
+                    "args" => {
+                        let arg_list = item.meta_item_list()?;
+                        for arg_item in arg_list {
+                            // FIXME: `arg_item.span()` is not the actual span it refers to,
+                            args.push((
+                                Cow::Owned(arg_item.name_or_empty().to_string()),
+                                arg_item.value_str()?.into_diag_arg(),
+                            ));
+                        }
+                    },
+                    "note" => {
+                        notes.push((Cow::Owned(item.value_str()?.to_string()), None));
+                    },
+                    "help" => {
+                        helps.push((Cow::Owned(item.value_str()?.to_string()), None));
+                    },
+                    _ => None?,
+                }
+            }
+            let primary_message = primary_message?;
+            let primary = (primary_message, span);
+            Some(DynamicError {
+                primary,
+                labels,
+                args,
+                notes,
+                helps,
+            })
+        }
+        from_attr(attr, span).unwrap_or_else(|| {
+            // tracing::warn!("Failed to parse RPL dynamic attribute: {:?}", attr);
+            Self::attr_error(attr.span)
+        })
+    }
 }

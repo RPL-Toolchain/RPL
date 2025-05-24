@@ -8,6 +8,7 @@ extern crate rustc_errors;
 extern crate rustc_fluent_macro;
 extern crate rustc_hir;
 extern crate rustc_infer;
+extern crate rustc_lint;
 extern crate rustc_lint_defs;
 extern crate rustc_macros;
 extern crate rustc_middle;
@@ -72,6 +73,7 @@ static ALL_PATTERNS: &[fn(TyCtxt<'_>, PatCtxt<'_>, ItemId)] = &[
     normal::manually_drop::check_item,
     inline::alloc_unchecked::check_item,
     normal::alloc_unchecked::check_item,
+    normal::dynamic::check_item,
 ];
 
 #[allow(unused)]
