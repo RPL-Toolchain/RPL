@@ -1,12 +1,32 @@
 error: Dynamic RPL pattern
   --> tests/ui/utils/dynamic.rs:6:1
    |
-LL | fn main() {
-   | ^^^^^^^^^
+LL | fn f1() {
+   | ^^^^^^^
    |
    = help: You can use `#[rpl::dynamic]` to create a customizable lint.
    = note: This is a dynamic RPL pattern, which can be customized during runtime.
    = note: `#[forbid(rpl::dynamic)]` on by default
 
-error: aborting due to 1 previous error
+error: Unknown attribute key
+  --> tests/ui/utils/dynamic.rs:15:5
+   |
+LL |     unknown_attribute = "what's this?" 
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: Allowed attribute keys are: `primary_message`, `labels`, `note`, `help`
+
+error: Missing primary message
+  --> tests/ui/utils/dynamic.rs:21:1
+   |
+LL | #[rpl::dynamic(help = "HELP!")]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Expected a string value
+  --> tests/ui/utils/dynamic.rs:24:42
+   |
+LL | #[rpl::dynamic(primary_message = "test", help = 1)]
+   |                                          ^^^^^^^^
+
+error: aborting due to 4 previous errors
 
