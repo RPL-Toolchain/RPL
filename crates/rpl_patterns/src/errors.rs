@@ -491,7 +491,9 @@ impl DynamicError {
                     "help" => {
                         helps.push((Cow::Owned(item.value_str()?.to_string()), None));
                     },
-                    _ => None?,
+                    _ => {
+                        error!("Unknown attribute key {:?}", item.name_or_empty())
+                    },
                 }
             }
             let primary_message = primary_message?;
