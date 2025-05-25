@@ -1,5 +1,5 @@
-error: {$kind} {$lang} pattern
-  --> tests/ui/utils/dynamic.rs:7:1
+error: Dynamic RPL pattern
+  --> tests/ui/utils/dynamic.rs:6:1
    |
 LL | fn main() {
    | ^^^^^^^^^
