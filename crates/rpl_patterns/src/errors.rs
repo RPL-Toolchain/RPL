@@ -518,7 +518,7 @@ impl DynamicError {
     ) -> Result<impl Iterator<Item = &rustc_ast::MetaItemInner>, Self> {
         item.meta_item_list().map_or_else(
             || Err(Self::expected_meta_item_list_error(item.span())),
-            |vec| Ok(vec.into_iter()),
+            |vec| Ok(vec.iter()),
         )
     }
     fn from_attr_impl(attr: &rustc_hir::Attribute, span: Span) -> Result<DynamicError, DynamicError> {
