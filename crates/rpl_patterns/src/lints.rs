@@ -909,7 +909,7 @@ declare_tool_lint! {
 }
 
 declare_tool_lint! {
-    /// The `rpl::alloc_maybe_zero` lint detects that a public function that may allocate a zero-sized memory
+    /// The `rpl::alloc_maybe_zero` lint detects public functions that may allocate zero-sized memory.
     ///
     /// ### Example
     ///
@@ -929,11 +929,11 @@ declare_tool_lint! {
     ///
     /// ### Explanation
     ///
-    /// The `alloc` function allocates memory of the given size,
-    /// which may be zero-sized.
+    /// The `alloc` function allocates memory of `size` bytes, which may be zero-sized.
+    /// And allocating zero-sized memory is an undefined behavior in Rust.
     pub rpl::ALLOC_MAYBE_ZERO,
     Deny,
-    "detects that a public function that may allocate a zero-sized memory"
+    "detects public functions that may allocate zero-sized memory"
 }
 
 declare_tool_lint! {

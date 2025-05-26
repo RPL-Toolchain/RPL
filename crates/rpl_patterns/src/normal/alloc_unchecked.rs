@@ -107,6 +107,8 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
                 }
             }
 
+            // For `unsafe` functions, it's the caller's responsibility to ensure that the allocation is safe.
+            // So we only check `alloc_maybe_zero` for safe functions.
             if kind.header().is_none_or(|header| !header.is_unsafe()) && self.tcx.visibility(def_id).is_public() {
                 let pattern = alloc_maybe_zero(self.pcx);
 
