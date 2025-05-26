@@ -916,7 +916,7 @@ declare_tool_lint! {
     /// ```rust
     /// use std::{alloc::{alloc, dealloc, Layout}, mem::size_of};
     ///
-    /// pub fn alloc<T>(size: usize) {
+    /// pub fn alloc_maybe_zero<T>(size: usize) {
     ///     let layout = Layout::from_size_align(size, 1).unwrap();
     ///     unsafe {
     ///         let ptr = alloc(layout);
