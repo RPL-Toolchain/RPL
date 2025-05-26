@@ -3,16 +3,16 @@
     "rust-analyzer.linkedProjects": [
         "./Cargo.toml",
     ],
-    // "rust-analyzer.procMacro.enable": false,
-    // "rust-analyzer.procMacro.attributes.enable": false, // Doesn't work
-    // "rust-analyzer.procMacro.ignored": {}, // Doesn't work
+    "rust-analyzer.procMacro.enable": false,
+    "rust-analyzer.procMacro.attributes.enable": false, // Doesn't work
+    "rust-analyzer.procMacro.ignored": {}, // Doesn't work
     "rust-analyzer.diagnostics.disabled": [
         "macro-error"
     ],
     "lldb.showDisassembly": "auto",
     "lldb.dereferencePointers": true,
     "lldb.consoleMode": "commands",
-  "editor.foldingMaximumRegions": 65000,
+    "editor.foldingMaximumRegions": 65000,
     "editor.formatOnSave": true,
     "cSpell.words": [
         "ctxt",
