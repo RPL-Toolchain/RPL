@@ -388,7 +388,7 @@ struct Pattern4<'pcx> {
 }
 
 #[rpl_macros::pattern_def]
-fn alloc_maybe_zero_mul(pcx: PatCtxt<'_>) -> Pattern4<'_> {
+fn alloc_zeroed_maybe_zero_mul(pcx: PatCtxt<'_>) -> Pattern4<'_> {
     let size;
     let alloc;
     let pattern = rpl! {
@@ -421,7 +421,7 @@ fn alloc_maybe_zero_mul(pcx: PatCtxt<'_>) -> Pattern4<'_> {
 }
 
 #[rpl_macros::pattern_def]
-fn alloc_zeroed_maybe_zero_mul(pcx: PatCtxt<'_>) -> Pattern4<'_> {
+fn alloc_maybe_zero_mul(pcx: PatCtxt<'_>) -> Pattern4<'_> {
     let size;
     let alloc;
     let pattern = rpl! {
