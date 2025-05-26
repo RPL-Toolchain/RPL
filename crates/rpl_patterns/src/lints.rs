@@ -914,12 +914,20 @@ declare_tool_lint! {
     /// ### Example
     ///
     /// ```rust
-    /// use std::{alloc::{alloc, dealloc, Layout}, mem::size_of};
+    /// use std::{alloc::{alloc, alloc_zeroed, dealloc, Layout}, mem::size_of};
     ///
     /// pub fn alloc_maybe_zero<T>(size: usize) {
     ///     let layout = Layout::from_size_align(size, 1).unwrap();
     ///     unsafe {
     ///         let ptr = alloc(layout);
+    ///         dealloc(ptr, layout);
+    ///     }
+    /// }
+    ///
+    /// pub fn alloc_zeroed_maybe_zero<T>(size: usize) {
+    ///     let layout = Layout::from_size_align(size, 1).unwrap();
+    ///     unsafe {
+    ///         let ptr = alloc_zeroed(layout);
     ///         dealloc(ptr, layout);
     ///     }
     /// }
@@ -929,7 +937,7 @@ declare_tool_lint! {
     ///
     /// ### Explanation
     ///
-    /// The `alloc` function allocates memory of `size` bytes, which may be zero-sized.
+    /// The `alloc` (and `alloc_zeroed`) function allocates memory of `size` bytes, which may be zero-sized.
     /// And allocating zero-sized memory is an undefined behavior in Rust.
     pub rpl::ALLOC_MAYBE_ZERO,
     Deny,

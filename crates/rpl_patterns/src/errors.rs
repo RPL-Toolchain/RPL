@@ -82,6 +82,7 @@ pub struct AllocMaybeZero {
     #[label(rpl_patterns_size_label)]
     pub size: Span,
     pub fn_name: Symbol,
+    pub alloc_fn: &'static str,
 }
 
 #[derive(LintDiagnostic)]

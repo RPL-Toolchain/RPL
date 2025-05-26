@@ -110,24 +110,31 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
             // For `unsafe` functions, it's the caller's responsibility to ensure that the allocation is safe.
             // So we only check `alloc_maybe_zero` for safe functions.
             if kind.header().is_none_or(|header| !header.is_unsafe()) && self.tcx.visibility(def_id).is_public() {
-                let pattern = alloc_maybe_zero(self.pcx);
+                for pattern in [alloc_maybe_zero_mul(self.pcx), alloc_zeroed_maybe_zero_mul(self.pcx)] {
+                    for matches in CheckMirCtxt::new(self.tcx, self.pcx, body, pattern.pattern, pattern.fn_pat).check()
+                    {
+                        let alloc = matches[pattern.alloc].span_no_inline(body);
+                        let size_arg = matches[pattern.size];
+                        let fn_name = self.tcx.item_name(def_id.to_def_id());
+                        let alloc_fn = pattern.alloc_fn;
 
-                for matches in CheckMirCtxt::new(self.tcx, self.pcx, body, pattern.pattern, pattern.fn_pat).check() {
-                    let alloc = matches[pattern.alloc].span_no_inline(body);
-                    let size_arg = matches[pattern.size];
-                    let fn_name = self.tcx.item_name(def_id.to_def_id());
+                        // debug!("{:?} {}", size_arg, body.arg_count);
 
-                    // debug!("{:?} {}", size_arg, body.arg_count);
-
-                    // `size` is an argument.
-                    if size_arg.as_usize() < 1 + body.arg_count {
-                        let size = body.local_decls[size_arg].source_info.span;
-                        self.tcx.emit_node_span_lint(
-                            ALLOC_MAYBE_ZERO,
-                            self.tcx.local_def_id_to_hir_id(def_id),
-                            alloc,
-                            crate::errors::AllocMaybeZero { alloc, size, fn_name },
-                        );
+                        // Check if `size` is an argument.
+                        if size_arg.as_usize() < 1 + body.arg_count {
+                            let size = body.local_decls[size_arg].source_info.span;
+                            self.tcx.emit_node_span_lint(
+                                ALLOC_MAYBE_ZERO,
+                                self.tcx.local_def_id_to_hir_id(def_id),
+                                alloc,
+                                crate::errors::AllocMaybeZero {
+                                    alloc,
+                                    size,
+                                    fn_name,
+                                    alloc_fn,
+                                },
+                            );
+                        }
                     }
                 }
             }
@@ -377,10 +384,11 @@ struct Pattern4<'pcx> {
     fn_pat: &'pcx pat::Fn<'pcx>,
     alloc: pat::Location,
     size: pat::Local,
+    alloc_fn: &'static str,
 }
 
 #[rpl_macros::pattern_def]
-fn alloc_maybe_zero(pcx: PatCtxt<'_>) -> Pattern4<'_> {
+fn alloc_maybe_zero_mul(pcx: PatCtxt<'_>) -> Pattern4<'_> {
     let size;
     let alloc;
     let pattern = rpl! {
@@ -391,7 +399,6 @@ fn alloc_maybe_zero(pcx: PatCtxt<'_>) -> Pattern4<'_> {
             let $result: core::result::Result<alloc::alloc::Layout, alloc::alloc::LayoutError> =
                 alloc::alloc::Layout::from_size_align(
                     copy $size,
-                    // _,
                     _
                 );
             let $layout : alloc::alloc::Layout =
@@ -409,5 +416,39 @@ fn alloc_maybe_zero(pcx: PatCtxt<'_>) -> Pattern4<'_> {
         fn_pat,
         alloc,
         size,
+        alloc_fn: "alloc_zeroed",
+    }
+}
+
+#[rpl_macros::pattern_def]
+fn alloc_zeroed_maybe_zero_mul(pcx: PatCtxt<'_>) -> Pattern4<'_> {
+    let size;
+    let alloc;
+    let pattern = rpl! {
+        fn $pattern(..) -> _ = mir! {
+            #[export(size)]
+            let $count: usize;
+            let $size: usize = Mul(copy $count, _);
+            let $result: core::result::Result<alloc::alloc::Layout, alloc::alloc::LayoutError> =
+                alloc::alloc::Layout::from_size_align(
+                    copy $size,
+                    _
+                );
+            let $layout : alloc::alloc::Layout =
+                core::result::Result<alloc::alloc::Layout, alloc::alloc::LayoutError>::unwrap(
+                    move $result
+                );
+            #[export(alloc)]
+            _ = alloc::alloc::alloc(copy $layout);
+        }
+    };
+    let fn_pat = pattern.fns.get_fn_pat(Symbol::intern("pattern")).unwrap();
+
+    Pattern4 {
+        pattern,
+        fn_pat,
+        alloc,
+        size,
+        alloc_fn: "allo",
     }
 }
