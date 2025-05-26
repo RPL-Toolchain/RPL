@@ -890,6 +890,9 @@ impl ToTokens for ExpandPat<'_, &LocalDecl> {
         {
             let stmt = &inner.ident;
             quote_each_token!(tokens #stmt = #ident;);
+        } else if let Some(export) = export {
+            let local = &export.inner.ident;
+            quote_each_token!(tokens #local = #ident;);
         }
     }
 }
