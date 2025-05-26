@@ -13,3 +13,6 @@ binary-dep-depinfo = true
 
 [profile.dev]
 split-debuginfo = "unpacked"
+
+[env]
+# RPL_PATS = "docs/patterns/CVE-2021-27376-MIR.rpl"
