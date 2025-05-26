@@ -1,7 +1,7 @@
 //@revisions: normal
 //@[normal]compile-flags: -Z inline-mir=false
 use std::{
-    alloc::{alloc_zeroed, dealloc, Layout},
+    alloc::{Layout, alloc_zeroed, dealloc},
     mem::size_of,
     ops::{Index, IndexMut},
     slice::{from_raw_parts, from_raw_parts_mut},
@@ -22,6 +22,8 @@ impl<const ALIGN: usize> AlignedMemory<{ ALIGN }> {
         unsafe {
             ptr = alloc_zeroed(layout);
             //~^ERROR: public function `new` allocates a pointer that may be zero-sized, which is an undefined behavior
+            //~|NOTE:  See https://doc.rust-lang.org/std/alloc/fn.alloc_zeroed.html and https://doc.rust-lang.org/std/alloc/trait.GlobalAlloc.html#method.alloc_zeroed
+            //~|NOTE:  `#[deny(rpl::alloc_maybe_zero)]` on by default
         }
 
         Self {

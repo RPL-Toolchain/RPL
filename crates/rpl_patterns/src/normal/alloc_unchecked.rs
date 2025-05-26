@@ -449,6 +449,6 @@ fn alloc_zeroed_maybe_zero_mul(pcx: PatCtxt<'_>) -> Pattern4<'_> {
         fn_pat,
         alloc,
         size,
-        alloc_fn: "allo",
+        alloc_fn: "alloc",
     }
 }
