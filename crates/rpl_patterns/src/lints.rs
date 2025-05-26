@@ -909,6 +909,34 @@ declare_tool_lint! {
 }
 
 declare_tool_lint! {
+    /// The `rpl::alloc_maybe_zero` lint detects that a public function that may allocate a zero-sized memory
+    ///
+    /// ### Example
+    ///
+    /// ```rust
+    /// use std::{alloc::{alloc, dealloc, Layout}, mem::size_of};
+    ///
+    /// pub fn alloc<T>(size: usize) {
+    ///     let layout = Layout::from_size_align(size, 1).unwrap();
+    ///     unsafe {
+    ///         let ptr = alloc(layout);
+    ///         dealloc(ptr, layout);
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// {{produces}}
+    ///
+    /// ### Explanation
+    ///
+    /// The `alloc` function allocates memory of the given size,
+    /// which may be zero-sized.
+    pub rpl::ALLOC_MAYBE_ZERO,
+    Deny,
+    "detects that a public function that may allocate a zero-sized memory"
+}
+
+declare_tool_lint! {
     /// The `rpl::use_after_realloc` lint detects using a pointer after it has been reallocated.
     ///
     /// ### Example

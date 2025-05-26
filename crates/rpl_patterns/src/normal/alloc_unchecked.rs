@@ -9,7 +9,7 @@ use rustc_span::{Span, Symbol};
 use rpl_context::{PatCtxt, pat};
 use rpl_mir::CheckMirCtxt;
 
-use crate::lints::{MISALIGNED_POINTER, USE_AFTER_REALLOC};
+use crate::lints::{ALLOC_MAYBE_ZERO, MISALIGNED_POINTER, USE_AFTER_REALLOC};
 
 #[instrument(level = "info", skip_all)]
 pub fn check_item(tcx: TyCtxt<'_>, pcx: PatCtxt<'_>, item_id: hir::ItemId) {
@@ -104,6 +104,29 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
                             ty,
                         },
                     );
+                }
+            }
+
+            if kind.header().is_none_or(|header| !header.is_unsafe()) && self.tcx.visibility(def_id).is_public() {
+                let pattern = alloc_maybe_zero(self.pcx);
+
+                for matches in CheckMirCtxt::new(self.tcx, self.pcx, body, pattern.pattern, pattern.fn_pat).check() {
+                    let alloc = matches[pattern.alloc].span_no_inline(body);
+                    let size_arg = matches[pattern.size];
+                    let fn_name = self.tcx.item_name(def_id.to_def_id());
+
+                    // debug!("{:?} {}", size_arg, body.arg_count);
+
+                    // `size` is an argument.
+                    if size_arg.as_usize() < 1 + body.arg_count {
+                        let size = body.local_decls[size_arg].source_info.span;
+                        self.tcx.emit_node_span_lint(
+                            ALLOC_MAYBE_ZERO,
+                            self.tcx.local_def_id_to_hir_id(def_id),
+                            alloc,
+                            crate::errors::AllocMaybeZero { alloc, size, fn_name },
+                        );
+                    }
                 }
             }
         }
@@ -344,5 +367,45 @@ fn use_after_realloc_write_mut(pcx: PatCtxt<'_>) -> Pattern3<'_> {
         realloc,
         deref,
         ty,
+    }
+}
+
+struct Pattern4<'pcx> {
+    pattern: &'pcx pat::Pattern<'pcx>,
+    fn_pat: &'pcx pat::Fn<'pcx>,
+    alloc: pat::Location,
+    size: pat::Local,
+}
+
+#[rpl_macros::pattern_def]
+fn alloc_maybe_zero(pcx: PatCtxt<'_>) -> Pattern4<'_> {
+    let size;
+    let alloc;
+    let pattern = rpl! {
+        fn $pattern(..) -> _ = mir! {
+            #[export(size)]
+            let $count: usize;
+            let $size: usize = Mul(copy $count, _);
+            let $result: core::result::Result<alloc::alloc::Layout, alloc::alloc::LayoutError> =
+                alloc::alloc::Layout::from_size_align(
+                    copy $size,
+                    // _,
+                    _
+                );
+            let $layout : alloc::alloc::Layout =
+                core::result::Result<alloc::alloc::Layout, alloc::alloc::LayoutError>::unwrap(
+                    move $result
+                );
+            #[export(alloc)]
+            _ = alloc::alloc::alloc_zeroed(copy $layout);
+        }
+    };
+    let fn_pat = pattern.fns.get_fn_pat(Symbol::intern("pattern")).unwrap();
+
+    Pattern4 {
+        pattern,
+        fn_pat,
+        alloc,
+        size,
     }
 }

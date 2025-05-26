@@ -130,6 +130,12 @@ rpl_patterns_misaligned_pointer = resulting pointer `*mut {$ty}` has a different
     .note = See https://doc.rust-lang.org/std/alloc/fn.alloc.html and https://doc.rust-lang.org/std/alloc/trait.GlobalAlloc.html#tymethod.alloc
     .help = consider using `core::alloc::Layout::new::<T>()` or `core::alloc::Layout::array::<T>(n)` to create a layout for the pointer
 
+rpl_patterns_alloc_maybe_zero = public function `{$fn_name}` allocates a pointer that may be zero-sized, which is an undefined behavior
+    .alloc_label = pointer created here
+    .size_label = size passed in here
+    .note = See https://doc.rust-lang.org/std/alloc/fn.alloc.html and https://doc.rust-lang.org/std/alloc/trait.GlobalAlloc.html#tymethod.alloc
+    .help = check whether the size is zero before allocating
+
 rpl_patterns_cassandra_iter_next_ptr_passed_to_cass_iter_get = it will be an undefined behavior to pass a pointer returned by `cass_iterator_next` to `cass_iterator_get_*` in a `std::iter::Iterator` implementation
     .cass_iter_next_label = `cass_iterator_next` called here
     .note = `cass_iterator_next` will invalidate the current item when called
