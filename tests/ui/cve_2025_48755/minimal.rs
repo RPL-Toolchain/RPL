@@ -1,6 +1,9 @@
 //@revisions: normal
 //@[normal]compile-flags: -Z inline-mir=false
-use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
+use std::{
+    alloc::{Layout, alloc, alloc_zeroed, dealloc},
+    mem::size_of,
+};
 
 pub fn alloc_maybe_zero(sz_u64: usize) {
     let sz_bytes = sz_u64 * size_of::<u64>();
