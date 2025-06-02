@@ -8,6 +8,7 @@ keywords.workspace = true
 edition.workspace = true
 
 [dependencies]
+derive_more.workspace = true
 rpl_meta.workspace = true
 rpl_parser.workspace = true
 rpl_predicates.workspace = true

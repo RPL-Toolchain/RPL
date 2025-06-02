@@ -59,6 +59,14 @@ impl<'i> From<&pairs::Identifier<'i>> for Ident<'i> {
     }
 }
 
+impl<'i> From<&pairs::Dollarself<'i>> for Ident<'i> {
+    fn from(ident: &pairs::Dollarself<'i>) -> Self {
+        let span = ident.span;
+        let name = Symbol::intern(span.as_str());
+        Self { name, span }
+    }
+}
+
 impl<'i> From<&pairs::MetaVariable<'i>> for Ident<'i> {
     fn from(meta: &pairs::MetaVariable<'i>) -> Self {
         let span = meta.span;

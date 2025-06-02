@@ -118,6 +118,10 @@ error_type!(
                 span: SpanWrapper<'i>,
             }
                 "Unknown predicate `{pred_name}`. \n{span}",
+            320 ImplAlreadyDeclared {
+                span: SpanWrapper<'i>,
+            }
+                "Impl already declared. \n{span}",
         }
 );
 

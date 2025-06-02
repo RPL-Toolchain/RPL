@@ -4,14 +4,23 @@ use std::sync::Arc;
 use super::utils::mutability_from_pair_mutability;
 use super::{FnPatternBody, FnSymbolTable, NonLocalMetaVars, Path, RawDecleration, RawStatement, Ty};
 use crate::PatCtxt;
+use derive_more::derive::Debug;
 use rpl_meta::collect_elems_separated_by_comma;
-use rpl_meta::symbol_table::WithPath;
+use rpl_meta::symbol_table::{Visibility, WithMetaTable, WithPath};
 use rpl_parser::generics::Choice4;
 use rpl_parser::pairs;
 use rustc_data_structures::fx::{FxHashMap, FxIndexMap};
 use rustc_hir::Safety;
 use rustc_middle::mir;
 use rustc_span::Symbol;
+
+pub type StructInner<'pcx> = Variant<'pcx>;
+pub type Struct<'pcx> = WithMetaTable<StructInner<'pcx>>;
+
+#[allow(dead_code)]
+pub(crate) type EnumInner<'pcx> = FxIndexMap<Symbol, Variant<'pcx>>;
+#[allow(dead_code)]
+pub(crate) type Enum<'pcx> = WithMetaTable<EnumInner<'pcx>>;
 
 #[derive(Debug)]
 pub struct Adt<'pcx> {
@@ -20,18 +29,30 @@ pub struct Adt<'pcx> {
 }
 
 impl<'pcx> Adt<'pcx> {
+    pub(crate) fn new_struct(inner: StructInner<'pcx>) -> Self {
+        Self {
+            meta: Default::default(),
+            kind: AdtKind::Struct(inner),
+        }
+    }
+    pub(crate) fn new_enum(inner: EnumInner<'pcx>) -> Self {
+        Self {
+            meta: Default::default(),
+            kind: AdtKind::Enum(inner),
+        }
+    }
     pub fn non_enum_variant_mut(&mut self) -> &mut Variant<'pcx> {
         match &mut self.kind {
             AdtKind::Struct(variant) => variant,
             AdtKind::Enum(_) => panic!("cannot mutate non-enum variant of enum"),
         }
     }
-    pub fn add_variant(&mut self, name: Symbol) -> &mut Variant<'pcx> {
-        match &mut self.kind {
-            AdtKind::Struct(_) => panic!("cannot add variant to struct"),
-            AdtKind::Enum(variants) => variants.entry(name).or_insert_with(Variant::default),
-        }
-    }
+    // pub fn add_variant(&mut self, name: Symbol) -> &mut Variant<'pcx> {
+    //     match &mut self.kind {
+    //         AdtKind::Struct(_) => panic!("cannot add variant to struct"),
+    //         AdtKind::Enum(variants) => variants.entry(name).or_insert_with(Variant::default),
+    //     }
+    // }
     pub fn non_enum_variant(&self) -> &Variant<'pcx> {
         match &self.kind {
             AdtKind::Struct(variant) => variant,
@@ -65,7 +86,7 @@ impl<'pcx> Adt<'pcx> {
 
 #[derive(Debug)]
 pub enum AdtKind<'pcx> {
-    Struct(Variant<'pcx>),
+    Struct(StructInner<'pcx>),
     Enum(FxIndexMap<Symbol, Variant<'pcx>>),
 }
 
@@ -197,11 +218,6 @@ impl<'pcx> FnPattern<'pcx> {
             .map(|ret| Ty::from_fn_ret(WithPath::new(p, ret), pcx, fn_sym_tab));
         (safety, visibility, fn_name, params, ret)
     }
-}
-
-pub enum Visibility {
-    Public,
-    Private,
 }
 
 #[derive(Default)]

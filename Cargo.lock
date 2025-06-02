@@ -1195,6 +1195,7 @@ dependencies = [
 name = "rpl_context"
 version = "0.1.0"
 dependencies = [
+ "derive_more",
  "rpl_meta",
  "rpl_parser",
  "rpl_predicates",

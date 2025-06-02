@@ -1,8 +1,5 @@
 [workspace]
-members = [
-    "crates/*",
-    "./"
-]
+members = ["crates/*", "./"]
 
 [workspace.package]
 version = "0.1.0"
@@ -44,7 +41,14 @@ thiserror = "1.0"
 pretty_assertions = "1.4"
 gsgdt = "0.1.2"
 syn_derive = "0.2"
-derive_more = { version = "1.0", features = ["from", "into_iterator", "debug", "deref", "display"] }
+derive_more = { version = "1.0", features = [
+    "from",
+    "into_iterator",
+    "debug",
+    "deref",
+    "deref_mut",
+    "display",
+] }
 libc = "0.2"
 byte-slice-cast = "1.0.0"
 num-derive = "0.3"

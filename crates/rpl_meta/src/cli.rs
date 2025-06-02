@@ -1,3 +1,5 @@
+use tracing::{debug, warn};
+
 use crate::RPLMetaError;
 use std::ffi::{OsStr, OsString};
 use std::fmt::Debug;
@@ -13,7 +15,7 @@ pub fn collect_file_from_string_args(args: &[String]) -> Vec<(PathBuf, String)> 
             let buf = match buf {
                 Ok(buf) => buf,
                 Err(err) => {
-                    eprintln!(
+                    warn!(
                         "{}",
                         RPLMetaError::FileError {
                             path,
@@ -61,11 +63,11 @@ fn traverse_dir(
     dir: impl Iterator<Item = io::Result<(PathBuf, OsString)>>,
     path: &PathBuf,
 ) {
-    eprintln!("Walking into {:?}", path);
+    debug!("Walking into {:?}", path);
     for entry in dir {
         match entry {
             Ok(entry) => stack.push(entry),
-            Err(err) => eprintln!("Can't read entry under {:?} because of:\n{}", path, err),
+            Err(err) => warn!("Can't read entry under {:?} because of:\n{}", path, err),
         }
     }
 }
@@ -90,13 +92,13 @@ pub fn traverse_rpl(root: PathBuf, mut f: impl FnMut(PathBuf)) {
                 let res = std::fs::canonicalize(&full);
                 match res {
                     Ok(full) => {
-                        eprintln!("{:?} is a normal file which ends with `.rpl`.", full,);
+                        debug!("{:?} is a normal file which ends with `.rpl`.", full,);
                         f(full);
                     },
-                    Err(err) => eprintln!("Can't canonicalize {:?} because of:\n{}", full, err),
+                    Err(err) => warn!("Can't canonicalize {:?} because of:\n{}", full, err),
                 }
             } else {
-                eprintln!("Skipped {:?}.", full);
+                debug!("Skipped {:?}.", full);
             }
         }
     }

@@ -30,12 +30,15 @@ use context::MetaContext;
 pub use error::RPLMetaError;
 use meta::SymbolTables;
 use std::path::PathBuf;
+use tracing::{instrument, warn};
 
+#[instrument(level = "info", skip_all, fields(patterns = ?path_and_content))]
 pub fn parse_and_collect<'mcx>(
     arena: &'mcx Arena<'mcx>,
     path_and_content: &'mcx Vec<(PathBuf, String)>,
-) -> MetaContext<'mcx> {
+) -> (MetaContext<'mcx>, bool) {
     let mut mctx = MetaContext::new(arena);
+    let mut has_error = false;
     for (path, content) in path_and_content {
         let idx = mctx.request_rpl_idx(path);
         let content = mctx.alloc_str(content);
@@ -53,16 +56,17 @@ pub fn parse_and_collect<'mcx>(
                 mctx.syntax_trees.insert(*idx, main);
                 // Perform meta collection
                 let meta = SymbolTables::collect(path, main, *idx, &mctx);
-                meta.show_error();
+                has_error |= meta.show_error();
                 mctx.symbol_tables.insert(*idx, meta);
             },
             Err(err) => {
-                eprintln!("{}", RPLMetaError::from(err));
+                warn!("{}", RPLMetaError::from(err));
+                has_error = true;
                 continue;
             },
         }
         // Seems unnecessary.
         // mctx.set_active_path(None);
     }
-    mctx
+    (mctx, has_error)
 }

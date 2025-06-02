@@ -65,7 +65,12 @@ impl<'mcx> SymbolTables<'mcx> {
 }
 
 impl SymbolTables<'_> {
-    pub fn show_error(&self) {
+    /// Show the errors of the symbol tables.
+    ///
+    /// # Returns
+    ///
+    /// Returns `true` if there are errors, otherwise `false`.
+    pub fn show_error(&self) -> bool {
         if !self.errors.is_empty() {
             error!(
                 "{:?} generated {} error{}.",
@@ -79,8 +84,10 @@ impl SymbolTables<'_> {
                 error!("{}. {}", cnt, error);
                 cnt += 1;
             }
+            true
         } else {
             info!("{}", format!("No error found in {:?}", self.path));
+            false
         }
     }
 }

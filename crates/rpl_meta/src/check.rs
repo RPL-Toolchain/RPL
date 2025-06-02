@@ -5,13 +5,18 @@ use crate::symbol_table::{
 };
 use crate::utils::{Ident, Path, Record};
 use crate::{RPLMetaError, collect_elems_separated_by_comma};
+use impls::CheckImplCtxt;
 use parser::generics::{Choice2, Choice3, Choice4, Choice5, Choice6, Choice12, Choice14};
 use parser::{SpanWrapper, pairs};
 use rpl_predicates::PredicateConjunction;
+use rustc_data_structures::fx::FxHashMap;
 use rustc_hash::FxHashSet;
 use rustc_span::Symbol;
 use std::ops::Deref;
 use std::sync::Arc;
+use tracing::debug;
+
+mod impls;
 
 pub struct CheckCtxt<'i> {
     pub(crate) name: Symbol,
@@ -19,7 +24,7 @@ pub struct CheckCtxt<'i> {
     /// Should be inserted into [`FnInner::types`].
     ///
     /// See [`SymbolTable::imports`] and [`CheckFnCtxt::imports`].
-    pub(crate) imports: FxHashSet<&'i pairs::Path<'i>>,
+    pub(crate) imports: FxHashMap<Symbol, &'i pairs::Path<'i>>,
     pub(crate) errors: Vec<RPLMetaError<'i>>,
 }
 
@@ -33,11 +38,17 @@ impl<'i> CheckCtxt<'i> {
         }
     }
 
-    pub fn check_import(&mut self, _mctx: &MetaContext<'i>, import: &'i pairs::UsePath<'i>) {
-        // let path = Path::from(import.Path());
+    pub fn check_import(&mut self, mctx: &MetaContext<'i>, import: &'i pairs::UsePath<'i>) {
+        let path = Path::from(import.Path());
+        let ident = path.ident();
         // FIXME: check duplicates
         // self.imports.insert(path.ident().name, path);
-        self.imports.insert(import.Path());
+        if self.imports.try_insert(ident.name, import.Path()).is_err() {
+            self.errors.push(RPLMetaError::SymbolAlreadyDeclared {
+                span: SpanWrapper::new(import.span, mctx.get_active_path()),
+                ident: ident.name,
+            });
+        }
     }
 
     pub fn check_pat_item(&mut self, mctx: &MetaContext<'i>, pat_item: &'i pairs::RPLPatternItem<'i>) {
@@ -140,7 +151,7 @@ impl<'i> CheckCtxt<'i> {
                 Choice4::_0(rust_fn) => self.check_fn(mctx, rust_fn),
                 Choice4::_1(rust_struct) => self.check_struct(mctx, rust_struct),
                 Choice4::_2(rust_enum) => self.check_enum(mctx, rust_enum),
-                Choice4::_3(_rust_impl) => todo!("check impl in meta pass"),
+                Choice4::_3(rust_impl) => self.check_impl(mctx, rust_impl),
             }
         }
     }
@@ -151,7 +162,7 @@ impl<'i> CheckCtxt<'i> {
         if let Some(fn_def) = fn_def {
             CheckFnCtxt {
                 meta_vars: fn_def.meta_vars.clone(),
-                _impl_def: None,
+                impl_def: None,
                 fn_def: &mut fn_def.inner,
                 imports: &self.imports,
                 errors: &mut self.errors,
@@ -185,13 +196,28 @@ impl<'i> CheckCtxt<'i> {
             .check_enum(mctx, rust_enum);
         }
     }
+
+    fn check_impl(&mut self, mctx: &MetaContext<'i>, rust_impl: &'i pairs::Impl<'i>) {
+        let meta_vars = self.symbol_table.meta_vars.clone();
+        let impl_def = self.symbol_table.add_impl(mctx, rust_impl, &mut self.errors);
+        if let Some(impl_def) = impl_def {
+            CheckImplCtxt {
+                meta_vars,
+                impl_def: &mut impl_def.inner,
+                imports: &self.imports,
+                errors: &mut self.errors,
+            }
+            .check_impl(mctx, rust_impl);
+        }
+    }
 }
 
 struct CheckFnCtxt<'i, 'r> {
     meta_vars: Arc<NonLocalMetaSymTab>,
-    _impl_def: Option<&'r ImplInner<'i>>,
+    #[allow(dead_code)]
+    impl_def: Option<&'r ImplInner<'i>>,
     fn_def: &'r mut FnInner<'i>,
-    imports: &'r FxHashSet<&'i pairs::Path<'i>>,
+    imports: &'r FxHashMap<Symbol, &'i pairs::Path<'i>>,
     errors: &'r mut Vec<RPLMetaError<'i>>,
 }
 
@@ -255,7 +281,8 @@ impl<'i> CheckFnCtxt<'i, '_> {
 impl<'i> CheckFnCtxt<'i, '_> {
     fn check_mir(&mut self, mctx: &MetaContext<'i>, mir: &'i pairs::MirBody<'i>) {
         let (mir_decls, mir_stmts) = mir.get_matched();
-        for path in self.imports.iter() {
+        //FIXME: the key in the line below may be reusable
+        for (_, path) in self.imports.iter() {
             self.fn_def.add_import(mctx, path, self.errors);
         }
         mir_decls
@@ -607,7 +634,8 @@ impl<'i> CheckFnCtxt<'i, '_> {
             },
             Choice14::_8(ty_meta_var) => {
                 let ident = ty_meta_var.MetaVariable().into();
-                _ = self.meta_vars.get_non_local_meta_var(mctx, ident, self.errors)
+                debug!(?ident, ?self.meta_vars, "checking meta variable");
+                let _ = self.meta_vars.get_non_local_meta_var(mctx, ident, self.errors);
             },
             Choice14::_9(_ty_self) => {},
             Choice14::_10(_primitive_types) => {},

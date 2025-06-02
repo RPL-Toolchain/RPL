@@ -107,18 +107,26 @@ fn logger_config() -> rustc_log::LoggerConfig {
     let mut cfg = rustc_log::LoggerConfig::from_env("RUSTC_LOG");
 
     if let Ok(var) = env::var("RPL_LOG") {
-        // RPL_LOG serves as default for RUSTC_LOG, if that is not set.
-        if matches!(cfg.filter, Err(env::VarError::NotPresent)) {
-            // We try to be a bit clever here: if `RPL_LOG` is just a single level
-            // used for everything, we only apply it to the parts of rustc that are
-            // CTFE-related. Otherwise, we use it verbatim for `RUSTC_LOG`.
-            // This way, if you set `RPL_LOG=info`, you get only the right parts of
-            // rustc traced, but you can also do `RPL_LOG=rpl=info,rustc_const_eval::interpret=debug`.
-            if var.parse::<tracing::Level>().is_ok() {
-                cfg.filter = Ok(format!("rpl={var}"));
-            } else {
-                cfg.filter = Ok(var);
+        if let Ok(level) = var.parse::<tracing::Level>() {
+            // RPL_LOG serves as default for RUSTC_LOG, if that is not set.
+            match cfg.filter {
+                Err(env::VarError::NotPresent | env::VarError::NotUnicode(_)) => {
+                    // We try to be a bit clever here: if `RPL_LOG` is just a single level
+                    // used for everything, we only apply it to the parts of rustc that are
+                    // CTFE-related. Otherwise, we use it verbatim for `RUSTC_LOG`.
+                    // This way, if you set `RPL_LOG=info`, you get only the right parts of
+                    // rustc traced, but you can also do `RPL_LOG=rpl=info,rustc_const_eval::interpret=debug`.
+                    cfg.filter = Ok(format!("rpl={level}"));
+                },
+                Ok(ref mut filter) => {
+                    filter.push_str(",rpl=");
+                    filter.push_str(&var);
+                },
             }
+        } else {
+            EarlyDiagCtxt::new(ErrorOutputType::default()).early_fatal(format!(
+                "RPL_LOG must be a valid tracing level, like `info` or `debug`: {var}"
+            ));
         }
     }
     cfg

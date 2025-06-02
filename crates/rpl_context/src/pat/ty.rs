@@ -1,6 +1,7 @@
 use std::ops::Deref;
 
-use rpl_meta::symbol_table::{GetType, TypeOrPath, WithPath};
+use either::Either;
+use rpl_meta::symbol_table::{GetType, TypeOrPath, TypeVariable, WithPath};
 use rpl_meta::{collect_elems_separated_by_comma, utils};
 use rpl_parser::generics::{Choice2, Choice3, Choice4, Choice10, Choice12, Choice14};
 use rpl_parser::pairs;
@@ -113,16 +114,23 @@ impl<'pcx> Ty<'pcx> {
             },
             Choice14::_8(ty_meta_var) => {
                 // FIXME: judge whether it is a type variable or a adt pattern;
-                let (ty, (idx, pred)) = fn_sym_tab.get_type_var(ty_meta_var);
-                let ty_meta_var = match ty {
-                    rpl_meta::symbol_table::MetaVariableType::Type => TyVar {
-                        idx: idx.into(),
-                        name: Symbol::intern(ty_meta_var.span.as_str()),
-                        pred,
+                match fn_sym_tab.get_type_var(ty_meta_var) {
+                    TypeVariable::MetaVariable(ty, idx) => {
+                        // FIXME: Information loss, the pred is not stored.
+                        // Solution:
+                        // Store the pred in the meta_pass.
+                        let ty_meta_var = match ty {
+                            rpl_meta::symbol_table::MetaVariableType::Type => TyVar {
+                                idx: idx.into(),
+                                name: Symbol::intern(ty_meta_var.span.as_str()),
+                                pred: &[],
+                            },
+                            _ => panic!("A non-type meta variable used as a type variable"),
+                        };
+                        pcx.mk_var_ty(ty_meta_var)
                     },
-                    _ => panic!("A non-type meta variable used as a type variable"),
-                };
-                pcx.mk_var_ty(ty_meta_var)
+                    TypeVariable::AdtPat(_, name) => pcx.mk_adt_pat_ty(name),
+                }
             },
             Choice14::_9(_ty_self) => todo!(),
             Choice14::_10(primitive_types) => pcx.mk_ty(TyKind::from_primitive_type(primitive_types)),

@@ -20,7 +20,7 @@ use rustc_hir as hir;
 use rustc_hir::def_id::LocalDefId;
 use rustc_hir::intravisit::{self, Visitor};
 use rustc_lint_defs::RegisteredTools;
-use rustc_macros::LintDiagnostic;
+use rustc_macros::{Diagnostic, LintDiagnostic};
 use rustc_middle::hir::nested_filter::All;
 use rustc_middle::ty::TyCtxt;
 use rustc_middle::util::Providers;
@@ -46,7 +46,7 @@ declare_tool_lint! {
     "detects an error"
 }
 
-#[derive(LintDiagnostic)]
+#[derive(Diagnostic, LintDiagnostic)]
 #[diag(rpl_driver_error_found_with_pattern)]
 pub struct ErrorFound;
 
