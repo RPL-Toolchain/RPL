@@ -113,6 +113,10 @@ impl<'a, 'pcx, 'tcx> CheckMirCtxt<'a, 'pcx, 'tcx> {
             places: IndexVec::from_elem_n(RefCell::new(FxIndexSet::default()), fn_pat.meta.place_vars.len()),
         }
     }
+    #[instrument(level = "info", skip_all, fields(
+        def_id = ?self.body.source.def_id(),
+        pat_name = ?self.pat_name,
+    ))]
     pub fn check(&self) -> Vec<Matched<'tcx>> {
         matches::matches(self)
     }

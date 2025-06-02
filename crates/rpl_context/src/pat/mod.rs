@@ -45,7 +45,7 @@ pub struct RustItems<'pcx> {
     pub pcx: PatCtxt<'pcx>,
     pub adts: FxHashMap<Symbol, Adt<'pcx>>,
     pub fns: FnPatterns<'pcx>,
-    pub impls: Vec<Impl<'pcx>>,
+    pub impls: FxHashMap<Symbol, Impl<'pcx>>,
     diag: FxHashMap<Symbol, DynamicErrorBuilder<'pcx>>,
 }
 
@@ -56,6 +56,7 @@ impl<'pcx> RustItems<'pcx> {
             adts: Default::default(),
             fns: Default::default(),
             impls: Default::default(),
+            diag: Default::default(),
         }
     }
 
@@ -311,7 +312,46 @@ impl<'pcx> Pattern<'pcx> {
         rust_enum: WithPath<'pcx, &'pcx pairs::Enum<'pcx>>,
         symbol_table: &'pcx rpl_meta::symbol_table::SymbolTable<'_>,
     ) {
-        todo!()
+        let mut enum_inner = EnumInner::default();
+
+        if let Some(variants) = rust_enum.EnumVariantsSeparatedByComma() {
+            let variants = collect_elems_separated_by_comma!(variants);
+            for variant in variants {
+                let mut enum_variant = Variant::default();
+                let identifier = match variant.deref() {
+                    Choice3::_0(variant) => {
+                        if let Some(fields) = variant.get_matched().2 {
+                            let fields = collect_elems_separated_by_comma!(fields);
+                            for field in fields {
+                                let (name, _, ty) = field.get_matched();
+                                let name = Symbol::intern(name.span.as_str());
+                                let ty = Ty::from(with_path(rust_enum.path, ty), self.pcx, symbol_table);
+                                let field = Field { ty };
+                                enum_variant.fields.insert(name, field);
+                            }
+                        }
+                        variant.get_matched().0
+                    },
+                    Choice3::_1(variant) => {
+                        let (name, _, ty, _) = variant.get_matched();
+                        let name = Symbol::intern(name.span.as_str());
+                        let ty = Ty::from(with_path(rust_enum.path, ty), self.pcx, symbol_table);
+                        let field = Field { ty };
+                        enum_variant.fields.insert(name, field);
+                        variant.get_matched().0
+                    },
+                    Choice3::_2(unit) => unit,
+                };
+                let ident = Ident::from(identifier);
+                enum_inner.insert(ident.name, enum_variant);
+            }
+        }
+
+        let struct_pat = Adt::new_enum(enum_inner);
+        // let struct_pat = self.pcx.alloc_struct(struct_pat);
+        if let Some(pat_name) = pat_name {
+            self.adts.insert(pat_name, struct_pat);
+        }
     }
 }
 
@@ -346,6 +386,8 @@ impl<'pcx> Pattern<'pcx> {
             trait_id,
             fns,
         };
-        self.impls.push(impl_pat);
+        if let Some(pat_name) = pat_name {
+            self.impls.insert(pat_name, impl_pat);
+        }
     }
 }

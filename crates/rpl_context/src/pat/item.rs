@@ -17,10 +17,8 @@ use rustc_span::Symbol;
 pub type StructInner<'pcx> = Variant<'pcx>;
 pub type Struct<'pcx> = WithMetaTable<StructInner<'pcx>>;
 
-#[allow(dead_code)]
-pub(crate) type EnumInner<'pcx> = FxIndexMap<Symbol, Variant<'pcx>>;
-#[allow(dead_code)]
-pub(crate) type Enum<'pcx> = WithMetaTable<EnumInner<'pcx>>;
+pub type EnumInner<'pcx> = FxIndexMap<Symbol, Variant<'pcx>>;
+pub type Enum<'pcx> = WithMetaTable<EnumInner<'pcx>>;
 
 #[derive(Debug)]
 pub struct Adt<'pcx> {

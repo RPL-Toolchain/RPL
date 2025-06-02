@@ -13,7 +13,10 @@ extern crate rustc_driver;
 extern crate rustc_hash;
 extern crate rustc_hir;
 extern crate rustc_index;
+extern crate rustc_log;
 extern crate rustc_span;
+#[macro_use]
+extern crate tracing;
 
 pub mod arena;
 pub mod check;
@@ -30,7 +33,6 @@ use context::MetaContext;
 pub use error::RPLMetaError;
 use meta::SymbolTables;
 use std::path::PathBuf;
-use tracing::{instrument, warn};
 
 #[instrument(level = "info", skip_all, fields(patterns = ?path_and_content))]
 pub fn parse_and_collect<'mcx>(
