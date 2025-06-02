@@ -23,7 +23,6 @@ derive_more.workspace = true
 colored.workspace = true
 error-enum.workspace = true
 schemars.workspace = true
-tracing.workspace = true
 sync-arena.workspace = true
 
 [dev-dependencies]

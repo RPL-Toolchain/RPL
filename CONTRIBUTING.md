@@ -42,6 +42,8 @@ The recommended workflow to setup a custom rustc is:
 -   Run `rustup toolchain link nightly-2025-02-13-stage1 build/host/stage1` to link your custom stage1 compiler to a new toolchain named `nightly-2025-02-13-stage1`;
 -   Now go back to the RPL repository, you will be able to run `RPL_LOG=debug cargo +nightly-2025-02-13-stage1 run --bin rpl-driver` to build and run RPL using your custom rustc with the debug log level;
 
+Additionally, when using `tracing` in a crate, **do not** specify it as a dependency in `Cargo.toml`, instead, use `#[macro_use] extern crate tracing;` to use that one shipped with the rustc toolchain.
+
 ### Troubleshooting: dylib not found
 
 `RPL_LOG=debug cargo +nightly-2025-02-13-stage1 run --bin rpl-driver` might not work, and you will probably see an error like this:

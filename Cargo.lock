@@ -1264,7 +1264,6 @@ dependencies = [
  "serde_json",
  "sync-arena",
  "thiserror",
- "tracing",
 ]
 
 [[package]]
@@ -1292,9 +1291,6 @@ dependencies = [
 [[package]]
 name = "rpl_mir_transform"
 version = "0.1.0"
-dependencies = [
- "tracing",
-]
 
 [[package]]
 name = "rpl_parser"
@@ -1321,7 +1317,7 @@ version = "0.1.0"
 dependencies = [
  "rpl_parser",
  "rpl_resolve",
- "tracing",
+ "rpl_match",
 ]
 
 [[package]]
