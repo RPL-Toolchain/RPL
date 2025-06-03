@@ -4,7 +4,7 @@ patt {
     p_const_const[
         $T: type, // element type before the cast
         $U: type, // element type after the cast
-    ] = #[mir] pub fn _ (..) -> _ {
+    ] = pub fn _ (..) -> _ {
         'src:
         let $p: *const [$T] = _;
         'cast:

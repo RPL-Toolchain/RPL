@@ -118,13 +118,13 @@ pub struct Field<'pcx> {
 }
 
 pub struct Impl<'pcx> {
-    pub meta: NonLocalMetaVars<'pcx>,
+    pub meta: Arc<NonLocalMetaVars<'pcx>>,
     #[expect(dead_code)]
-    ty: Ty<'pcx>,
+    pub(crate) ty: Ty<'pcx>,
     #[expect(dead_code)]
-    trait_id: Option<Path<'pcx>>,
+    pub(crate) trait_id: Option<Path<'pcx>>,
     #[expect(dead_code)]
-    fns: FxHashMap<Symbol, FnPattern<'pcx>>,
+    pub(crate) fns: FxHashMap<Symbol, FnPattern<'pcx>>,
 }
 
 #[derive(Default)]

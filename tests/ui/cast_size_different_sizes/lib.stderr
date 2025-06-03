@@ -6,7 +6,7 @@ LL |     let p = &a as *const [u8] as *const [u32];
    |             |
    |             casted from this
    |
-   = note: casting a pointer to a slice of type `$T` to a pointer to a slice of another type `$U` with different element type ABI, size or alignment can lead to undefined behavior.
+   = note: casting a pointer to a slice of type `u8` to a pointer to a slice of another type `u32` with different element type ABI, size or alignment can lead to undefined behavior.
    = note: `#[deny(rpl::cast_size_different_sizes)]` on by default
 
 error: casts between raw pointers to slices with different element sizes
@@ -17,7 +17,7 @@ LL |     let p = &a as *const [u8] as *const [MaybeUninit<u8>];
    |             |
    |             casted from this
    |
-   = note: casting a pointer to a slice of type `$T` to a pointer to a slice of another type `$U` with different element type ABI, size or alignment can lead to undefined behavior.
+   = note: casting a pointer to a slice of type `u8` to a pointer to a slice of another type `std::mem::MaybeUninit<u8>` with different element type ABI, size or alignment can lead to undefined behavior.
 
 error: aborting due to 2 previous errors
 

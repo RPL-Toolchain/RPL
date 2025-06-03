@@ -1,6 +1,5 @@
 use std::ops::Deref;
 
-use either::Either;
 use rpl_meta::symbol_table::{GetType, TypeOrPath, TypeVariable, WithPath};
 use rpl_meta::{collect_elems_separated_by_comma, utils};
 use rpl_parser::generics::{Choice2, Choice3, Choice4, Choice10, Choice12, Choice14};
@@ -115,7 +114,7 @@ impl<'pcx> Ty<'pcx> {
             Choice14::_8(ty_meta_var) => {
                 // FIXME: judge whether it is a type variable or a adt pattern;
                 match fn_sym_tab.get_type_var(ty_meta_var) {
-                    TypeVariable::MetaVariable(ty, idx) => {
+                    TypeVariable::MetaVariable(ty, idx, pred) => {
                         // FIXME: Information loss, the pred is not stored.
                         // Solution:
                         // Store the pred in the meta_pass.
@@ -123,7 +122,7 @@ impl<'pcx> Ty<'pcx> {
                             rpl_meta::symbol_table::MetaVariableType::Type => TyVar {
                                 idx: idx.into(),
                                 name: Symbol::intern(ty_meta_var.span.as_str()),
-                                pred: &[],
+                                pred,
                             },
                             _ => panic!("A non-type meta variable used as a type variable"),
                         };

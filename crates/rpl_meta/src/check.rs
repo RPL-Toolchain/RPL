@@ -10,7 +10,6 @@ use parser::generics::{Choice2, Choice3, Choice4, Choice5, Choice6, Choice12, Ch
 use parser::{SpanWrapper, pairs};
 use rpl_predicates::PredicateConjunction;
 use rustc_data_structures::fx::FxHashMap;
-use rustc_hash::FxHashSet;
 use rustc_span::Symbol;
 use std::ops::Deref;
 use std::sync::Arc;

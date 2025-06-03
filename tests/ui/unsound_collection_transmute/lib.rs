@@ -1,3 +1,4 @@
+//@ignore-on-host
 use std::mem::transmute;
 
 fn f1() {

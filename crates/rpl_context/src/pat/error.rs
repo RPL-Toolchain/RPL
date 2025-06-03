@@ -81,8 +81,8 @@ impl<'i> SubMsg<'i> {
         for seg in s.iter_matched() {
             match seg {
                 Choice2::_0(arg) => {
-                    let (var_type, idx) = meta_vars
-                        .get_type_and_idx_from_symbol(Symbol::intern(arg.MetaVariable().span.as_str()))
+                    let (var_type, (idx, _)) = meta_vars
+                        .get_from_symbol(Symbol::intern(arg.MetaVariable().span.as_str()))
                         .unwrap();
                     match var_type {
                         MetaVariableType::Type => msgs.push(SubMsg::Ty(idx.into())),
