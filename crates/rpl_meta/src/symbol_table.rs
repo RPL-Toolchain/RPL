@@ -486,6 +486,7 @@ pub struct FnInner<'i> {
     #[expect(unused)]
     span: Span<'i>,
     path: &'i std::path::Path,
+    /// Type aliases and paths imported into the function scope.
     types: FxHashMap<Symbol, TypeOrPath<'i>>,
     // FIXME: remove it when `self` parameter is implemented
     self_value: Option<&'i pairs::Type<'i>>,

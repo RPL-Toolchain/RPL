@@ -140,7 +140,7 @@ impl rustc_driver::Callbacks for RplCallbacks {
         let mctx = MCTX.get_or_init(|| {
             rpl_meta::parse_and_collect(mctx_arena, patterns_and_paths, |error| {
                 error_counter += 1;
-                eprintln!("{error_counter}. {error}");
+                eprintln!("{error_counter}. {error}"); //FIXME: this would mess up when running on a workspace with multiple crates
                 // let _ = dcx.emit_err(error.clone());
             })
         });
