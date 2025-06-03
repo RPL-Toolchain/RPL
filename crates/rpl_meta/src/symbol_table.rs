@@ -763,7 +763,12 @@ impl<'i> ImplInner<'i> {
 }
 
 impl<'i> ImplInner<'i> {
-    pub fn add_fn(&mut self, mctx: &MetaContext<'i>, ident: Ident<'i>, fn_def: Fn<'i>) -> RPLMetaResult<&mut Fn<'i>> {
+    pub fn add_fn(
+        &mut self,
+        mctx: &MetaContext<'i>,
+        ident: Ident<'i>,
+        fn_def: Fn<'i>,
+    ) -> RPLMetaResult<'i, &mut Fn<'i>> {
         self.fns
             .try_insert(ident.name, fn_def)
             .map_err(|_entry| RPLMetaError::MethodAlreadyDeclared {

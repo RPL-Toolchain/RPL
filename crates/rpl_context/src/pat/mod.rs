@@ -76,15 +76,6 @@ impl<'pcx> RustItems<'pcx> {
             Choice4::_3(rust_impl) => self.add_impl(pat_name, with_path(item.path, rust_impl), meta, symbol_table),
         }
     }
-    // // FIXME: remove it when pest parser is ready
-    // pub fn new_struct(&mut self, name: Symbol) -> &mut Adt<'pcx> {
-    //     self.adts.entry(name).or_insert_with(Adt::new_struct)
-    //     // .non_enum_variant_mut()
-    // }
-    // // FIXME: remove it when pest parser is ready
-    // pub fn new_enum(&mut self, name: Symbol) -> &mut Adt<'pcx> {
-    //     self.adts.entry(name).or_insert_with(Adt::new_enum)
-    // }
 
     fn add_fn(
         &mut self,

@@ -40,8 +40,6 @@ impl<'i> CheckCtxt<'i> {
     pub fn check_import(&mut self, mctx: &MetaContext<'i>, import: &'i pairs::UsePath<'i>) {
         let path = Path::from(import.Path());
         let ident = path.ident();
-        // FIXME: check duplicates
-        // self.imports.insert(path.ident().name, path);
         if self.imports.try_insert(ident.name, import.Path()).is_err() {
             self.errors.push(RPLMetaError::SymbolAlreadyDeclared {
                 span: SpanWrapper::new(import.span, mctx.get_active_path()),
@@ -280,7 +278,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
 impl<'i> CheckFnCtxt<'i, '_> {
     fn check_mir(&mut self, mctx: &MetaContext<'i>, mir: &'i pairs::MirBody<'i>) {
         let (mir_decls, mir_stmts) = mir.get_matched();
-        //FIXME: the key in the line below may be reusable
+        //FIXME: the key in the line below may be reused for cloning, as `Path::from` may be expensive
         for (_, path) in self.imports.iter() {
             self.fn_def.add_import(mctx, path, self.errors);
         }

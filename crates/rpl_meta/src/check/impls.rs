@@ -1,6 +1,7 @@
 use crate::RPLMetaError;
 use crate::context::MetaContext;
 use crate::symbol_table::{FnInner, ImplInner, NonLocalMetaSymTab};
+use crate::utils::Record;
 use parser::pairs;
 use rustc_data_structures::fx::FxHashMap;
 use rustc_span::Symbol;
@@ -30,7 +31,9 @@ impl<'i> CheckImplCtxt<'i, '_> {
             }
             .check_fn(mctx, rust_fn);
             if let Some(ident) = fn_name {
-                self.impl_def.add_fn(mctx, ident, (fn_def, meta_vars).into()).unwrap(); //FIXME: handle errors
+                self.impl_def
+                    .add_fn(mctx, ident, (fn_def, meta_vars).into())
+                    .or_record(self.errors);
             }
         }
     }
