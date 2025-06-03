@@ -24,7 +24,7 @@ impl<'i> CheckImplCtxt<'i, '_> {
             let meta_vars = self.meta_vars.clone();
             CheckFnCtxt {
                 meta_vars: meta_vars.clone(),
-                impl_def: None, //FIXME
+                impl_def: Some(self.impl_def),
                 fn_def: &mut fn_def,
                 imports: self.imports,
                 errors: self.errors,

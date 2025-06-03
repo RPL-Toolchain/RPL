@@ -37,7 +37,7 @@ pub use error::RPLMetaError;
 use meta::SymbolTables;
 use std::path::PathBuf;
 
-pub fn parse_and_collect<'mcx, 'tcx>(
+pub fn parse_and_collect<'mcx>(
     arena: &'mcx Arena<'mcx>,
     path_and_content: &'mcx Vec<(PathBuf, String)>,
     mut handler: impl FnMut(&RPLMetaError<'mcx>),
