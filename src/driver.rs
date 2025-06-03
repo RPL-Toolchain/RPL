@@ -221,8 +221,11 @@ pub fn main() {
         let mut args: Vec<String> = orig_args.clone();
         pass_sysroot_env_if_given(&mut args, sys_root_env);
 
-        let pattern_paths = env::var("RPL_PATS")
-            .expect("RPL_PATS is not set. Pass pattern path to RPL by setting the `RPL_PATS` environment variable.");
+        let pattern_paths = env::var("RPL_PATS").unwrap_or_else(|_| {
+            early_dcx.early_fatal(
+                "RPL_PATS is not set properly. Pass pattern path to RPL by setting the `RPL_PATS` environment variable.",
+            )
+        });
 
         let mut no_deps = false;
         let rpl_args_var = env::var(rpl_interface::RPL_ARGS_ENV).ok();
