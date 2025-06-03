@@ -16,7 +16,7 @@ error_type!(
         #[bold]
         Error "Error" {
             001 ParseError {
-                error: ParseError,
+                error: Arc<ParseError<'i>>,
             }
                 "Parse error.\n {error}",
             100 FileError {
@@ -28,9 +28,9 @@ error_type!(
                 "Cannot locate RPL pattern file `{path:?}`. Caused by: {error}",
             200 ImportError {
                 /// Referencing position.
-                span: Span<'i>,
+                span: SpanWrapper<'i>,
                 /// Referencing file.
-                path: PathBuf,
+                path: &'i PathBuf,
                 /// Cause.
                 error: Arc<std::io::Error>,
             }
@@ -70,9 +70,9 @@ error_type!(
             }
                 "Type or path `{type_or_path}` is not declared. \n{span}",
             308 MethodAlreadyDeclared {
-                _span: Span<'i>,
+                span: SpanWrapper<'i>,
             }
-                "Method is already declared.",
+                "Method is already declared. \n{span}",
             309 MethodNotDeclared {
             }
                 "Method is not declared.",
@@ -125,18 +125,20 @@ error_type!(
         }
 );
 
-impl From<ParseError> for RPLMetaError<'_> {
-    fn from(value: ParseError) -> Self {
-        Self::ParseError { error: value }
+impl<'i> From<ParseError<'i>> for RPLMetaError<'i> {
+    fn from(value: ParseError<'i>) -> Self {
+        Self::ParseError { error: value.into() }
     }
 }
 impl<'a> RPLMetaError<'a> {
     /// Wrap [`std::io::Error`] as canonicalizating failure.
-    pub fn file_error(error: std::io::Error, span: Option<Span<'a>>, path: PathBuf) -> Self {
+    pub fn file_error(error: std::io::Error, span: Option<Span<'a>>, path: &'a PathBuf) -> Self {
         let error = Arc::new(error);
         if let Some(span) = span {
+            let span = SpanWrapper::new(span, path);
             Self::ImportError { path, error, span }
         } else {
+            let path = path.clone();
             Self::FileError { path, error }
         }
     }
@@ -145,3 +147,72 @@ impl<'a> RPLMetaError<'a> {
 impl std::error::Error for RPLMetaError<'_> {}
 
 pub(crate) type RPLMetaResult<'a, T> = Result<T, RPLMetaError<'a>>;
+
+// impl Diagnostic<'_, ErrorGuaranteed> for RPLMetaError<'_> {
+//     fn into_diag(self, dcx: DiagCtxtHandle<'_>, level: Level) -> Diag<'_, ErrorGuaranteed> {
+//         match self {
+//             Self::ParseError { error } => error.into_diag(dcx, level),
+//             Self::FileError { path, error } => {
+//                 dcx.struct_err(format!("Cannot locate RPL pattern file `{path:?}`. Caused by:
+// {error}"))             },
+//             Self::ImportError { span, path, error } => dcx.struct_span_err(
+//                 span_cvt(span),
+//                 format!("Cannot locate RPL pattern file `{path:?}` at {span}. Caused
+// by:\n{error}"),             ),
+//             Self::SymbolAlreadyDeclared { ident, span } => {
+//                 dcx.struct_span_err(span_cvt(span), format!("Symbol `{ident}` is already
+// declared."))             },
+//             Self::SymbolNotDeclared { ident, span } => {
+//                 dcx.struct_span_err(span_cvt(span), format!("Symbol `{ident}` is not declared."))
+//             },
+//             Self::NonLocalMetaVariableAlreadyDeclared { meta_var, span } => dcx.struct_span_err(
+//                 span_cvt(span),
+//                 format!("Non local meta variable `{meta_var}` is already declared."),
+//             ),
+//             Self::NonLocalMetaVariableNotDeclared { meta_var, span } => dcx.struct_span_err(
+//                 span_cvt(span),
+//                 format!("Non local meta variable `{meta_var}` is not declared."),
+//             ),
+//             Self::ExportAlreadyDeclared { _span } => dcx.struct_err("Export is already
+// declared."),             Self::TypeOrPathAlreadyDeclared { type_or_path, span } =>
+// dcx.struct_span_err(                 span_cvt(span),
+//                 format!("Type or path `{type_or_path}` is already declared."),
+//             ),
+//             Self::TypeOrPathNotDeclared { type_or_path, span } => dcx.struct_span_err(
+//                 span_cvt(span),
+//                 format!("Type or path `{type_or_path}` is not declared."),
+//             ),
+//             Self::MethodAlreadyDeclared { span } => dcx.struct_span_err(span_cvt(span), "Method
+// is already declared."),             Self::MethodNotDeclared {} => dcx.struct_err("Method is not
+// declared."),             Self::SelfNotDeclared { span } => dcx.struct_span_err(span_cvt(span),
+// "`self` is not declared."),             Self::SelfAlreadyDeclared { span } =>
+// dcx.struct_span_err(span_cvt(span), "`self` is already declared."),
+// Self::SelfValueOutsideImpl {} => dcx.struct_err("Using `self` value outside of an `impl` item."),
+//             Self::SelfTypeOutsideImpl { span } => {
+//                 dcx.struct_span_err(span_cvt(span), "Using `Self` type outside of an `impl`
+// item.")             },
+//             Self::ConstantIndexOutOfBound { index, min_length } => dcx.struct_span_err(
+//                 span_cvt(index),
+//                 format!(
+//                     "Constant index out of bound for minimum length. \n Index: {index} \n Minimum
+// length: {min_length}"                 ),
+//             ),
+//             Self::MultipleOtherwiseInSwitchInt { span } => dcx.struct_span_err(
+//                 span_cvt(span),
+//                 "Multiple otherwise (`_`) branches in switchInt statement.",
+//             ),
+//             Self::MissingSuffixInSwitchInt { span } => {
+//                 dcx.struct_span_err(span_cvt(span), "Missing integer suffix in switchInt
+// statement.")             },
+//             Self::UnknownLangItem { value, span } => {
+//                 dcx.struct_span_err(span_cvt(span), format!("Unknown lang item `{value}`."))
+//             },
+//             Self::RetNotDeclared { span } => {
+//                 dcx.struct_span_err(span_cvt(span), "The return value `RET` in MIR pattern is not
+// declared.")             },
+//             Self::ImplAlreadyDeclared { span } => dcx.struct_span_err(span_cvt(span), "Impl
+// already declared."),             #[expect(unreachable_patterns, reason = "all variants are
+// covered")]             _ => dcx.struct_err(self.to_string()),
+//         }
+//     }
+// }

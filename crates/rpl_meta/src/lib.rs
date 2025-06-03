@@ -10,10 +10,13 @@ extern crate rpl_parser as parser;
 extern crate rustc_arena;
 extern crate rustc_data_structures;
 extern crate rustc_driver;
+extern crate rustc_errors;
 extern crate rustc_hash;
 extern crate rustc_hir;
 extern crate rustc_index;
 extern crate rustc_log;
+extern crate rustc_macros;
+extern crate rustc_middle;
 extern crate rustc_span;
 #[macro_use]
 extern crate tracing;
@@ -34,13 +37,12 @@ pub use error::RPLMetaError;
 use meta::SymbolTables;
 use std::path::PathBuf;
 
-#[instrument(level = "info", skip_all, fields(patterns = ?path_and_content))]
-pub fn parse_and_collect<'mcx>(
+pub fn parse_and_collect<'mcx, 'tcx>(
     arena: &'mcx Arena<'mcx>,
     path_and_content: &'mcx Vec<(PathBuf, String)>,
-) -> (MetaContext<'mcx>, bool) {
+    mut handler: impl FnMut(&RPLMetaError<'mcx>),
+) -> MetaContext<'mcx> {
     let mut mctx = MetaContext::new(arena);
-    let mut has_error = false;
     for (path, content) in path_and_content {
         let idx = mctx.request_rpl_idx(path);
         let content = mctx.alloc_str(content);
@@ -58,17 +60,16 @@ pub fn parse_and_collect<'mcx>(
                 mctx.syntax_trees.insert(*idx, main);
                 // Perform meta collection
                 let meta = SymbolTables::collect(path, main, *idx, &mctx);
-                has_error |= meta.show_error();
+                meta.show_error(&mut handler);
                 mctx.symbol_tables.insert(*idx, meta);
             },
             Err(err) => {
-                warn!("{}", RPLMetaError::from(err));
-                has_error = true;
+                handler(&RPLMetaError::from(err));
                 continue;
             },
         }
         // Seems unnecessary.
         // mctx.set_active_path(None);
     }
-    (mctx, has_error)
+    mctx
 }

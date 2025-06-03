@@ -30,7 +30,7 @@ impl<'i, 'r> CheckImplCtxt<'i, 'r> {
             }
             .check_fn(mctx, rust_fn);
             if let Some(ident) = fn_name {
-                self.impl_def.add_fn(ident, (fn_def, meta_vars).into()).unwrap(); //FIXME: handle errors
+                self.impl_def.add_fn(mctx, ident, (fn_def, meta_vars).into()).unwrap(); //FIXME: handle errors
             }
         }
     }

@@ -13,7 +13,6 @@ use rustc_hash::FxHashMap;
 use rustc_span::Symbol;
 use std::ops::Deref;
 use std::sync::Arc;
-use tracing::instrument;
 
 #[derive(Clone, Copy, From)]
 pub enum TypeOrPath<'i> {
@@ -566,7 +565,6 @@ impl<'i> FnInner<'i> {
     ) {
         self.add_type_impl(mctx, ident, TypeOrPath::Type(ty), errors);
     }
-    #[instrument(skip(self, path))]
     fn get_type(&self, path: &'i std::path::Path, ident: &Ident<'i>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
         self.types
             .get(&ident.name)
@@ -768,10 +766,12 @@ impl<'i> ImplInner<'i> {
 }
 
 impl<'i> ImplInner<'i> {
-    pub fn add_fn(&mut self, ident: Ident<'i>, fn_def: Fn<'i>) -> RPLMetaResult<&mut Fn<'i>> {
+    pub fn add_fn(&mut self, mctx: &MetaContext<'i>, ident: Ident<'i>, fn_def: Fn<'i>) -> RPLMetaResult<&mut Fn<'i>> {
         self.fns
             .try_insert(ident.name, fn_def)
-            .map_err(|_entry| RPLMetaError::MethodAlreadyDeclared { _span: ident.span })
+            .map_err(|_entry| RPLMetaError::MethodAlreadyDeclared {
+                span: SpanWrapper::new(ident.span, mctx.get_active_path()),
+            })
     }
 }
 

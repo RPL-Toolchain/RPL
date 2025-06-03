@@ -1,7 +1,12 @@
+#![feature(rustc_private)]
+
 pub mod error;
 pub mod parser;
 pub mod position;
 pub mod span;
+
+extern crate rustc_errors;
+extern crate rustc_span;
 
 use pest::Stack;
 use pest_typed::tracker::Tracker;
@@ -15,8 +20,8 @@ pub use span::SpanWrapper;
 
 pub fn parse<'i, T: pest_typed::ParsableTypedNode<'i, Rule>>(
     input: impl pest_typed::AsInput<'i>,
-    path: &Path,
-) -> Result<T, ParseError> {
+    path: &'i Path,
+) -> Result<T, ParseError<'i>> {
     let input = input.as_input();
     let mut stack = Stack::new();
 
@@ -28,6 +33,6 @@ pub fn parse<'i, T: pest_typed::ParsableTypedNode<'i, Rule>>(
 }
 
 /// Parse input to [main](pairs::main).
-pub fn parse_main<'i>(input: &'i str, path: &Path) -> Result<pairs::main<'i>, ParseError> {
+pub fn parse_main<'i>(input: &'i str, path: &'i Path) -> Result<pairs::main<'i>, ParseError<'i>> {
     parse(input, path)
 }

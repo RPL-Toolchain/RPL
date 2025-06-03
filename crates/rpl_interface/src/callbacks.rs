@@ -132,16 +132,23 @@ impl rustc_driver::Callbacks for RplCallbacks {
     }
     fn after_analysis(&mut self, compiler: &interface::Compiler, tcx: TyCtxt<'_>) -> rustc_driver::Compilation {
         static MCTX_ARENA: OnceLock<rpl_meta::arena::Arena<'_>> = OnceLock::new();
-        static MCTX: OnceLock<(rpl_meta::context::MetaContext<'_>, bool)> = OnceLock::new();
+        static MCTX: OnceLock<rpl_meta::context::MetaContext<'_>> = OnceLock::new();
         let mctx_arena = MCTX_ARENA.get_or_init(rpl_meta::arena::Arena::default);
         let patterns_and_paths = mctx_arena.alloc(collect_file_from_string_args(&self.pattern_paths));
-        let (mctx, pattern_has_error) =
-            MCTX.get_or_init(|| rpl_meta::parse_and_collect(mctx_arena, patterns_and_paths));
-        if *pattern_has_error {
-            compiler.sess.dcx().emit_fatal(ErrorFound);
-        } else {
-            PatternCtxt::entered(|pcx| rpl_driver::check_crate(tcx, pcx, mctx));
+        // let dcx = compiler.sess.dcx();
+        let mut has_error = false;
+        let mctx = MCTX.get_or_init(|| {
+            rpl_meta::parse_and_collect(mctx_arena, patterns_and_paths, |error| {
+                eprintln!("{error}");
+                has_error = true;
+                // let _ = dcx.emit_err(error.clone());
+            })
+        });
+        // dcx.abort_if_errors();
+        if has_error {
+            tcx.dcx().emit_fatal(ErrorFound);
         }
+        PatternCtxt::entered(|pcx| rpl_driver::check_crate(tcx, pcx, mctx));
         rustc_driver::Compilation::Continue
     }
 }

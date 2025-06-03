@@ -31,3 +31,7 @@ pest_generator.workspace = true
 
 [lib]
 doctest = false
+
+[package.metadata.rust-analyzer]
+# This crate uses #[feature(rustc_private)]
+rustc_private = true

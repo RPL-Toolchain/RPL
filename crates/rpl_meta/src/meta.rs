@@ -64,13 +64,9 @@ impl<'mcx> SymbolTables<'mcx> {
     }
 }
 
-impl SymbolTables<'_> {
+impl<'mcx> SymbolTables<'mcx> {
     /// Show the errors of the symbol tables.
-    ///
-    /// # Returns
-    ///
-    /// Returns `true` if there are errors, otherwise `false`.
-    pub fn show_error(&self) -> bool {
+    pub fn show_error(&self, mut handler: impl FnMut(&RPLMetaError<'mcx>)) {
         if !self.errors.is_empty() {
             error!(
                 "{:?} generated {} error{}.",
@@ -79,15 +75,12 @@ impl SymbolTables<'_> {
                 if self.errors.len() > 1 { "s" } else { "" }
             );
 
-            let mut cnt = 1usize;
             for error in &self.errors {
-                error!("{}. {}", cnt, error);
-                cnt += 1;
+                // FIXME: a better way to print the error
+                handler(error);
             }
-            true
         } else {
             info!("{}", format!("No error found in {:?}", self.path));
-            false
         }
     }
 }
