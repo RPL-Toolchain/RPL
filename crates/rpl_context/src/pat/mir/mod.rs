@@ -415,7 +415,7 @@ impl<'pcx> RawDecleration<'pcx> {
                     Ty::from(WithPath::new(p, ty), pcx, fn_sym_tab),
                 )
             },
-            Choice3::_1(use_path) => Self::UsePath(Path::from(use_path.get_matched().1, pcx)),
+            Choice3::_1(use_path) => Self::UsePath(Path::from_pairs(use_path.get_matched().1, pcx)),
             Choice3::_2(local_init) => {
                 let (label, _, _, local, _, _, init, _) = local_init.get_matched();
                 let local = Local::from(fn_sym_tab.inner.get_local_idx(Symbol::intern(local.span.as_str())));

@@ -184,7 +184,7 @@ impl<'pcx> RustItems<'pcx> {
         let ty = Ty::from(WithPath::new(p, ty), self.pcx, symbol_table);
         let trait_id = impl_kind
             .as_ref()
-            .map(|impl_kind| Path::from(impl_kind.get_matched().0, self.pcx));
+            .map(|impl_kind| Path::from_pairs(impl_kind.get_matched().0, self.pcx));
         let fns = fns
             .iter_matched()
             .map(|rust_fn| {

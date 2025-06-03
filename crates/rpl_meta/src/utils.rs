@@ -126,6 +126,22 @@ impl<'i> Path<'i> {
         let last = self.segments.last().unwrap();
         Ident::from(*last)
     }
+
+    /// Returns the leading identifier if it's the path is not starting with `::`.
+    pub fn leading_ident(&self) -> Option<Ident<'i>> {
+        if self.leading.is_none() {
+            Some(Ident::from(self.segments[0]))
+        } else {
+            None
+        }
+    }
+    pub fn replace_leading_ident(self, mut prefix: Self) -> Self {
+        assert!(self.leading.is_none());
+        prefix.segments.reserve(self.segments.len().saturating_sub(1));
+        prefix.segments.extend(self.segments.into_iter().skip(1));
+        prefix._span = self._span;
+        prefix
+    }
 }
 
 impl fmt::Debug for Path<'_> {
