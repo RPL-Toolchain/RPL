@@ -5,12 +5,14 @@ patt {
         $T: type, // element type before the cast
         $U: type, // element type after the cast
     ] = #[mir] pub fn _ (..) -> _ {
+        type SrcVec = alloc::vec::Vec<$T>;
+        type DstVec = alloc::vec::Vec<$U>;
         'src:
-        let $p: alloc::vec::Vec<$T> = _;
+        let $p: SrcVec = _;
         'cast:
-        let $q: alloc::vec::Vec<$U> = move $p as alloc::vec::Vec<$U> (Transmute);
-    } where {
-        !same_abi($T, $U) || !same_size($T, $U) || !same_align($T, $U)
+        let $q: DstVec = move $p as DstVec (Transmute);
+    // } where {
+    //     !same_abi($T, $U) || !same_size($T, $U) || !same_align($T, $U)
     }
 }
 

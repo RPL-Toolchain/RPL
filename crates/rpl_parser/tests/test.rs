@@ -1,3 +1,5 @@
+#![feature(rustc_private)]
+
 #[cfg(test)]
 use rpl_parser::parser::{Grammar, pairs};
 
@@ -450,4 +452,52 @@ patt {
 }
 "#
     );
+}
+
+#[test]
+fn cve_2020_35860() {
+    full_test!(
+        main,
+        r#"
+pattern CVE-2020-35860
+
+diag {
+    p_deref = {
+        " 
+            The public struct $CBox contains a raw pointer ($ptr) to a type $T. 
+            Its `Deref` implementation dereferences the pointer without null checks.
+          
+            Specifically, the `Deref` implementation calls `CStr::from_ptr(self.$ptr)`,
+            whose safety requirements include that the pointer must be non-null.
+        ",
+        $CBox: "$CBox is defined here",
+        $ptr: "$ptr is defined here",
+    }
+}
+"#
+    );
+}
+
+#[test]
+fn mir_cast_kind() {
+    full_test!(MirCastKind, "Transmute")
+}
+
+#[test]
+fn mir_operand() {
+    full_test!(MirOperand, "move $p");
+    full_test!(MirOperand, "copy $p");
+}
+
+#[test]
+fn ty() {
+    full_test!(Type, "DstVec");
+    full_test!(Type, "$T");
+}
+
+#[test]
+fn rvalue_cast() {
+    full_test!(MirRvalueCast, "move $p as *const u8 (Transmute)");
+    full_test!(MirRvalueCast, "move $p as DstVec (Transmute)");
+    full_test!(MirRvalueCast, "move $p as $T (Transmute)");
 }

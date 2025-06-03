@@ -5,6 +5,7 @@ pub mod parser;
 pub mod position;
 pub mod span;
 
+extern crate rustc_driver;
 extern crate rustc_errors;
 extern crate rustc_span;
 
