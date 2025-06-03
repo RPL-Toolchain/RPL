@@ -6,7 +6,6 @@ use parser::pairs;
 use rustc_data_structures::fx::FxHashMap;
 use rustc_span::Symbol;
 use std::path::Path;
-use tracing::{error, info};
 
 /// Meta data of a single rpl file.
 pub struct SymbolTables<'mcx> {
@@ -68,7 +67,7 @@ impl<'mcx> SymbolTables<'mcx> {
     /// Show the errors of the symbol tables.
     pub fn show_error(&self, mut handler: impl FnMut(&RPLMetaError<'mcx>)) {
         if !self.errors.is_empty() {
-            error!(
+            warn!(
                 "{:?} generated {} error{}.",
                 self.path,
                 self.errors.len(),
@@ -80,7 +79,7 @@ impl<'mcx> SymbolTables<'mcx> {
                 handler(error);
             }
         } else {
-            info!("{}", format!("No error found in {:?}", self.path));
+            info!("No error found in {:?}", self.path);
         }
     }
 }

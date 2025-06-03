@@ -874,9 +874,25 @@ MetaVariableWithDiagMessageSeparatedByComma = {
     MetaVariableWithDiagMessage ~ (Comma ~ MetaVariableWithDiagMessage)* ~ Comma?
 }
 
+diagMessageArg = ${
+    LeftBrace ~ MetaVariable ~ RightBrace
+}
+
+diagMessageText = @{
+    (!("\"" | LeftBrace) ~ ANY)+
+}
+
+diagMessageInner = ${
+    (diagMessageArg | diagMessageText)+
+}
+
+diagMessage = ${
+    "\"" ~ diagMessageInner ~ "\""
+}
+
 // diag block Item
 diagBlockItem = {
-    Identifier ~ Assign ~ LeftBrace ~ (Identifier ~ (LeftParen ~ Identifier ~ RightParen)? ~ Assign ~ String ~ Comma)* ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace
+    Identifier ~ Assign ~ LeftBrace ~ (Identifier ~ (LeftParen ~ Identifier ~ RightParen)? ~ Assign ~ diagMessage ~ Comma)* ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace
 }
 
 // RPL Blocks

@@ -1,12 +1,15 @@
-use std::borrow::Cow;
 use std::sync::LazyLock;
 
+use rpl_meta::symbol_table::{MetaVariableType, NonLocalMetaSymTab};
+use rpl_parser::generics::Choice2;
 use rpl_parser::pairs;
 use rustc_errors::LintDiagnostic;
 use rustc_lint::{Level, Lint};
 use rustc_middle::mir::Body;
 use rustc_span::{Span, Symbol};
 use sync_arena::declare_arena;
+
+use crate::pat::{ConstVarIdx, TyVarIdx};
 
 use super::{LabelMap, Matched};
 
@@ -21,14 +24,14 @@ pub struct DynamicError {
     ///
     /// See [`rustc_errors::Diag::primary_message`].
     /// The primary message is the main error message that will be displayed to the user.
-    primary: (Cow<'static, str>, Span),
+    primary: (String, Span),
     /// Label description, and the span of the label.
     ///
     /// See [`rustc_errors::Diag::span_label`].
     /// Labels are used to highlight specific parts of the code that are relevant to the error.
-    labels: Vec<(Cow<'static, str>, Span)>,
-    notes: Vec<(Cow<'static, str>, Option<Span>)>,
-    helps: Vec<(Cow<'static, str>, Option<Span>)>,
+    labels: Vec<(String, Span)>,
+    notes: Vec<(String, Option<Span>)>,
+    helps: Vec<(String, Option<Span>)>,
     lint: &'static Lint,
 }
 
@@ -66,13 +69,49 @@ impl DynamicError {
     }
 }
 
+enum SubMsg<'i> {
+    Str(&'i str),
+    Ty(TyVarIdx),
+    Const(ConstVarIdx),
+}
+
+impl<'i> SubMsg<'i> {
+    fn parse(s: &pairs::diagMessageInner<'i, 0>, meta_vars: &NonLocalMetaSymTab) -> Vec<Self> {
+        let mut msgs = Vec::new();
+        for seg in s.iter_matched() {
+            match seg {
+                Choice2::_0(arg) => {
+                    let (var_type, idx) = meta_vars
+                        .get_type_and_idx_from_symbol(Symbol::intern(arg.MetaVariable().span.as_str()))
+                        .unwrap();
+                    match var_type {
+                        MetaVariableType::Type => msgs.push(SubMsg::Ty(idx.into())),
+                        MetaVariableType::Const => msgs.push(SubMsg::Const(idx.into())),
+                        MetaVariableType::Place => panic!(
+                            "Unexpected place meta variable in diagnostic message: {}",
+                            arg.span.as_str()
+                        ),
+                    }
+                },
+                Choice2::_1(text) => {
+                    msgs.push(SubMsg::Str(text.span.as_str()));
+                },
+            }
+        }
+        msgs
+    }
+}
+
 pub(crate) struct DynamicErrorBuilder<'i> {
-    primary: (&'i str, &'i str),
-    #[allow(dead_code)] //FIXME: handle this
-    args: Vec<(&'i str, &'i str)>,
-    labels: Vec<(&'i str, &'i str)>,
-    notes: Vec<(&'i str, Option<&'i str>)>,
-    helps: Vec<(&'i str, Option<&'i str>)>,
+    /// Primary message and its span.
+    primary: (Vec<SubMsg<'i>>, &'i str),
+    /// Label description, and the span of the label.
+    labels: Vec<(Vec<SubMsg<'i>>, &'i str)>,
+    /// Notes and their spans.
+    notes: Vec<(Vec<SubMsg<'i>>, Option<&'i str>)>,
+    /// Helps and their spans.
+    /// Helps are additional information that can help the user understand the error.
+    helps: Vec<(Vec<SubMsg<'i>>, Option<&'i str>)>,
     lint: &'static Lint,
 }
 
@@ -85,24 +124,21 @@ declare_arena!(
 static ARENA: LazyLock<Arena<'static>> = LazyLock::new(Arena::default);
 
 impl<'i> DynamicErrorBuilder<'i> {
-    pub(super) fn from_item(item: &'i pairs::diagBlockItem<'i>) -> (Self, Symbol) {
-        let (ident, _, _, pairs, _, _) = item.get_matched();
-        let pattern_name = Symbol::intern(ident.span.as_str());
+    //FIXME: this function has a lot of `unwrap` calls, which can panic if the input is malformed.
+    /// Create a [`DynamicErrorBuilder`] from a [`pairs::diagBlockItem`].
+    pub(super) fn from_item(item: &'i pairs::diagBlockItem<'i>, meta_vars: &NonLocalMetaSymTab) -> Self {
+        let (_, _, _, pairs, _, _) = item.get_matched();
         let mut primary = (None, None);
         let mut labels = Vec::new();
         let mut notes = Vec::new();
         let mut helps = Vec::new();
-        let args = Vec::new();
         let mut level = Level::Deny;
         let mut name = None;
 
         for pair in pairs.iter_matched() {
             let (key, span, _, message, _) = pair.get_matched();
 
-            let message = message.span.as_str();
-            //FIXME: strip quotes from message
-            let message = message.strip_prefix("\"").unwrap_or(message);
-            let message = message.strip_suffix("\"").unwrap_or(message);
+            let message = message.get_matched().1;
 
             let key = key.span.as_str();
 
@@ -110,51 +146,50 @@ impl<'i> DynamicErrorBuilder<'i> {
 
             match key {
                 "primary" => {
-                    primary.0 = Some(message);
+                    primary.0 = Some(SubMsg::parse(message, meta_vars));
                     if let Some(span_name) = span_name {
                         primary.1 = Some(span_name);
                     }
                 },
-                "args" => {
-                    labels.push((message, span_name.unwrap()));
-                },
                 "label" => {
-                    labels.push((message, span_name.unwrap()));
+                    labels.push((SubMsg::parse(message, meta_vars), span_name.unwrap()));
                 },
                 "note" => {
-                    notes.push((message, span_name));
+                    notes.push((SubMsg::parse(message, meta_vars), span_name));
                 },
                 "help" => {
-                    helps.push((message, span_name));
+                    helps.push((SubMsg::parse(message, meta_vars), span_name));
                 },
                 "name" => {
                     name = Some(message);
                 },
                 "level" => {
+                    let message = message.span.as_str();
                     level = match message {
                         "allow" => Level::Allow,
                         "warning" => Level::Warn,
                         "deny" => Level::Deny,
                         "forbid" => Level::Forbid,
-                        _ => unimplemented!("Unrecognized level: {message}"),
+                        _ => unimplemented!("Unrecognized level: {message}",),
                     };
                 },
                 _ => unimplemented!("Unrecognized key: {key:?}"),
             }
         }
+        let primary = (primary.0.unwrap(), primary.1.unwrap());
+        let name = name.unwrap().span.as_str();
         let builder = DynamicErrorBuilder {
-            primary: (primary.0.unwrap(), primary.1.unwrap()),
-            args,
+            primary,
             labels,
             notes,
             helps,
             lint: ARENA.alloc(Lint {
-                name: ARENA.alloc_str(&format!("rpl::{}", name.unwrap())),
+                name: ARENA.alloc_str(&format!("rpl::{name}")),
                 default_level: level,
                 ..Lint::default_fields_for_macro()
             }),
         };
-        (builder, pattern_name)
+        builder
     }
     pub(crate) fn build<'tcx>(
         &self,
@@ -162,21 +197,38 @@ impl<'i> DynamicErrorBuilder<'i> {
         body: &Body<'tcx>,
         matched: &impl Matched<'tcx>,
     ) -> DynamicError {
+        fn format<'tcx>(message: &Vec<SubMsg>, matched: &impl Matched<'tcx>) -> String {
+            let mut s = String::new();
+            for msg in message {
+                match msg {
+                    SubMsg::Str(smsg) => s.push_str(smsg),
+                    SubMsg::Ty(idx) => {
+                        let ty = matched.type_meta_var(*idx);
+                        s.push_str(&ty.to_string());
+                    },
+                    SubMsg::Const(idx) => {
+                        let const_ = matched.const_meta_var(*idx);
+                        s.push_str(&const_.to_string());
+                    },
+                }
+            }
+            s
+        }
         let primary = (
-            Cow::Owned(self.primary.0.to_string()),
+            format(&self.primary.0, matched),
             matched.span(label_map, body, self.primary.1),
-        ); // FIXME: use actual span
+        );
         let labels = self
             .labels
             .iter()
-            .map(|(label, span)| (Cow::Owned(label.to_string()), matched.span(label_map, body, span)))
+            .map(|(label, span)| (format(label, matched), matched.span(label_map, body, span)))
             .collect();
         let notes = self
             .notes
             .iter()
             .map(|(note, span)| {
                 (
-                    Cow::Owned(note.to_string()),
+                    format(note, matched),
                     span.map(|span| matched.span(label_map, body, span)),
                 )
             })
@@ -186,7 +238,7 @@ impl<'i> DynamicErrorBuilder<'i> {
             .iter()
             .map(|(help, span)| {
                 (
-                    Cow::Owned(help.to_string()),
+                    format(help, matched),
                     span.map(|span| matched.span(label_map, body, span)),
                 )
             })

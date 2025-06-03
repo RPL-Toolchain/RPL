@@ -77,7 +77,7 @@ impl<'i> ParseError<'i> {
     }
 }
 
-impl<'i> Display for ParseError<'i> {
+impl Display for ParseError<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         format_tracker(self.path, self.position, &self.attempts, identity, f)
     }

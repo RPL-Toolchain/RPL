@@ -524,7 +524,7 @@ impl<'i> FnInner<'i> {
         imports: &FxHashMap<Symbol, &'i pairs::Path<'i>>,
     ) -> (Option<Ident<'i>>, Self) {
         match fn_name.deref() {
-            Choice3::_0(_) => (None, Self::new(fn_name.span, mctx.get_active_path(), self_ty, &imports)),
+            Choice3::_0(_) => (None, Self::new(fn_name.span, mctx.get_active_path(), self_ty, imports)),
             Choice3::_1(ident) => {
                 let ident = Ident::from(ident);
                 (
@@ -607,10 +607,7 @@ impl<'i> FnInner<'i> {
     }
 
     pub fn get_local_idx(&self, symbol: Symbol) -> usize {
-        self.symbol_to_local_idx
-            .get(&symbol)
-            .copied()
-            .expect(&format!("local {symbol:?} not found in {:?}", self.symbol_to_local_idx)) // should not panic
+        self.symbol_to_local_idx.get(&symbol).copied().unwrap() // should not panic
     }
 }
 
@@ -886,11 +883,13 @@ impl<'i> GetType<'i> for Fn<'i> {
         let (kind, (idx, pred)) = self
             .meta_vars
             .get_from_symbol(Symbol::intern(ty_meta_var.span.as_str()))
-            .expect(&format!(
-                "Type variable `{}` not found in symbol table {:?}",
-                ty_meta_var.span.as_str(),
-                self.meta_vars
-            ));
+            .unwrap_or_else(|| {
+                panic!(
+                    "Type variable `{}` not found in symbol table {:?}",
+                    ty_meta_var.span.as_str(),
+                    self.meta_vars
+                )
+            });
         // unwrap should be safe here because of the meta pass.
         TypeVariable::MetaVariable(kind, idx, pred)
     }
@@ -926,9 +925,7 @@ impl<'i> GetType<'i> for SymbolTable<'i> {
             .get_from_symbol(symbol)
             .map(TypeVariable::from)
             .or_else(|| self.get_adt(symbol).map(TypeVariable::from))
-            .expect(&format!(
-                "Type variable `{}` not found in symbol table",
-                ty_meta_var.span.as_str()
-            )) // unwrap should be safe here because of the meta pass.
+            .unwrap()
+        // unwrap should be safe here because of the meta pass.
     }
 }

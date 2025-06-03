@@ -15,7 +15,7 @@ pub(super) struct CheckImplCtxt<'i, 'r> {
     pub(super) errors: &'r mut Vec<RPLMetaError<'i>>,
 }
 
-impl<'i, 'r> CheckImplCtxt<'i, 'r> {
+impl<'i> CheckImplCtxt<'i, '_> {
     pub(super) fn check_impl(&mut self, mctx: &MetaContext<'i>, rust_impl: &'i pairs::Impl<'i>) {
         let (_, _, _, _, fns, _) = rust_impl.get_matched();
         for rust_fn in fns.iter_matched() {

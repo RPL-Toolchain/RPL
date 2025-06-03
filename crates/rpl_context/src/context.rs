@@ -208,7 +208,7 @@ impl<'pcx> PatCtxt<'pcx> {
             );
         });
         for diag in diags {
-            pattern.add_diag(diag)
+            pattern.add_diag(diag, patt_symbol_tables)
         }
         self.rpl_patterns.lock().insert(id, pattern);
     }

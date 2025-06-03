@@ -263,6 +263,10 @@ pub enum Rule {
     r#RPLPatternItem,
     r#MetaVariableWithDiagMessage,
     r#MetaVariableWithDiagMessageSeparatedByComma,
+    r#diagMessageArg,
+    r#diagMessageText,
+    r#diagMessageInner,
+    r#diagMessage,
     r#diagBlockItem,
     r#pattBlock,
     r#utilBlock,
@@ -1156,6 +1160,27 @@ mod constant_wrappers {
     pub struct r#w_125;
     impl ::pest_typed::StringWrapper for r#w_125 {
         const CONTENT: &'static ::core::primitive::str = "Group";
+    }
+    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_124;
+    impl ::pest_typed::StringWrapper for r#w_124 {
+        const CONTENT: &'static ::core::primitive::str = "\"";
+    }
+    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_125;
+    impl ::pest_typed::StringWrapper for r#w_125 {
+        const CONTENT: &'static ::core::primitive::str = "\"";
+    }
+    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_126;
+    impl ::pest_typed::StringWrapper for r#w_126 {
+        const CONTENT: &'static ::core::primitive::str = "\"";
     }
 }
 #[doc = "Generated structs for tags."]
@@ -8659,7 +8684,100 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#diagBlockItem , "Corresponds to expression: `(Identifier ~ Assign ~ LeftBrace ~ (Identifier ~ (LeftParen ~ Identifier ~ RightParen)? ~ Assign ~ String ~ Comma)* ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagBlockItem , super :: super :: generics :: Seq6 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq5 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#String :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Comma :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#MetaVariableWithDiagMessageSeparatedByComma :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#diagMessageArg , "Corresponds to expression: `(LeftBrace ~ MetaVariable ~ RightBrace)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageArg , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftBrace :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MetaVariable :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightBrace :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessageArg<'i, INHERITED> {
+            #[doc = "A helper function to access [`LeftBrace`]."]
+            #[allow(non_snake_case)]
+            pub fn r#LeftBrace<'s>(&'s self) -> &'s super::super::rules::r#LeftBrace<'i, 0> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.0.matched;
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MetaVariable`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MetaVariable<'s>(&'s self) -> &'s super::super::rules::r#MetaVariable<'i, 0> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`RightBrace`]."]
+            #[allow(non_snake_case)]
+            pub fn r#RightBrace<'s>(&'s self) -> &'s super::super::rules::r#RightBrace<'i, 0> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.2.matched;
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#diagMessageText , "Corresponds to expression: `(!(\"\\\"\" | LeftBrace) ~ ANY)+`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageText , super :: super :: generics :: RepOnce :: < 'i , 0 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: generics :: Choice2 :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_124 > , super :: super :: rules :: r#LeftBrace :: < 'i , 0 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , 0 >) , > > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessageText<'i, INHERITED> {}
+        :: pest_typed :: rule ! (r#diagMessageInner , "Corresponds to expression: `(diagMessageArg | diagMessageText)+`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageInner , super :: super :: generics :: RepOnce :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#diagMessageArg :: < 'i , 0 > , super :: super :: rules :: r#diagMessageText :: < 'i , 0 > , > > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessageInner<'i, INHERITED> {
+            #[doc = "A helper function to access [`diagMessageArg`]."]
+            #[allow(non_snake_case)]
+            pub fn r#diagMessageArg<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Vec<
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#diagMessageArg<'i, 0>>,
+            > {
+                let res = &*self.content;
+                {
+                    let res = res
+                        .content
+                        .iter()
+                        .map(|res| {
+                            let res = &res.matched;
+                            {
+                                let res = res._0().map(|res| res);
+                                res
+                            }
+                        })
+                        .collect::<::pest_typed::re_exported::Vec<_>>();
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`diagMessageText`]."]
+            #[allow(non_snake_case)]
+            pub fn r#diagMessageText<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Vec<
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#diagMessageText<'i, 0>>,
+            > {
+                let res = &*self.content;
+                {
+                    let res = res
+                        .content
+                        .iter()
+                        .map(|res| {
+                            let res = &res.matched;
+                            {
+                                let res = res._1().map(|res| res);
+                                res
+                            }
+                        })
+                        .collect::<::pest_typed::re_exported::Vec<_>>();
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#diagMessage , "Corresponds to expression: `(\"\\\"\" ~ diagMessageInner ~ \"\\\"\")`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessage , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_125 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessageInner :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_126 > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessage<'i, INHERITED> {
+            #[doc = "A helper function to access [`diagMessageInner`]."]
+            #[allow(non_snake_case)]
+            pub fn r#diagMessageInner<'s>(&'s self) -> &'s super::super::rules::r#diagMessageInner<'i, 0> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#diagBlockItem , "Corresponds to expression: `(Identifier ~ Assign ~ LeftBrace ~ (Identifier ~ (LeftParen ~ Identifier ~ RightParen)? ~ Assign ~ diagMessage ~ Comma)* ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagBlockItem , super :: super :: generics :: Seq6 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq5 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessage :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Comma :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#MetaVariableWithDiagMessageSeparatedByComma :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#diagBlockItem<'i, INHERITED> {
             #[doc = "A helper function to access [`Assign`]."]
             #[allow(non_snake_case)]
@@ -8873,11 +8991,11 @@ pub mod rules_impl {
                     }
                 }
             }
-            #[doc = "A helper function to access [`String`]."]
+            #[doc = "A helper function to access [`diagMessage`]."]
             #[allow(non_snake_case)]
-            pub fn r#String<'s>(
+            pub fn r#diagMessage<'s>(
                 &'s self,
-            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#String<'i, INHERITED>> {
+            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#diagMessage<'i, INHERITED>> {
                 let res = &*self.content;
                 {
                     let res = &res.content.3.matched;
