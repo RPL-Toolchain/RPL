@@ -9,7 +9,7 @@ on:
       - 'CONTRIBUTING.md'
       - '.vscode/**'
   pull_request:
-    branches: [ master ]
+    branches: [ master, pest ]
     paths-ignore:
       - 'docs/**'
       - 'README.md'
