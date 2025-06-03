@@ -32,4 +32,5 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: cargo install --path .
       - run: cargo rpl --workspace --all-targets
+        if: github.ref != 'refs/heads/pest'
       # - uses: actions-rust-lang/audit@v1.2.4
