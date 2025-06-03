@@ -114,7 +114,6 @@ impl NonLocalMetaSymTab {
     }
 
     #[allow(clippy::manual_map)]
-    #[instrument(skip(self))]
     pub fn get_from_symbol(&self, symbol: Symbol) -> Option<(MetaVariableType, (usize, PredicateConjunction))> {
         if let Some(idx_and_preds) = self.type_vars.get(&symbol) {
             Some((MetaVariableType::Type, idx_and_preds.clone()))

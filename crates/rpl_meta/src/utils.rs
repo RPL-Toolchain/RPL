@@ -90,17 +90,17 @@ impl std::fmt::Display for Ident<'_> {
 
 pub struct Path<'i> {
     pub leading: Option<&'i pairs::PathLeading<'i>>,
-    pub segments: Vec<&'i pairs::PathSegment<'i>>,
+    pub segments: Vec<(Ident<'i>, Option<&'i pairs::PathArguments<'i>>)>,
     pub _span: Span<'i>,
 }
 
 impl<'i> From<&'i pairs::Path<'i>> for Path<'i> {
     fn from(path: &'i pairs::Path<'i>) -> Self {
         let (leading, seg, segs) = path.get_matched();
-        let mut segments = vec![seg];
+        let mut segments = vec![(Ident::from(seg), seg.PathArguments())];
         segs.iter_matched().for_each(|seg| {
             let (_, seg) = seg.get_matched();
-            segments.push(seg);
+            segments.push((Ident::from(seg), seg.PathArguments()));
         });
         let span = path.span;
         Self {
@@ -115,7 +115,7 @@ impl<'i> Path<'i> {
     /// Returns `Some(ident)` if `self` is a single identifier.
     pub fn as_ident(&self) -> Option<Ident<'i>> {
         if self.leading.is_none() && self.segments.len() == 1 {
-            Some(Ident::from(self.segments[0]))
+            Some(self.segments[0].0)
         } else {
             None
         }
@@ -124,20 +124,24 @@ impl<'i> Path<'i> {
     pub fn ident(&self) -> Ident<'i> {
         //FIXME: use a non-empty `Vec` type
         let last = self.segments.last().unwrap();
-        Ident::from(*last)
+        last.0
     }
 
     /// Returns the leading identifier if it's the path is not starting with `::`.
     pub fn leading_ident(&self) -> Option<Ident<'i>> {
         if self.leading.is_none() {
-            Some(Ident::from(self.segments[0]))
+            Some(self.segments[0].0)
         } else {
             None
         }
     }
+    #[instrument(level = "debug", ret)]
     pub fn replace_leading_ident(self, mut prefix: Self) -> Self {
         assert!(self.leading.is_none());
         prefix.segments.reserve(self.segments.len().saturating_sub(1));
+        assert!(!prefix.segments.is_empty());
+        assert!(prefix.segments.last().unwrap().1.is_none());
+        prefix.segments.last_mut().unwrap().1 = self.segments[0].1;
         prefix.segments.extend(self.segments.into_iter().skip(1));
         prefix._span = self._span;
         prefix
@@ -147,10 +151,16 @@ impl<'i> Path<'i> {
 impl fmt::Debug for Path<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(leading) = self.leading {
-            write!(f, "{}", leading.span.as_str())?;
+            write!(f, "{}", leading.span.as_str().trim())?;
         }
-        for segment in &self.segments {
-            write!(f, "::{}", segment.span.as_str())?;
+        for (i, segment) in self.segments.iter().enumerate() {
+            if i > 0 {
+                write!(f, "::")?;
+            }
+            write!(f, "{}", segment.0)?;
+            if let Some(args) = segment.1 {
+                write!(f, "{}", args.span.as_str().trim())?;
+            }
         }
         Ok(())
     }

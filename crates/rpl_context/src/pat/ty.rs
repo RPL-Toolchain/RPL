@@ -149,6 +149,7 @@ impl<'pcx> Ty<'pcx> {
     ///
     /// Also checks [`PathWithArgs::from_type_path`] for resolving type paths.
     /// Maybe reuse `PathWithArgs::from_type_path`?
+    #[instrument(level = "debug", skip_all, ret)]
     fn from_type_path(
         ty_path: WithPath<'pcx, &'pcx pairs::TypePath<'pcx>>,
         pcx: PatCtxt<'pcx>,
@@ -375,10 +376,8 @@ impl<'pcx> Path<'pcx> {
         {
             items.push(Symbol::intern("crate"));
         }
-        items.extend(path.segments.iter().map(|seg| match seg.get_matched().0 {
-            Choice2::_0(ident) => Symbol::intern(ident.span.as_str()),
-            Choice2::_1(ident) => Symbol::intern(ident.span.as_str()),
-        }));
+        //FIXME: how about the path arguments?
+        items.extend(path.segments.iter().map(|seg| seg.0.name));
         ItemPath(pcx.mk_slice(&items)).into()
     }
 }
@@ -425,7 +424,7 @@ impl<'pcx> GenericArgsRef<'pcx> {
         let path: &rpl_meta::utils::Path<'_> = args.inner;
         let mut items: Vec<GenericArgKind<'_>> = Vec::new();
         path.segments.iter().for_each(|seg| {
-            let args = seg.get_matched().1;
+            let args = seg.1;
             if let Some(args) = args {
                 Self::from_angle_bracketed_generic_arguments(WithPath::new(p, args.deref()), pcx, fn_sym_tab)
                     .iter()
@@ -489,6 +488,7 @@ impl<'pcx> PathWithArgs<'pcx> {
     /// # Note
     ///
     /// Also checks [`Ty::from_type_path`] for resolving type paths.
+    #[instrument(level = "debug", skip_all, ret)]
     pub fn from_type_path(
         path: WithPath<'pcx, &'pcx pairs::TypePath<'pcx>>,
         pcx: PatCtxt<'pcx>,

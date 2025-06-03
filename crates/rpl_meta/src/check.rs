@@ -13,7 +13,6 @@ use rustc_data_structures::fx::FxHashMap;
 use rustc_span::Symbol;
 use std::ops::Deref;
 use std::sync::Arc;
-use tracing::debug;
 
 mod impls;
 
@@ -631,7 +630,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
             },
             Choice14::_8(ty_meta_var) => {
                 let ident = ty_meta_var.MetaVariable().into();
-                debug!(?ident, ?self.meta_vars, "checking meta variable");
+                // debug!(?ident, ?self.meta_vars, "checking meta variable");
                 let _ = self.meta_vars.get_non_local_meta_var(mctx, ident, self.errors);
             },
             Choice14::_9(_ty_self) => {},
@@ -662,7 +661,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
             }
         } else {
             for segment in path.segments {
-                if let Some(path_arguments) = segment.PathArguments() {
+                if let Some(path_arguments) = segment.1 {
                     self.check_generic_args(mctx, path_arguments);
                 }
             }
