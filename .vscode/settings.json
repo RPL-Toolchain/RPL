@@ -10,7 +10,9 @@
     "lldb.dereferencePointers": true,
     "lldb.consoleMode": "commands",
     "editor.foldingMaximumRegions": 65000,
-    "editor.formatOnSave": true,
+    "[rust]": {
+        "editor.formatOnSave": true,
+    },
     "cSpell.words": [
         "ctxt",
         "graphviz",
