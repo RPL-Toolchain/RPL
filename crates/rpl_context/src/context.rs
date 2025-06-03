@@ -80,7 +80,7 @@ impl PatternCtxt<'_> {
         let pcx = &PatternCtxt {
             arena,
             rpl_patterns: Default::default(),
-            primitive_types: PrimitiveTypes::new(&arena),
+            primitive_types: PrimitiveTypes::new(arena),
         };
         f(PatCtxt { pcx })
     }

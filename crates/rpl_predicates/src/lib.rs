@@ -126,7 +126,7 @@ pub struct PredicateConjunction {
 }
 
 impl PredicateConjunction {
-    pub fn from_pairs_opt<'i>(preds: Option<&pairs::PredicateConjunction<'i>>) -> Self {
+    pub fn from_pairs_opt(preds: Option<&pairs::PredicateConjunction<'_>>) -> Self {
         if let Some(preds) = preds {
             let (first, following) = preds.get_matched();
             let clauses = std::iter::once(first)
@@ -161,7 +161,7 @@ struct PredicateClause {
 }
 
 impl PredicateClause {
-    fn from_pairs<'i>(pred: &pairs::PredicateClause<'i>) -> Self {
+    fn from_pairs(pred: &pairs::PredicateClause<'_>) -> Self {
         let terms = match pred.deref() {
             Choice2::_0(pred) => vec![PredicateTerm::from_pairs(pred)],
             Choice2::_1(preds) => {
@@ -197,7 +197,7 @@ struct PredicateTerm {
 }
 
 impl PredicateTerm {
-    fn from_pairs<'i>(pred: &pairs::PredicateTerm<'i>) -> Self {
+    fn from_pairs(pred: &pairs::PredicateTerm<'_>) -> Self {
         let (pred, is_neg) = match pred.deref() {
             Choice2::_0(pred) => (pred, false),
             Choice2::_1(pred) => (pred.get_matched().1, true),
