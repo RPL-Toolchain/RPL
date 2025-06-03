@@ -46,7 +46,7 @@ fn format_tracker<'i>(
         format_rule(rule, f)?;
     }
     for rule in iter {
-        write!(f, ",")?;
+        write!(f, ", ")?;
         format_rule(rule, f)?;
     }
     write!(f, "]")?;
