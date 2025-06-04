@@ -47,5 +47,13 @@ fn path() {
             let p2 = Path::from(&p2);
             assert_eq!(p1.replace_leading_ident(p2).to_string(), "std::vec::Vec::<u8>::new");
         }
+
+        {
+            let p1 = pairs::Path::try_parse("A<C>").unwrap();
+            let p2 = pairs::Path::try_parse("B<D>").unwrap();
+            let p1 = Path::from(&p1);
+            let p2 = Path::from(&p2);
+            assert_eq!(p1.replace_leading_ident(p2).to_string(), "B::<D, C>");
+        }
     });
 }
