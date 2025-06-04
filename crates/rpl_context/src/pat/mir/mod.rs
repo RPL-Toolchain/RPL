@@ -268,7 +268,7 @@ impl<'pcx> Place<'pcx, PlaceBase> {
                     }
                 },
                 Choice5::_4(downcast) => {
-                    let (_, ident) = downcast.get_matched();
+                    let (_, ident, _) = downcast.get_matched();
                     match ident {
                         Choice2::_0(ident) => PlaceElem::DowncastPat(Symbol::intern(ident.span.as_str())),
                         Choice2::_1(ident) => PlaceElem::Downcast(Symbol::intern(ident.span.as_str())),

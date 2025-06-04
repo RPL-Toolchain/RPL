@@ -1,0 +1,12 @@
+error: transmutes from `Vec<u16>` to `Vec<u32>` where `u16` and `u32` have different ABI, size or alignment
+  --> tests/ui/unsound_collection_transmute/lib.rs:4:14
+   |
+LL |     unsafe { transmute::<_, Vec<u32>>(vec![2_u16]) };
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^-----------^
+   |                                       |
+   |                                       casted from this
+   |
+   = note: `#[deny(rpl::unsound_collection_transmute)]` on by default
+
+error: aborting due to 1 previous error
+

@@ -4,7 +4,7 @@ patt {
     p_vec_vec[
         $T: type, // element type before the cast
         $U: type, // element type after the cast
-    ] = #[mir] pub fn _ (..) -> _ {
+    ] = pub fn _ (..) -> _ {
         type SrcVec = alloc::vec::Vec<$T>;
         type DstVec = alloc::vec::Vec<$U>;
         'src:
@@ -17,8 +17,8 @@ patt {
 }
 
 diag {
-    p_const_const = {
-        primary(cast) = "transmutes from one collection type to another with different element type ABI, size or alignment",
+    p_vec_vec = {
+        primary(cast) = "transmutes from `Vec<{$T}>` to `Vec<{$U}>` where `{$T}` and `{$U}` have different ABI, size or alignment",
         label(src)    = "casted from this",
         name          = "unsound_collection_transmute",
     }
