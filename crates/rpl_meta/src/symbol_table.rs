@@ -894,7 +894,6 @@ impl<'i> GetType<'i> for SymbolTable<'i> {
         let symbol = Symbol::intern(ty_meta_var.span.as_str());
         self.meta_vars
             .get_from_symbol(symbol)
-            .map(MetaVariable::from)
             .or_else(|| self.get_adt(symbol).map(MetaVariable::from))
             .unwrap()
         // unwrap should be safe here because of the meta pass.
