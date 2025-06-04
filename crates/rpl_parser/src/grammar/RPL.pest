@@ -497,7 +497,7 @@ MirPlaceSubslice = {
 }
 
 MirPlaceDowncast = {
-    kw_as ~ (MetaVariable | Identifier)
+    kw_as ~ (MetaVariable | Identifier) ~ !LeftParen
 }
 
 MirBasicPlace = {

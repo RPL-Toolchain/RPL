@@ -463,15 +463,12 @@ pattern CVE-2020-35860
 
 diag {
     p_deref = {
-        " 
-            The public struct $CBox contains a raw pointer ($ptr) to a type $T. 
-            Its `Deref` implementation dereferences the pointer without null checks.
-          
-            Specifically, the `Deref` implementation calls `CStr::from_ptr(self.$ptr)`,
-            whose safety requirements include that the pointer must be non-null.
-        ",
-        $CBox: "$CBox is defined here",
-        $ptr: "$ptr is defined here",
+        help = "The public struct $CBox contains a raw pointer ($ptr) to a type $T.",
+        help = "Its `Deref` implementation dereferences the pointer without null checks.",
+        help = "Specifically, the `Deref` implementation calls `CStr::from_ptr(self.$ptr)`",
+        help = "whose safety requirements include that the pointer must be non-null.",
+        label(CBox) = "$CBox is defined here",
+        label(ptr)  = "$ptr is defined here",
     }
 }
 "#
@@ -487,6 +484,7 @@ fn mir_cast_kind() {
 fn mir_operand() {
     full_test!(MirOperand, "move $p");
     full_test!(MirOperand, "copy $p");
+    full_test!(MirOperand, "move $p as DstVec");
 }
 
 #[test]
@@ -500,4 +498,9 @@ fn rvalue_cast() {
     full_test!(MirRvalueCast, "move $p as *const u8 (Transmute)");
     full_test!(MirRvalueCast, "move $p as DstVec (Transmute)");
     full_test!(MirRvalueCast, "move $p as $T (Transmute)");
+}
+
+#[test]
+fn mir_local_decl() {
+    full_test!(MirLocalDecl, "let $q: DstVec = move $p as DstVec (Transmute);");
 }
