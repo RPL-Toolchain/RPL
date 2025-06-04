@@ -81,9 +81,10 @@ impl<'i> SubMsg<'i> {
         for seg in s.iter_matched() {
             match seg {
                 Choice2::_0(arg) => {
-                    let (var_type, (idx, _)) = meta_vars
+                    let (var_type, idx, _) = meta_vars
                         .get_from_symbol(Symbol::intern(arg.MetaVariable().span.as_str()))
-                        .unwrap();
+                        .unwrap()
+                        .expect_non_adt();
                     match var_type {
                         MetaVariableType::Type => msgs.push(SubMsg::Ty(idx.into())),
                         MetaVariableType::Const => msgs.push(SubMsg::Const(idx.into())),

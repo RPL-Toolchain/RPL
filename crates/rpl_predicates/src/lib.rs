@@ -125,6 +125,8 @@ pub struct PredicateConjunction {
     clauses: Vec<PredicateClause>,
 }
 
+pub type Predicate<'pcx> = &'pcx PredicateConjunction;
+
 impl PredicateConjunction {
     pub fn from_pairs_opt(preds: Option<&pairs::PredicateConjunction<'_>>) -> Self {
         if let Some(preds) = preds {

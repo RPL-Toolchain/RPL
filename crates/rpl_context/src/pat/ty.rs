@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use rpl_meta::symbol_table::{GetType, TypeOrPath, TypeVariable, WithPath};
+use rpl_meta::symbol_table::{GetType, MetaVariable, TypeOrPath, WithPath};
 use rpl_meta::{collect_elems_separated_by_comma, utils};
 use rpl_parser::generics::{Choice2, Choice3, Choice4, Choice10, Choice12, Choice14};
 use rpl_parser::pairs;
@@ -113,9 +113,8 @@ impl<'pcx> Ty<'pcx> {
                 pcx.mk_tuple_ty(&tys)
             },
             Choice14::_8(ty_meta_var) => {
-                // FIXME: judge whether it is a type variable or a adt pattern;
                 match fn_sym_tab.get_type_var(ty_meta_var) {
-                    TypeVariable::MetaVariable(ty, idx, pred) => {
+                    MetaVariable::MetaVariable(ty, idx, pred) => {
                         // FIXME: Information loss, the pred is not stored.
                         // Solution:
                         // Store the pred in the meta_pass.
@@ -129,7 +128,7 @@ impl<'pcx> Ty<'pcx> {
                         };
                         pcx.mk_var_ty(ty_meta_var)
                     },
-                    TypeVariable::AdtPat(_, name) => pcx.mk_adt_pat_ty(name),
+                    MetaVariable::AdtPat(_, name) => pcx.mk_adt_pat_ty(name),
                 }
             },
             Choice14::_9(_ty_self) => todo!(),

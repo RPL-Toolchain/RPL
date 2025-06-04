@@ -1,7 +1,7 @@
 use crate::context::MetaContext;
 use crate::symbol_table::{
-    EnumInner, FnInner, GetType as _, ImplInner, NonLocalMetaSymTab, SymbolTable, Variant, WithMetaTable, WithPath,
-    ident_is_primitive,
+    AdtPatType, EnumInner, FnInner, GetType as _, ImplInner, NonLocalMetaSymTab, SymbolTable, Variant, WithMetaTable,
+    WithPath, ident_is_primitive,
 };
 use crate::utils::{Ident, Path, Record};
 use crate::{RPLMetaError, collect_elems_separated_by_comma};
@@ -169,7 +169,14 @@ impl<'i> CheckCtxt<'i> {
 
     fn check_struct(&mut self, mctx: &MetaContext<'i>, rust_struct: &'i pairs::Struct<'i>) {
         let struct_name = rust_struct.get_matched().2;
-        let struct_def = self.symbol_table.add_struct(mctx, struct_name.into(), &mut self.errors);
+        let struct_name = struct_name.into();
+        Arc::get_mut(&mut self.symbol_table.meta_vars).unwrap().add_adt_pat(
+            mctx,
+            struct_name,
+            AdtPatType::Struct,
+            &mut self.errors,
+        );
+        let struct_def = self.symbol_table.add_struct(mctx, struct_name, &mut self.errors);
         if let Some(struct_def) = struct_def {
             CheckVariantCtxt {
                 _meta_vars: struct_def.meta_vars.clone(),
@@ -182,7 +189,14 @@ impl<'i> CheckCtxt<'i> {
 
     fn check_enum(&mut self, mctx: &MetaContext<'i>, rust_enum: &'i pairs::Enum<'i>) {
         let enum_name = rust_enum.get_matched().1;
-        let enum_def = self.symbol_table.add_enum(mctx, enum_name.into(), &mut self.errors);
+        let enum_name = enum_name.into();
+        Arc::get_mut(&mut self.symbol_table.meta_vars).unwrap().add_adt_pat(
+            mctx,
+            enum_name,
+            AdtPatType::Enum,
+            &mut self.errors,
+        );
+        let enum_def = self.symbol_table.add_enum(mctx, enum_name, &mut self.errors);
         if let Some(enum_def) = enum_def {
             CheckEnumCtxt {
                 meta_vars: enum_def.meta_vars.clone(),
@@ -275,6 +289,8 @@ impl<'i> CheckFnCtxt<'i, '_> {
 }
 
 impl<'i> CheckFnCtxt<'i, '_> {
+    /// - Add collected imports
+    /// - Check function body
     fn check_mir(&mut self, mctx: &MetaContext<'i>, mir: &'i pairs::MirBody<'i>) {
         let (mir_decls, mir_stmts) = mir.get_matched();
         //FIXME: the key in the line below may be reused for cloning, as `Path::from` may be expensive
@@ -623,9 +639,9 @@ impl<'i> CheckFnCtxt<'i, '_> {
                 }
             },
             Choice14::_8(ty_meta_var) => {
-                let ident = ty_meta_var.MetaVariable().into();
+                let ident = Ident::from(ty_meta_var.MetaVariable());
                 // debug!(?ident, ?self.meta_vars, "checking meta variable");
-                let _ = self.meta_vars.get_non_local_meta_var(mctx, ident, self.errors);
+                let _: Option<_> = self.meta_vars.get_non_local_meta_var(mctx, ident, self.errors);
             },
             Choice14::_9(_ty_self) => {},
             Choice14::_10(_primitive_types) => {},

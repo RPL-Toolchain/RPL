@@ -75,6 +75,10 @@ pub struct CheckMirCtxt<'a, 'pcx, 'tcx> {
 
 impl<'a, 'pcx, 'tcx> CheckMirCtxt<'a, 'pcx, 'tcx> {
     #[expect(clippy::too_many_arguments)]
+    #[instrument(level = "debug", skip_all, fields(
+        def_id = ?body.source.def_id(),
+        pat_name = ?pat_name,
+    ))]
     pub fn new(
         tcx: TyCtxt<'tcx>,
         pcx: PatCtxt<'pcx>,

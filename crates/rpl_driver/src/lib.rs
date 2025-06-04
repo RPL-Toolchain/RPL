@@ -113,7 +113,7 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
                 for (&name, pat_item) in &pattern.patt_block {
                     match pat_item {
                         rpl_context::pat::PatternItem::RustItems(rpl_rust_items) => {
-                            for fn_pat in &rpl_rust_items.fns.unnamed_fns {
+                            for fn_pat in &rpl_rust_items.fns {
                                 for matched in CheckMirCtxt::new(
                                     self.tcx,
                                     self.pcx,

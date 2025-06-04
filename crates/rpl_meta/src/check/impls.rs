@@ -20,7 +20,7 @@ impl<'i> CheckImplCtxt<'i, '_> {
     pub(super) fn check_impl(&mut self, mctx: &MetaContext<'i>, rust_impl: &'i pairs::Impl<'i>) {
         let (_, _, _, _, fns, _) = rust_impl.get_matched();
         for rust_fn in fns.iter_matched() {
-            let (fn_name, mut fn_def) = FnInner::parse_from(mctx, rust_fn.FnSig().FnName(), None, self.imports);
+            let (fn_name, mut fn_def) = FnInner::parse_from(mctx, rust_fn.FnSig().FnName(), None);
             let meta_vars = self.meta_vars.clone();
             CheckFnCtxt {
                 meta_vars: meta_vars.clone(),

@@ -309,3 +309,18 @@ impl<'pcx> Params<'pcx> {
         Self { params, non_exhaustive }
     }
 }
+
+impl<'s, 'pcx> IntoIterator for &'s FnPatterns<'pcx> {
+    type Item = &'pcx FnPattern<'pcx>;
+
+    type IntoIter = std::iter::Copied<
+        std::iter::Chain<
+            std::collections::hash_map::Values<'s, Symbol, &'pcx FnPattern<'pcx>>,
+            std::slice::Iter<'s, &'pcx FnPattern<'pcx>>,
+        >,
+    >;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.named_fns.values().chain(self.unnamed_fns.iter()).copied()
+    }
+}
