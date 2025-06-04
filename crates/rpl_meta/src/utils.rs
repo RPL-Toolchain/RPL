@@ -135,6 +135,7 @@ impl<'i> Path<'i> {
             None
         }
     }
+    /// Replaces the leading identifier with a new one.
     #[instrument(level = "debug", ret)]
     pub fn replace_leading_ident(self, mut prefix: Self) -> Self {
         assert!(self.leading.is_none());
@@ -144,8 +145,9 @@ impl<'i> Path<'i> {
         // type A = B<C>;
         // let _ : A<D> = _;
         if self.segments[0].1.is_some() {
-            assert!(prefix.segments.last().unwrap().1.is_none());
-            prefix.segments.last_mut().unwrap().1 = self.segments[0].1;
+            let prefix_last = prefix.segments.last_mut().unwrap();
+            assert!(prefix_last.1.is_none());
+            prefix_last.1 = self.segments[0].1;
         }
         prefix.segments.extend(self.segments.into_iter().skip(1));
         prefix._span = self._span;
@@ -168,6 +170,12 @@ impl fmt::Debug for Path<'_> {
             }
         }
         Ok(())
+    }
+}
+
+impl fmt::Display for Path<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self, f)
     }
 }
 
