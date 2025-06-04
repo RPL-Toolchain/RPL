@@ -671,17 +671,12 @@ impl<'i> CheckFnCtxt<'i, '_> {
             }
         } else {
             for segment in path.segments {
-                if let Some(path_arguments) = segment.1 {
-                    self.check_generic_args(mctx, path_arguments);
-                }
+                self.check_generic_args(mctx, &segment.1);
             }
         }
     }
 
-    fn check_generic_args(&mut self, mctx: &MetaContext<'i>, path_arguments: &'i pairs::PathArguments<'i>) {
-        let (_, _, args, _) = path_arguments.get_matched();
-
-        let args = collect_elems_separated_by_comma!(args).collect::<Vec<_>>();
+    fn check_generic_args(&mut self, mctx: &MetaContext<'i>, args: &[&'i pairs::GenericArgument<'i>]) {
         for arg in args {
             self.check_generic_arg(mctx, arg);
         }

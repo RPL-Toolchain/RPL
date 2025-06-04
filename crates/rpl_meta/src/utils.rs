@@ -1,3 +1,4 @@
+use crate::collect_elems_separated_by_comma;
 use derive_more::Debug;
 use parser::generics::Choice2;
 use parser::pairs;
@@ -90,17 +91,25 @@ impl std::fmt::Display for Ident<'_> {
 
 pub struct Path<'i> {
     pub leading: Option<&'i pairs::PathLeading<'i>>,
-    pub segments: Vec<(Ident<'i>, Option<&'i pairs::PathArguments<'i>>)>,
+    pub segments: Vec<(Ident<'i>, Vec<&'i pairs::GenericArgument<'i>>)>,
     pub _span: Span<'i>,
 }
 
 impl<'i> From<&'i pairs::Path<'i>> for Path<'i> {
     fn from(path: &'i pairs::Path<'i>) -> Self {
+        fn collect_args<'i>(args: Option<&'i pairs::PathArguments<'i>>) -> Vec<&'i pairs::GenericArgument<'i>> {
+            args.map(|args| {
+                let args = args.get_matched().2;
+                collect_elems_separated_by_comma!(args).collect()
+            })
+            .unwrap_or_default()
+        }
         let (leading, seg, segs) = path.get_matched();
-        let mut segments = vec![(Ident::from(seg), seg.PathArguments())];
+        let mut segments = vec![(Ident::from(seg), collect_args(seg.PathArguments()))];
         segs.iter_matched().for_each(|seg| {
             let (_, seg) = seg.get_matched();
-            segments.push((Ident::from(seg), seg.PathArguments()));
+            let args = collect_args(seg.PathArguments());
+            segments.push((Ident::from(seg), args));
         });
         let span = path.span;
         Self {
@@ -137,18 +146,16 @@ impl<'i> Path<'i> {
     }
     /// Replaces the leading identifier with a new one.
     #[instrument(level = "debug", ret)]
-    pub fn replace_leading_ident(self, mut prefix: Self) -> Self {
+    pub fn replace_leading_ident(mut self, mut prefix: Self) -> Self {
         assert!(self.leading.is_none());
         prefix.segments.reserve(self.segments.len().saturating_sub(1));
         assert!(!prefix.segments.is_empty());
-        // FIXME: bound check
-        // type A = B<C>;
-        // let _ : A<D> = _;
-        if self.segments[0].1.is_some() {
-            let prefix_last = prefix.segments.last_mut().unwrap();
-            assert!(prefix_last.1.is_none());
-            prefix_last.1 = self.segments[0].1;
-        }
+        prefix
+            .segments
+            .last_mut()
+            .unwrap()
+            .1
+            .extend(std::mem::take(&mut self.segments[0].1));
         prefix.segments.extend(self.segments.into_iter().skip(1));
         prefix._span = self._span;
         prefix
@@ -165,8 +172,15 @@ impl fmt::Debug for Path<'_> {
                 write!(f, "::")?;
             }
             write!(f, "{}", segment.0)?;
-            if let Some(args) = segment.1 {
-                write!(f, "{}", args.span.as_str().trim())?;
+            if !segment.1.is_empty() {
+                write!(f, "::<")?;
+                for (j, arg) in segment.1.iter().enumerate() {
+                    if j > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}", arg.span.as_str().trim())?;
+                }
+                write!(f, ">")?;
             }
         }
         Ok(())

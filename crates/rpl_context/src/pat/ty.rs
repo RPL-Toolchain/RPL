@@ -423,26 +423,21 @@ impl<'pcx> GenericArgsRef<'pcx> {
         let path: &rpl_meta::utils::Path<'_> = args.inner;
         let mut items: Vec<GenericArgKind<'_>> = Vec::new();
         path.segments.iter().for_each(|seg| {
-            let args = seg.1;
-            if let Some(args) = args {
-                Self::from_angle_bracketed_generic_arguments(WithPath::new(p, args.deref()), pcx, fn_sym_tab)
-                    .iter()
-                    .for_each(|arg| {
-                        items.push(*arg);
-                    });
-            }
+            Self::from_generic_arguments(p, seg.1.iter().copied(), pcx, fn_sym_tab)
+                .iter()
+                .for_each(|arg| {
+                    items.push(*arg);
+                });
         });
         GenericArgsRef(pcx.mk_slice(&items))
     }
 
-    pub fn from_angle_bracketed_generic_arguments(
-        args: WithPath<'pcx, &'pcx pairs::AngleBracketedGenericArguments<'pcx>>,
+    pub fn from_generic_arguments(
+        p: &'pcx std::path::Path,
+        args: impl Iterator<Item = &'pcx pairs::GenericArgument<'pcx>>,
         pcx: PatCtxt<'pcx>,
         fn_sym_tab: &'pcx impl GetType<'pcx>,
     ) -> Self {
-        let p = args.path;
-        let (_, _, args, _) = args.get_matched();
-        let args = collect_elems_separated_by_comma!(args).collect::<Vec<_>>();
         let args = args
             .into_iter()
             .map(|arg| GenericArgKind::from(WithPath::new(p, arg), pcx, fn_sym_tab))
@@ -532,7 +527,12 @@ impl<'pcx> PathWithArgs<'pcx> {
         let lang_item =
             LangItem::from_name(rustc_span::Symbol::intern(lang_item.span.as_str())).expect("Unknown lang item");
         let args = if let Some(args) = args {
-            GenericArgsRef::from_angle_bracketed_generic_arguments(WithPath::new(p, args), pcx, fn_sym_tab)
+            GenericArgsRef::from_generic_arguments(
+                p,
+                collect_elems_separated_by_comma!(args.GenericArgumentsSepretatedByComma()),
+                pcx,
+                fn_sym_tab,
+            )
         } else {
             GenericArgsRef(&[])
         };
