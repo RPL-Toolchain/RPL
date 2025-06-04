@@ -420,7 +420,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
 
     fn check_mir_type_decl(&mut self, mctx: &MetaContext<'i>, type_decl: &'i pairs::MirTypeDecl<'i>) {
         let (_, ident, _, ty, _) = type_decl.get_matched();
-        self.fn_def.add_type(mctx, ident.into(), ty.into(), self.errors);
+        self.fn_def.add_type_impl(mctx, ident.into(), ty.into(), self.errors);
     }
 
     fn check_mir_local_decl(&mut self, mctx: &MetaContext<'i>, local_decl: &'i pairs::MirLocalDecl<'i>) {

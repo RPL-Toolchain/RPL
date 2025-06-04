@@ -510,7 +510,7 @@ impl<'i> FnInner<'i> {
         }
     }
     #[instrument(level = "trace", skip_all, fields(types = ?self.types.keys(), ident = ?ident.name, ty = ?ty.span().as_str()))]
-    fn add_type_impl(
+    pub(crate) fn add_type_impl(
         &mut self,
         mctx: &MetaContext<'i>,
         ident: Ident<'i>,
@@ -546,7 +546,7 @@ impl<'i> FnInner<'i> {
         let ty_or_path = path.into();
         let path: Path<'i> = path.into();
         let ident = path.ident();
-        self.add_type(mctx, ident, ty_or_path, errors);
+        self.add_type_impl(mctx, ident, ty_or_path, errors);
     }
 
     pub fn get_sorted_locals(&self) -> WithPath<'i, Vec<(Symbol, &'i pairs::Type<'i>)>> {
