@@ -28,7 +28,7 @@ pub fn is_all_safe_trait<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx
 #[instrument(level = "debug", skip(tcx), ret)]
 #[allow(unused_variables)]
 pub fn is_not_unpin<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, ty: Ty<'tcx>) -> bool {
-    ty.is_dyn_star()
+    !ty.is_unpin(tcx, typing_env)
 }
 
 /// Check if ty is sync.
