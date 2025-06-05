@@ -12,7 +12,7 @@ patt {
         'cast:
         let $q: DstVec = move $p as DstVec (Transmute);
     // } where {
-    //     !same_abi($T, $U) || !same_size($T, $U) || !same_align($T, $U)
+    //     !same_abi_size_align($T, $U)
     }
 }
 
