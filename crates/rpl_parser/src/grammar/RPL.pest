@@ -258,6 +258,7 @@ Word          = @{ WordLeading ~ (WordFollowing)* }
 
 // RPL identifier and meta variables
 Identifier   = @{ !(Keywords) ~ Word }
+LabelName    = @{ Word }
 MetaVariable = @{ Dollar ~ Word }
 
 MetaVariableType = {
@@ -724,7 +725,7 @@ MirDrop = {
 }
 
 Label = {
-    Quote ~ Identifier
+    Quote ~ LabelName
 }
 
 LabelWithColon = {
@@ -891,7 +892,7 @@ diagMessage = ${
 
 // diag block Item
 diagBlockItem = {
-    Identifier ~ Assign ~ LeftBrace ~ (Identifier ~ (LeftParen ~ Identifier ~ RightParen)? ~ Assign ~ diagMessage ~ Comma)* ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace
+    Identifier ~ Assign ~ LeftBrace ~ (Identifier ~ (LeftParen ~ LabelName ~ RightParen)? ~ Assign ~ diagMessage ~ Comma)* ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace
 }
 
 // RPL Blocks
