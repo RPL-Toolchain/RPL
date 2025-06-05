@@ -145,7 +145,6 @@ impl<'i> Path<'i> {
         }
     }
     /// Replaces the leading identifier with a new one.
-    #[instrument(level = "debug", ret)]
     pub fn replace_leading_ident(mut self, mut prefix: Self) -> Self {
         assert!(self.leading.is_none());
         prefix.segments.reserve(self.segments.len().saturating_sub(1));

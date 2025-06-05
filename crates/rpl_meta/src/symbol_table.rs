@@ -228,11 +228,16 @@ macro_rules! map_inner {
     };
 }
 
+pub type Imports<'i> = FxHashMap<Symbol, &'i pairs::Path<'i>>;
+
 #[derive(Default)]
 pub struct SymbolTable<'i> {
     // meta variables in p[$T: ty]
     pub meta_vars: Arc<NonLocalMetaSymTab>,
-    imports: FxHashMap<Symbol, &'i pairs::Path<'i>>,
+    /// Should be inserted into [`FnInner::types`].
+    ///
+    /// See [`SymbolTable::imports`].
+    pub(crate) imports: Imports<'i>,
     structs: FxHashMap<Symbol, Struct<'i>>,
     enums: FxHashMap<Symbol, Enum<'i>>,
     fns: FxHashMap<Symbol, Fn<'i>>,
@@ -285,8 +290,9 @@ impl<'i> SymbolTable<'i> {
         ident: &'i pairs::FnName<'i>,
         self_ty: Option<&'i pairs::Type<'i>>,
         errors: &mut Vec<RPLMetaError<'i>>,
-    ) -> Option<&mut Fn<'i>> {
+    ) -> Option<(&mut Fn<'i>, &Imports<'i>)> {
         let (fn_name, fn_def) = FnInner::parse_from(mctx, ident, self_ty);
+        let imports = &self.imports;
         if let Some(fn_name) = fn_name {
             self.fns
                 .try_insert(fn_name.name, (fn_def, self.meta_vars.clone()).into())
@@ -303,6 +309,8 @@ impl<'i> SymbolTable<'i> {
             self.unnamed_fns.push((fn_def, self.meta_vars.clone()).into());
             Some(self.unnamed_fns.last_mut().unwrap())
         }
+        //FIXME: this is a hack to borrow the imports from the symbol table
+        .map(|fn_inner| (fn_inner, imports))
     }
 
     /// See [`SymbolTable::get_impl`].
@@ -311,7 +319,7 @@ impl<'i> SymbolTable<'i> {
         mctx: &MetaContext<'i>,
         impl_pat: &'i pairs::Impl<'i>,
         errors: &mut Vec<RPLMetaError<'i>>,
-    ) -> Option<&mut Impl<'i>> {
+    ) -> Option<(&mut Impl<'i>, &Imports<'i>)> {
         self.impls
             .try_insert(
                 (impl_pat.Type(), impl_pat.ImplKind()),
@@ -324,6 +332,8 @@ impl<'i> SymbolTable<'i> {
                 errors.push(err);
             })
             .ok()
+            //FIXME: this is a hack to borrow the imports from the symbol table
+            .map(|impl_inner| (impl_inner, &self.imports))
     }
 
     pub fn contains_adt(&self, ident: &Ident<'_>) -> bool {
@@ -350,12 +360,13 @@ impl<'i> SymbolTable<'i> {
     ) -> FxHashMap<Symbol, Self> {
         let mut symbol_tables = FxHashMap::default();
         for pat_item in pat_items {
+            //FIXME: maybe check whether the key exists before collecting the symbol table?
             let CheckCtxt {
                 name,
-                imports: _,
                 symbol_table: symbols,
                 errors: error_vec,
             } = Self::collect_symbol_table(mctx, pat_imports, pat_item);
+            debug!(?name, imports = ?symbols.imports.keys(), meta = ?symbols.meta_vars);
             errors.extend(error_vec);
             _ = symbol_tables.try_insert(name, symbols).map_err(|entry| {
                 let name = entry.entry.key();

@@ -148,7 +148,7 @@ impl<'pcx> Ty<'pcx> {
     ///
     /// Also checks [`PathWithArgs::from_type_path`] for resolving type paths.
     /// Maybe reuse `PathWithArgs::from_type_path`?
-    #[instrument(level = "debug", skip_all, ret)]
+    #[instrument(level = "trace", skip_all, ret)]
     fn from_type_path(
         ty_path: WithPath<'pcx, &'pcx pairs::TypePath<'pcx>>,
         pcx: PatCtxt<'pcx>,
@@ -472,7 +472,7 @@ impl<'pcx> PathWithArgs<'pcx> {
     /// # Note
     ///
     /// Also checks [`Ty::from_type_path`] for resolving type paths.
-    #[instrument(level = "debug", skip_all, ret)]
+    #[instrument(level = "trace", skip_all, ret)]
     pub fn from_path(
         path: WithPath<'pcx, &'pcx pairs::Path<'pcx>>,
         pcx: PatCtxt<'pcx>,
@@ -503,7 +503,7 @@ impl<'pcx> PathWithArgs<'pcx> {
     /// # Note
     ///
     /// Also checks [`Ty::from_type_path`] for resolving type paths.
-    #[instrument(level = "debug", skip_all, ret)]
+    #[instrument(level = "trace", skip_all, ret)]
     pub fn from_type_path(
         path: WithPath<'pcx, &'pcx pairs::TypePath<'pcx>>,
         pcx: PatCtxt<'pcx>,

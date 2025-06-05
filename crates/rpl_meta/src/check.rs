@@ -16,13 +16,10 @@ use std::sync::Arc;
 
 mod impls;
 
+/// Used for checking any errors in RPL patterns.
 pub struct CheckCtxt<'i> {
     pub(crate) name: Symbol,
     pub(crate) symbol_table: SymbolTable<'i>,
-    /// Should be inserted into [`FnInner::types`].
-    ///
-    /// See [`SymbolTable::imports`] and [`CheckFnCtxt::imports`].
-    pub(crate) imports: FxHashMap<Symbol, &'i pairs::Path<'i>>,
     pub(crate) errors: Vec<RPLMetaError<'i>>,
 }
 
@@ -32,14 +29,13 @@ impl<'i> CheckCtxt<'i> {
             name,
             symbol_table: SymbolTable::default(),
             errors: Vec::new(),
-            imports: Default::default(),
         }
     }
 
     pub fn check_import(&mut self, mctx: &MetaContext<'i>, import: &'i pairs::UsePath<'i>) {
         let path = Path::from(import.Path());
         let ident = path.ident();
-        if self.imports.try_insert(ident.name, import.Path()).is_err() {
+        if self.symbol_table.imports.try_insert(ident.name, import.Path()).is_err() {
             self.errors.push(RPLMetaError::SymbolAlreadyDeclared {
                 span: SpanWrapper::new(import.span, mctx.get_active_path()),
                 ident: ident.name,
@@ -155,12 +151,12 @@ impl<'i> CheckCtxt<'i> {
     fn check_fn(&mut self, mctx: &MetaContext<'i>, rust_fn: &'i pairs::Fn<'i>) {
         let fn_name = rust_fn.FnSig().FnName();
         let fn_def = self.symbol_table.add_fn(mctx, fn_name, None, &mut self.errors);
-        if let Some(fn_def) = fn_def {
+        if let Some((fn_def, imports)) = fn_def {
             CheckFnCtxt {
                 meta_vars: fn_def.meta_vars.clone(),
                 impl_def: None,
                 fn_def: &mut fn_def.inner,
-                imports: &self.imports,
+                imports,
                 errors: &mut self.errors,
             }
             .check_fn(mctx, rust_fn);
@@ -210,11 +206,11 @@ impl<'i> CheckCtxt<'i> {
     fn check_impl(&mut self, mctx: &MetaContext<'i>, rust_impl: &'i pairs::Impl<'i>) {
         let meta_vars = self.symbol_table.meta_vars.clone();
         let impl_def = self.symbol_table.add_impl(mctx, rust_impl, &mut self.errors);
-        if let Some(impl_def) = impl_def {
+        if let Some((impl_def, imports)) = impl_def {
             CheckImplCtxt {
                 meta_vars,
                 impl_def: &mut impl_def.inner,
-                imports: &self.imports,
+                imports,
                 errors: &mut self.errors,
             }
             .check_impl(mctx, rust_impl);

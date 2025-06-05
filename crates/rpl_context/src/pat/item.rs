@@ -22,20 +22,20 @@ pub type Enum<'pcx> = WithMetaTable<EnumInner<'pcx>>;
 
 #[derive(Debug)]
 pub struct Adt<'pcx> {
-    pub meta: NonLocalMetaVars<'pcx>,
+    pub meta: Arc<NonLocalMetaVars<'pcx>>,
     pub kind: AdtKind<'pcx>,
 }
 
 impl<'pcx> Adt<'pcx> {
-    pub(crate) fn new_struct(inner: StructInner<'pcx>) -> Self {
+    pub(crate) fn new_struct(inner: StructInner<'pcx>, meta: Arc<NonLocalMetaVars<'pcx>>) -> Self {
         Self {
-            meta: Default::default(),
+            meta,
             kind: AdtKind::Struct(inner),
         }
     }
-    pub(crate) fn new_enum(inner: EnumInner<'pcx>) -> Self {
+    pub(crate) fn new_enum(inner: EnumInner<'pcx>, meta: Arc<NonLocalMetaVars<'pcx>>) -> Self {
         Self {
-            meta: Default::default(),
+            meta,
             kind: AdtKind::Enum(inner),
         }
     }
@@ -119,12 +119,9 @@ pub struct Field<'pcx> {
 
 pub struct Impl<'pcx> {
     pub meta: Arc<NonLocalMetaVars<'pcx>>,
-    #[expect(dead_code)]
     pub(crate) ty: Ty<'pcx>,
-    #[expect(dead_code)]
     pub(crate) trait_id: Option<Path<'pcx>>,
-    #[expect(dead_code)]
-    pub(crate) fns: FxHashMap<Symbol, FnPattern<'pcx>>,
+    pub fns: FxHashMap<Symbol, FnPattern<'pcx>>,
 }
 
 #[derive(Default)]

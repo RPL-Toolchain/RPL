@@ -71,12 +71,15 @@ impl<'pcx> RustItems<'pcx> {
                 let fn_symbol_table = symbol_table.get_fn(fn_name).unwrap();
                 self.add_fn(WithPath::new(item.path, rust_fn), meta, fn_symbol_table);
             },
-            Choice4::_1(rust_struct) => self.add_struct(pat_name, with_path(item.path, rust_struct), symbol_table),
-            Choice4::_2(rust_enum) => self.add_enum(pat_name, with_path(item.path, rust_enum), symbol_table),
+            Choice4::_1(rust_struct) => {
+                self.add_struct(pat_name, with_path(item.path, rust_struct), meta, symbol_table)
+            },
+            Choice4::_2(rust_enum) => self.add_enum(pat_name, with_path(item.path, rust_enum), meta, symbol_table),
             Choice4::_3(rust_impl) => self.add_impl(pat_name, with_path(item.path, rust_impl), meta, symbol_table),
         }
     }
 
+    #[instrument(level = "debug", skip(self, rust_fn, meta, fn_symbol_table))]
     fn add_fn(
         &mut self,
         rust_fn: WithPath<'pcx, &'pcx pairs::Fn<'pcx>>,
@@ -98,13 +101,16 @@ impl<'pcx> RustItems<'pcx> {
         }
     }
 
+    #[instrument(level = "debug", skip(self, rust_struct, symbol_table))]
     fn add_struct(
         &mut self,
         pat_name: Option<Symbol>,
         rust_struct: WithPath<'pcx, &'pcx pairs::Struct<'pcx>>,
+        meta: Arc<NonLocalMetaVars<'pcx>>,
         symbol_table: &'pcx rpl_meta::symbol_table::SymbolTable<'pcx>,
     ) {
         let mut struct_inner = StructInner::default();
+        let name = rust_struct.MetaVariable();
         if let Some(fields) = rust_struct.get_matched().4 {
             let fields = collect_elems_separated_by_comma!(fields);
             for field in fields {
@@ -116,20 +122,21 @@ impl<'pcx> RustItems<'pcx> {
             }
         }
 
-        let struct_pat = Adt::new_struct(struct_inner);
+        let struct_pat = Adt::new_struct(struct_inner, meta);
         // let struct_pat = self.pcx.alloc_struct(struct_pat);
-        if let Some(pat_name) = pat_name {
-            self.adts.insert(pat_name, struct_pat);
-        }
+        self.adts.insert(Symbol::intern(name.span.as_str()), struct_pat);
     }
 
+    #[instrument(level = "debug", skip(self, rust_enum, symbol_table))]
     fn add_enum(
         &mut self,
         pat_name: Option<Symbol>,
         rust_enum: WithPath<'pcx, &'pcx pairs::Enum<'pcx>>,
+        meta: Arc<NonLocalMetaVars<'pcx>>,
         symbol_table: &'pcx rpl_meta::symbol_table::SymbolTable<'pcx>,
     ) {
         let mut enum_inner = EnumInner::default();
+        let name = rust_enum.MetaVariable();
 
         if let Some(variants) = rust_enum.EnumVariantsSeparatedByComma() {
             let variants = collect_elems_separated_by_comma!(variants);
@@ -164,13 +171,12 @@ impl<'pcx> RustItems<'pcx> {
             }
         }
 
-        let struct_pat = Adt::new_enum(enum_inner);
+        let struct_pat = Adt::new_enum(enum_inner, meta);
         // let struct_pat = self.pcx.alloc_struct(struct_pat);
-        if let Some(pat_name) = pat_name {
-            self.adts.insert(pat_name, struct_pat);
-        }
+        self.adts.insert(Symbol::intern(name.span.as_str()), struct_pat);
     }
 
+    #[instrument(level = "debug", skip(self, rust_impl, meta, symbol_table))]
     fn add_impl(
         &mut self,
         pat_name: Option<Symbol>,
@@ -200,11 +206,13 @@ impl<'pcx> RustItems<'pcx> {
             trait_id,
             fns,
         };
+        debug!(ty = ?impl_pat.ty, trait_id = ?impl_pat.trait_id, fns = ?impl_pat.fns.keys());
         if let Some(pat_name) = pat_name {
             self.impls.insert(pat_name, impl_pat);
         }
     }
 
+    #[instrument(level = "trace", skip(self), fields(adts = ?self.adts.keys()), ret)]
     pub fn get_adt(&self, adt: Symbol) -> Option<&Adt<'pcx>> {
         self.adts.get(&adt)
     }
@@ -234,9 +242,12 @@ impl<'pcx> Pattern<'pcx> {
         label_map: &LabelMap,
         body: &Body<'tcx>,
         matched: &impl Matched<'tcx>,
-    ) -> DynamicError {
-        // FIXME: raise an error if the diag related to the pattern is not found
-        self.diag_block.get(&pat_name).unwrap().build(label_map, body, matched)
+    ) -> Result<DynamicError, DynamicError> {
+        Ok(self
+            .diag_block
+            .get(&pat_name)
+            .ok_or_else(|| DynamicError::default_diagnostic(body.span))?
+            .build(label_map, body, matched))
     }
 }
 
@@ -259,6 +270,7 @@ impl<'pcx> Pattern<'pcx> {
         self.add_item_or_patt_op(name, with_path(p, item_or_patt_op), symbol_table, meta, block_type);
     }
 
+    #[instrument(level = "debug", skip(self, item_or_patt_op, symbol_table, meta))]
     fn add_item_or_patt_op(
         &mut self,
         pat_name: Symbol,
