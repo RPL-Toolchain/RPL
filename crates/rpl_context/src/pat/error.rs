@@ -69,14 +69,14 @@ impl DynamicError {
     }
     pub fn default_diagnostic(span: Span) -> Self {
         const LINT: Lint = Lint {
-            name: "rpl::default_diagnostic",
+            name: "rpl::missing_diagnostic",
             default_level: Level::Deny,
             ..Lint::default_fields_for_macro()
         };
         let primary = (String::from("A pattern instance found in this span"), span);
         let labels = Vec::new();
         let notes = vec![
-            (String::from("This is a default diagnostic message."), None),
+            (String::from("This is a fallback diagnostic message."), None),
             (
                 String::from(
                     "You are seeing this because there is no corresponding diagnostic item in the RPL pattern file.",
