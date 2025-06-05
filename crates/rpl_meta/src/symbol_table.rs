@@ -485,8 +485,8 @@ pub struct FnInner<'i> {
     /// Type aliases and paths imported into the function scope.
     types: FxHashMap<Symbol, TypeOrPath<'i>>,
     // FIXME: remove it when `self` parameter is implemented
-    self_value: Option<(Option<Symbol>, &'i pairs::Type<'i>)>,
-    ret_value: Option<(Option<Symbol>, &'i pairs::Type<'i>)>,
+    self_value: Option<&'i pairs::Type<'i>>,
+    ret_value: Option<&'i pairs::Type<'i>>,
     self_param: Option<&'i pairs::SelfParam<'i>>,
     self_ty: Option<&'i pairs::Type<'i>>,
     params: FxHashMap<Symbol, &'i pairs::Type<'i>>,
@@ -654,7 +654,7 @@ impl<'i> FnInner<'i> {
                         span: SpanWrapper::new(local.span, mctx.get_active_path()),
                     });
                 } else {
-                    self.self_value = Some((label, ty));
+                    self.self_value = Some(ty);
                     self.add_local(mctx, label, self_value.into(), ty, LocalSpecial::Self_, errors);
                 }
             },
@@ -664,7 +664,7 @@ impl<'i> FnInner<'i> {
                         span: SpanWrapper::new(local.span, mctx.get_active_path()),
                     });
                 } else {
-                    self.ret_value = Some((label, ty));
+                    self.ret_value = Some(ty);
                     self.add_local(mctx, label, ret_value.into(), ty, LocalSpecial::Return, errors);
                 }
             },
@@ -701,7 +701,7 @@ impl<'i> FnInner<'i> {
     ) -> Option<&'i pairs::Type<'i>> {
         match local.deref() {
             Choice4::_0(_place_holder) => None,
-            Choice4::_2(_ret_value) => self.ret_value.map(|(_, ty)| ty).or_else(|| {
+            Choice4::_2(_ret_value) => self.ret_value.or_else(|| {
                 errors.push(RPLMetaError::RetNotDeclared {
                     span: SpanWrapper::new(local.span, mctx.get_active_path()),
                 });
@@ -715,7 +715,7 @@ impl<'i> FnInner<'i> {
                 });
                 None
             },
-            Choice4::_1(_) => self.self_value.map(|(_, ty)| ty).or(self.self_ty).or_else(|| {
+            Choice4::_1(_) => self.self_value.or(self.self_ty).or_else(|| {
                 errors.push(RPLMetaError::SelfTypeOutsideImpl {
                     span: SpanWrapper::new(local.span, mctx.get_active_path()),
                 });
