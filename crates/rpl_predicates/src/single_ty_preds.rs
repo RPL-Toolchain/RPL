@@ -59,6 +59,12 @@ pub fn is_ptr<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, ty: Ty<'
     ty.is_any_ptr()
 }
 
+/// Check if ty needs to be dropped.
+#[instrument(level = "debug", skip(tcx), ret)]
+pub fn needs_drop<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, ty: Ty<'tcx>) -> bool {
+    ty.needs_drop(tcx, typing_env)
+}
+
 /// Check if ty is a primitive type.
 #[allow(unused_variables)]
 pub fn is_primitive<'tcx>(_tcx: TyCtxt<'tcx>, _typing_env: ty::TypingEnv<'tcx>, ty: Ty<'tcx>) -> bool {

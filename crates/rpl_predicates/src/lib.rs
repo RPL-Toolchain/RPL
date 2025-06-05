@@ -50,6 +50,7 @@ pub const ALL_PREDICATES: &[&str] = &[
     "is_sync",
     "is_integral",
     "is_ptr",
+    "needs_drop",
     "is_primitive",
     // translate_preds
     "translate_from_hir_function",
@@ -73,6 +74,7 @@ impl From<&str> for PredicateKind {
             "is_sync" => Self::Ty(is_sync),
             "is_integral" => Self::Ty(is_integral),
             "is_ptr" => Self::Ty(is_ptr),
+            "needs_drop" => Self::Ty(needs_drop),
             "is_primitive" => Self::Ty(is_primitive),
             "translate_from_hir_function" => Self::Translate(translate_from_hir_function),
             "is_false" => Self::Trivial(is_false),
