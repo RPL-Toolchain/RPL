@@ -567,6 +567,7 @@ impl<'i> FnInner<'i> {
         self.add_type_impl(mctx, ident, ty_or_path, errors);
     }
 
+    #[expect(clippy::type_complexity)]
     pub fn get_sorted_locals(&self) -> WithPath<'i, Vec<(Option<Symbol>, Symbol, &'i pairs::Type<'i>, LocalSpecial)>> {
         let mut locals = self
             .locals

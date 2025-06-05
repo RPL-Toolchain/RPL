@@ -19,7 +19,6 @@ use std::convert::identity;
 
 use rpl_context::PatCtxt;
 use rpl_meta::context::MetaContext;
-use rpl_meta::symbol_table::Visibility;
 use rpl_mir::CheckMirCtxt;
 use rustc_hir as hir;
 use rustc_hir::def_id::LocalDefId;
@@ -135,9 +134,10 @@ impl<'tcx> CheckFnCtxt<'_, 'tcx> {
                                 for (&name, pat_item) in &pattern.patt_block {
                                     match pat_item {
                                         rpl_context::pat::PatternItem::RustItems(rpl_rust_items) => {
-                                            for (_, impl_pat) in &rpl_rust_items.impls {
+                                            for impl_pat in rpl_rust_items.impls.values() {
                                                 //FIXME: check impl_pat.ty and impl_pat.trait_id
-                                                for (_, fn_pat) in &impl_pat.fns {
+                                                for fn_pat in impl_pat.fns.values() {
+                                                    //FIXME: sometimes we need to check function name
                                                     // if *fn_name != impl_item.ident.name {
                                                     //     continue;
                                                     // }
