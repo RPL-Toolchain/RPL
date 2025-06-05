@@ -471,6 +471,13 @@ impl<'i> Variant<'i> {
 
 pub type Fn<'i> = WithMetaTable<FnInner<'i>>;
 
+#[derive(Clone, Copy)]
+pub enum LocalSpecial {
+    None,
+    Self_,
+    Return,
+}
+
 pub struct FnInner<'i> {
     #[expect(unused)]
     span: Span<'i>,
@@ -478,12 +485,12 @@ pub struct FnInner<'i> {
     /// Type aliases and paths imported into the function scope.
     types: FxHashMap<Symbol, TypeOrPath<'i>>,
     // FIXME: remove it when `self` parameter is implemented
-    self_value: Option<&'i pairs::Type<'i>>,
-    ret_value: Option<&'i pairs::Type<'i>>,
+    self_value: Option<(Option<Symbol>, &'i pairs::Type<'i>)>,
+    ret_value: Option<(Option<Symbol>, &'i pairs::Type<'i>)>,
     self_param: Option<&'i pairs::SelfParam<'i>>,
     self_ty: Option<&'i pairs::Type<'i>>,
     params: FxHashMap<Symbol, &'i pairs::Type<'i>>,
-    locals: FxHashMap<Symbol, (usize, &'i pairs::Type<'i>)>,
+    locals: FxHashMap<Symbol, (Option<Symbol>, usize, &'i pairs::Type<'i>, LocalSpecial)>,
     pub symbol_to_local_idx: FxHashMap<Symbol, usize>,
 }
 
@@ -560,16 +567,19 @@ impl<'i> FnInner<'i> {
         self.add_type_impl(mctx, ident, ty_or_path, errors);
     }
 
-    pub fn get_sorted_locals(&self) -> WithPath<'i, Vec<(Symbol, &'i pairs::Type<'i>)>> {
+    pub fn get_sorted_locals(&self) -> WithPath<'i, Vec<(Option<Symbol>, Symbol, &'i pairs::Type<'i>, LocalSpecial)>> {
         let mut locals = self
             .locals
             .iter()
-            .map(|(ident, (idx, ty))| (ident, (idx, ty)))
+            .map(|(ident, (label, idx, ty, s))| (ident, (label, idx, ty, s)))
             .collect::<Vec<_>>();
-        locals.sort_by_key(|(_, (idx, _))| *idx);
+        locals.sort_by_key(|(_, (_, idx, _, _))| *idx);
         WithPath::new(
             self.path,
-            locals.into_iter().map(|(ident, (_, ty))| (*ident, *ty)).collect(),
+            locals
+                .into_iter()
+                .map(|(ident, (label, _, ty, s))| (*label, *ident, *ty, *s))
+                .collect(),
         )
     }
 
@@ -610,13 +620,15 @@ impl<'i> FnInner<'i> {
     pub fn add_local(
         &mut self,
         mctx: &MetaContext<'i>,
+        label: Option<Symbol>,
         ident: Ident<'i>,
         ty: &'i pairs::Type<'i>,
+        special: LocalSpecial,
         errors: &mut Vec<RPLMetaError<'i>>,
     ) {
         let len = self.locals.len();
         if let std::collections::hash_map::Entry::Vacant(e) = self.locals.entry(ident.name) {
-            e.insert((len, ty));
+            e.insert((label, len, ty, special));
             self.symbol_to_local_idx.insert(ident.name, len);
         } else {
             let err = RPLMetaError::SymbolAlreadyDeclared {
@@ -629,6 +641,7 @@ impl<'i> FnInner<'i> {
     pub fn add_place_local(
         &mut self,
         mctx: &MetaContext<'i>,
+        label: Option<Symbol>,
         local: &'i pairs::MirPlaceLocal<'i>,
         ty: &'i pairs::Type<'i>,
         errors: &mut Vec<RPLMetaError<'i>>,
@@ -636,18 +649,32 @@ impl<'i> FnInner<'i> {
         match local.deref() {
             Choice4::_0(_place_holder) => {},
             Choice4::_1(self_value) => {
-                self.self_value = Some(ty);
-                //FIXME: does this reasonable to be an arbitrary idx?
-                self.add_local(mctx, self_value.into(), ty, errors);
+                if self.self_value.is_some() {
+                    errors.push(RPLMetaError::SelfAlreadyDeclared {
+                        span: SpanWrapper::new(local.span, mctx.get_active_path()),
+                    });
+                } else {
+                    self.self_value = Some((label, ty));
+                    self.add_local(mctx, label, self_value.into(), ty, LocalSpecial::Self_, errors);
+                }
             },
-            Choice4::_2(_ret_value) => self.ret_value = Some(ty),
-            Choice4::_3(ident) => self.add_local(mctx, ident.into(), ty, errors),
+            Choice4::_2(ret_value) => {
+                if self.self_value.is_some() {
+                    errors.push(RPLMetaError::RetAlreadyDeclared {
+                        span: SpanWrapper::new(local.span, mctx.get_active_path()),
+                    });
+                } else {
+                    self.ret_value = Some((label, ty));
+                    self.add_local(mctx, label, ret_value.into(), ty, LocalSpecial::Return, errors);
+                }
+            },
+            Choice4::_3(ident) => self.add_local(mctx, label, ident.into(), ty, LocalSpecial::None, errors),
         }
     }
     fn get_local_impl(&self, ident: Ident<'i>) -> Option<&'i pairs::Type<'i>> {
         self.locals
             .get(&ident.name)
-            .map(|(_idx, ty)| ty)
+            .map(|(_label, _idx, ty, _)| ty)
             .or_else(|| self.params.get(&ident.name))
             .copied()
     }
@@ -674,7 +701,7 @@ impl<'i> FnInner<'i> {
     ) -> Option<&'i pairs::Type<'i>> {
         match local.deref() {
             Choice4::_0(_place_holder) => None,
-            Choice4::_2(_ret_value) => self.ret_value.or_else(|| {
+            Choice4::_2(_ret_value) => self.ret_value.map(|(_, ty)| ty).or_else(|| {
                 errors.push(RPLMetaError::RetNotDeclared {
                     span: SpanWrapper::new(local.span, mctx.get_active_path()),
                 });
@@ -688,7 +715,7 @@ impl<'i> FnInner<'i> {
                 });
                 None
             },
-            Choice4::_1(_) => self.self_value.or(self.self_ty).or_else(|| {
+            Choice4::_1(_) => self.self_value.map(|(_, ty)| ty).or(self.self_ty).or_else(|| {
                 errors.push(RPLMetaError::SelfTypeOutsideImpl {
                     span: SpanWrapper::new(local.span, mctx.get_active_path()),
                 });

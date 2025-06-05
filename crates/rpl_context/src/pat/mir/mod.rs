@@ -3,7 +3,7 @@ use std::fmt::{self, Debug};
 use std::ops::Index;
 
 use either::Either;
-use rpl_meta::symbol_table::WithPath;
+use rpl_meta::symbol_table::{LocalSpecial, WithPath};
 use rpl_parser::generics::{Choice5, Choice6, Choice12};
 use rustc_abi::FieldIdx;
 use rustc_data_structures::fx::FxIndexMap;
@@ -1070,9 +1070,21 @@ impl<'pcx> FnPatternBodyBuilder<'pcx> {
 
     pub fn mk_locals(&mut self, fn_sym_tab: &'pcx FnSymbolTable<'pcx>, pcx: PatCtxt<'pcx>) {
         let WithPath { path, inner: locals } = fn_sym_tab.inner.get_sorted_locals();
-        for (_, ty) in locals {
+        for (label, _, ty, special) in locals {
             let ty = Ty::from(with_path(path, ty), pcx, fn_sym_tab);
-            self.mk_local(ty);
+            let local = self.mk_local(ty);
+            match special {
+                LocalSpecial::Return => {
+                    self.pattern.return_idx = Some(local);
+                },
+                LocalSpecial::Self_ => {
+                    self.pattern.self_idx = Some(local);
+                },
+                LocalSpecial::None => {},
+            }
+            if let Some(label) = label {
+                self.pattern.labels.insert(label, Spanned::Local(local));
+            }
         }
     }
 
@@ -1146,7 +1158,7 @@ impl<'pcx> FnPatternBodyBuilder<'pcx> {
         self.pattern.basic_blocks[block].statements.push(assign);
         let loc = Location { block, statement_index };
         if let Some(label) = label {
-            self.pattern.labels.insert(label, loc);
+            self.pattern.labels.insert(label, Spanned::Location(loc));
         }
         loc
     }

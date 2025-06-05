@@ -28,7 +28,14 @@ pub use non_local_meta_vars::*;
 pub use ty::*;
 
 pub type Label = Symbol;
-pub type LabelMap = FxHashMap<Label, mir::Location>;
+
+#[derive(Debug)]
+pub enum Spanned {
+    Location(mir::Location),
+    Local(mir::Local),
+}
+
+pub type LabelMap = FxHashMap<Label, Spanned>;
 
 #[derive(Debug, Clone, Copy)]
 pub enum PattOrUtil {
