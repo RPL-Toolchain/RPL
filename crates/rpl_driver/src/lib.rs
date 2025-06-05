@@ -19,6 +19,7 @@ use std::convert::identity;
 
 use rpl_context::PatCtxt;
 use rpl_meta::context::MetaContext;
+use rpl_meta::symbol_table::Visibility;
 use rpl_mir::CheckMirCtxt;
 use rustc_hir as hir;
 use rustc_hir::def_id::LocalDefId;
@@ -96,6 +97,8 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
         match item.kind {
             hir::ItemKind::Trait(hir::IsAuto::No, hir::Safety::Safe, ..) | hir::ItemKind::Fn { .. } => {},
             hir::ItemKind::Impl(impl_) => self.check_impl(impl_),
+            // hir::ItemKind::Struct(struct_, generics) => self.check_struct(item.owner_id.def_id, struct_, generics),
+            // hir::ItemKind::Enum(enum_, generics) => self.check_enum(item.owner_id.def_id, enum_, generics),
             _ => return,
         }
         intravisit::walk_item(self, item);
@@ -222,4 +225,40 @@ impl<'tcx> CheckFnCtxt<'_, 'tcx> {
             });
         }
     }
+    // #[instrument(level = "debug", skip(self))]
+    // fn check_struct(
+    //     &mut self,
+    //     def_id: LocalDefId,
+    //     variant: hir::VariantData<'tcx>,
+    //     generics: &'tcx hir::Generics<'tcx>,
+    // ) {
+    //     let adt_def = self.tcx.adt_def(def_id);
+    //     self.pcx.for_each_rpl_pattern(|_id, pattern| {
+    //         for (&name, pat_item) in &pattern.patt_block {
+    //             match pat_item {
+    //                 rpl_context::pat::PatternItem::RustItems(rpl_rust_items) => {
+    //                     for (_, adt_pat) in &rpl_rust_items.adts {
+    //                         for matched in
+    //                             MatchAdtCtxt::new(self.tcx, self.pcx, rpl_rust_items,
+    // adt_pat).match_adt(adt_def)                         {
+    //                             let error = pattern
+    //                                 .get_diag(name, &fn_pat.expect_mir_body().labels, body, &matched)
+    //                                 .unwrap_or_else(identity);
+    //                             self.tcx.emit_node_span_lint(
+    //                                 error.lint(),
+    //                                 self.tcx.local_def_id_to_hir_id(def_id),
+    //                                 error.primary_span(),
+    //                                 error,
+    //                             );
+    //                         }
+    //                     }
+    //                 },
+    //                 _ => unreachable!(),
+    //             }
+    //         }
+    //     });
+    // }
+    // #[instrument(level = "debug", skip(self))]
+    // fn check_enum(&mut self, def_id: LocalDefId, variants: hir::EnumDef<'tcx>, generics: &'tcx
+    // hir::Generics<'tcx>) {}
 }
