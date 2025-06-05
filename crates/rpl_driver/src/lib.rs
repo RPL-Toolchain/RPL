@@ -195,6 +195,12 @@ impl<'tcx> CheckFnCtxt<'_, 'tcx> {
                     match pat_item {
                         rpl_context::pat::PatternItem::RustItems(rpl_rust_items) => {
                             for fn_pat in &rpl_rust_items.fns {
+                                // // FIXME: a more general way to handle this
+                                // if matches!(fn_pat.visibility, Visibility::Public)
+                                //     && !self.tcx.visibility(def_id).is_public()
+                                // {
+                                //     continue;
+                                // }
                                 for matched in CheckMirCtxt::new(
                                     self.tcx,
                                     self.pcx,
