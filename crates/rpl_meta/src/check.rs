@@ -350,13 +350,9 @@ impl<'i> CheckFnCtxt<'i, '_> {
         match value.deref() {
             Choice3::_0(_bool) => {},
             Choice3::_1(int) => {
-                let int_str = int.span.as_str();
-                // find the last '_' in the string, and check if the suffix after the '_' is a primitive type
-                let last_underscore = int_str.rfind('_');
                 let mut missing_suffix = false;
-                if let Some(last_underscore) = last_underscore {
-                    let suffix = &int_str[last_underscore + 1..];
-                    if !crate::symbol_table::str_is_primitive(suffix) {
+                if let Some(suffix) = int.IntegerSuffix() {
+                    if !crate::symbol_table::str_is_primitive(suffix.span.as_str()) {
                         missing_suffix = true;
                     }
                 } else {
