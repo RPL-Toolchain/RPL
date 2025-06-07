@@ -31,6 +31,9 @@ pub enum Rule {
     r#kw_PtrToPtr,
     r#kw_IntToInt,
     r#kw_Transmute,
+    r#kw_PointerCoercion,
+    r#kw_Unsize,
+    r#kw_Implicit,
     r#kw_Add,
     r#kw_Sub,
     r#kw_Mul,
@@ -200,6 +203,8 @@ pub enum Rule {
     r#MirRvalueRef,
     r#MirRvalueRawPtr,
     r#MirRvalueLen,
+    r#PointerCoercion,
+    r#CoercionSource,
     r#MirCastKind,
     r#MirRvalueCast,
     r#MirBinOp,
@@ -259,6 +264,7 @@ pub enum Rule {
     r#RustItem,
     r#RustItems,
     r#PatternConfiguration,
+    r#PatternExpression,
     r#PatternOperation,
     r#RustItemsOrPatternOperation,
     r#RPLPatternItem,
@@ -455,614 +461,614 @@ mod constant_wrappers {
     impl ::pest_typed::StringWrapper for r#w_24 {
         const CONTENT: &'static ::core::primitive::str = "Transmute";
     }
-    #[doc = "A wrapper for `\"Add\"`."]
+    #[doc = "A wrapper for `\"PointerCoercion\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
     pub struct r#w_25;
     impl ::pest_typed::StringWrapper for r#w_25 {
+        const CONTENT: &'static ::core::primitive::str = "PointerCoercion";
+    }
+    #[doc = "A wrapper for `\"Unsize\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_26;
+    impl ::pest_typed::StringWrapper for r#w_26 {
+        const CONTENT: &'static ::core::primitive::str = "Unsize";
+    }
+    #[doc = "A wrapper for `\"Implicit\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_27;
+    impl ::pest_typed::StringWrapper for r#w_27 {
+        const CONTENT: &'static ::core::primitive::str = "Implicit";
+    }
+    #[doc = "A wrapper for `\"Add\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_28;
+    impl ::pest_typed::StringWrapper for r#w_28 {
         const CONTENT: &'static ::core::primitive::str = "Add";
     }
     #[doc = "A wrapper for `\"Sub\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_26;
-    impl ::pest_typed::StringWrapper for r#w_26 {
+    pub struct r#w_29;
+    impl ::pest_typed::StringWrapper for r#w_29 {
         const CONTENT: &'static ::core::primitive::str = "Sub";
     }
     #[doc = "A wrapper for `\"Mul\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_27;
-    impl ::pest_typed::StringWrapper for r#w_27 {
+    pub struct r#w_30;
+    impl ::pest_typed::StringWrapper for r#w_30 {
         const CONTENT: &'static ::core::primitive::str = "Mul";
     }
     #[doc = "A wrapper for `\"Div\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_28;
-    impl ::pest_typed::StringWrapper for r#w_28 {
+    pub struct r#w_31;
+    impl ::pest_typed::StringWrapper for r#w_31 {
         const CONTENT: &'static ::core::primitive::str = "Div";
     }
     #[doc = "A wrapper for `\"Rem\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_29;
-    impl ::pest_typed::StringWrapper for r#w_29 {
+    pub struct r#w_32;
+    impl ::pest_typed::StringWrapper for r#w_32 {
         const CONTENT: &'static ::core::primitive::str = "Rem";
     }
     #[doc = "A wrapper for `\"Lt\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_30;
-    impl ::pest_typed::StringWrapper for r#w_30 {
+    pub struct r#w_33;
+    impl ::pest_typed::StringWrapper for r#w_33 {
         const CONTENT: &'static ::core::primitive::str = "Lt";
     }
     #[doc = "A wrapper for `\"Le\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_31;
-    impl ::pest_typed::StringWrapper for r#w_31 {
+    pub struct r#w_34;
+    impl ::pest_typed::StringWrapper for r#w_34 {
         const CONTENT: &'static ::core::primitive::str = "Le";
     }
     #[doc = "A wrapper for `\"Gt\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_32;
-    impl ::pest_typed::StringWrapper for r#w_32 {
+    pub struct r#w_35;
+    impl ::pest_typed::StringWrapper for r#w_35 {
         const CONTENT: &'static ::core::primitive::str = "Gt";
     }
     #[doc = "A wrapper for `\"Ge\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_33;
-    impl ::pest_typed::StringWrapper for r#w_33 {
+    pub struct r#w_36;
+    impl ::pest_typed::StringWrapper for r#w_36 {
         const CONTENT: &'static ::core::primitive::str = "Ge";
     }
     #[doc = "A wrapper for `\"Eq\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_34;
-    impl ::pest_typed::StringWrapper for r#w_34 {
+    pub struct r#w_37;
+    impl ::pest_typed::StringWrapper for r#w_37 {
         const CONTENT: &'static ::core::primitive::str = "Eq";
     }
     #[doc = "A wrapper for `\"Ne\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_35;
-    impl ::pest_typed::StringWrapper for r#w_35 {
+    pub struct r#w_38;
+    impl ::pest_typed::StringWrapper for r#w_38 {
         const CONTENT: &'static ::core::primitive::str = "Ne";
     }
     #[doc = "A wrapper for `\"Offset\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_36;
-    impl ::pest_typed::StringWrapper for r#w_36 {
+    pub struct r#w_39;
+    impl ::pest_typed::StringWrapper for r#w_39 {
         const CONTENT: &'static ::core::primitive::str = "Offset";
     }
     #[doc = "A wrapper for `\"SizeOf\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_37;
-    impl ::pest_typed::StringWrapper for r#w_37 {
+    pub struct r#w_40;
+    impl ::pest_typed::StringWrapper for r#w_40 {
         const CONTENT: &'static ::core::primitive::str = "SizeOf";
     }
     #[doc = "A wrapper for `\"AlignOf\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_38;
-    impl ::pest_typed::StringWrapper for r#w_38 {
+    pub struct r#w_41;
+    impl ::pest_typed::StringWrapper for r#w_41 {
         const CONTENT: &'static ::core::primitive::str = "AlignOf";
     }
     #[doc = "A wrapper for `\"Neg\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_39;
-    impl ::pest_typed::StringWrapper for r#w_39 {
+    pub struct r#w_42;
+    impl ::pest_typed::StringWrapper for r#w_42 {
         const CONTENT: &'static ::core::primitive::str = "Neg";
     }
     #[doc = "A wrapper for `\"Not\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_40;
-    impl ::pest_typed::StringWrapper for r#w_40 {
+    pub struct r#w_43;
+    impl ::pest_typed::StringWrapper for r#w_43 {
         const CONTENT: &'static ::core::primitive::str = "Not";
     }
     #[doc = "A wrapper for `\"PtrMetadata\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_41;
-    impl ::pest_typed::StringWrapper for r#w_41 {
+    pub struct r#w_44;
+    impl ::pest_typed::StringWrapper for r#w_44 {
         const CONTENT: &'static ::core::primitive::str = "PtrMetadata";
     }
     #[doc = "A wrapper for `\"discriminant\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_42;
-    impl ::pest_typed::StringWrapper for r#w_42 {
+    pub struct r#w_45;
+    impl ::pest_typed::StringWrapper for r#w_45 {
         const CONTENT: &'static ::core::primitive::str = "discriminant";
     }
     #[doc = "A wrapper for `\"Ctor\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_43;
-    impl ::pest_typed::StringWrapper for r#w_43 {
+    pub struct r#w_46;
+    impl ::pest_typed::StringWrapper for r#w_46 {
         const CONTENT: &'static ::core::primitive::str = "Ctor";
     }
     #[doc = "A wrapper for `\"from\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_44;
-    impl ::pest_typed::StringWrapper for r#w_44 {
+    pub struct r#w_47;
+    impl ::pest_typed::StringWrapper for r#w_47 {
         const CONTENT: &'static ::core::primitive::str = "from";
     }
     #[doc = "A wrapper for `\"of\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_45;
-    impl ::pest_typed::StringWrapper for r#w_45 {
+    pub struct r#w_48;
+    impl ::pest_typed::StringWrapper for r#w_48 {
         const CONTENT: &'static ::core::primitive::str = "of";
     }
     #[doc = "A wrapper for `\"raw\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_46;
-    impl ::pest_typed::StringWrapper for r#w_46 {
+    pub struct r#w_49;
+    impl ::pest_typed::StringWrapper for r#w_49 {
         const CONTENT: &'static ::core::primitive::str = "raw";
     }
     #[doc = "A wrapper for `\"drop\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_47;
-    impl ::pest_typed::StringWrapper for r#w_47 {
+    pub struct r#w_50;
+    impl ::pest_typed::StringWrapper for r#w_50 {
         const CONTENT: &'static ::core::primitive::str = "drop";
     }
     #[doc = "A wrapper for `\"break\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_48;
-    impl ::pest_typed::StringWrapper for r#w_48 {
+    pub struct r#w_51;
+    impl ::pest_typed::StringWrapper for r#w_51 {
         const CONTENT: &'static ::core::primitive::str = "break";
     }
     #[doc = "A wrapper for `\"continue\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_49;
-    impl ::pest_typed::StringWrapper for r#w_49 {
+    pub struct r#w_52;
+    impl ::pest_typed::StringWrapper for r#w_52 {
         const CONTENT: &'static ::core::primitive::str = "continue";
     }
     #[doc = "A wrapper for `\"loop\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_50;
-    impl ::pest_typed::StringWrapper for r#w_50 {
+    pub struct r#w_53;
+    impl ::pest_typed::StringWrapper for r#w_53 {
         const CONTENT: &'static ::core::primitive::str = "loop";
     }
     #[doc = "A wrapper for `\"switchInt\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_51;
-    impl ::pest_typed::StringWrapper for r#w_51 {
+    pub struct r#w_54;
+    impl ::pest_typed::StringWrapper for r#w_54 {
         const CONTENT: &'static ::core::primitive::str = "switchInt";
     }
     #[doc = "A wrapper for `\"true\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_52;
-    impl ::pest_typed::StringWrapper for r#w_52 {
+    pub struct r#w_55;
+    impl ::pest_typed::StringWrapper for r#w_55 {
         const CONTENT: &'static ::core::primitive::str = "true";
     }
     #[doc = "A wrapper for `\"false\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_53;
-    impl ::pest_typed::StringWrapper for r#w_53 {
+    pub struct r#w_56;
+    impl ::pest_typed::StringWrapper for r#w_56 {
         const CONTENT: &'static ::core::primitive::str = "false";
     }
     #[doc = "A wrapper for `\"unsafe\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_54;
-    impl ::pest_typed::StringWrapper for r#w_54 {
+    pub struct r#w_57;
+    impl ::pest_typed::StringWrapper for r#w_57 {
         const CONTENT: &'static ::core::primitive::str = "unsafe";
     }
     #[doc = "A wrapper for `\"pub\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_55;
-    impl ::pest_typed::StringWrapper for r#w_55 {
+    pub struct r#w_58;
+    impl ::pest_typed::StringWrapper for r#w_58 {
         const CONTENT: &'static ::core::primitive::str = "pub";
     }
     #[doc = "A wrapper for `\"struct\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_56;
-    impl ::pest_typed::StringWrapper for r#w_56 {
+    pub struct r#w_59;
+    impl ::pest_typed::StringWrapper for r#w_59 {
         const CONTENT: &'static ::core::primitive::str = "struct";
     }
     #[doc = "A wrapper for `\"enum\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_57;
-    impl ::pest_typed::StringWrapper for r#w_57 {
+    pub struct r#w_60;
+    impl ::pest_typed::StringWrapper for r#w_60 {
         const CONTENT: &'static ::core::primitive::str = "enum";
     }
     #[doc = "A wrapper for `\"impl\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_58;
-    impl ::pest_typed::StringWrapper for r#w_58 {
+    pub struct r#w_61;
+    impl ::pest_typed::StringWrapper for r#w_61 {
         const CONTENT: &'static ::core::primitive::str = "impl";
     }
     #[doc = "A wrapper for `\"for\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_59;
-    impl ::pest_typed::StringWrapper for r#w_59 {
+    pub struct r#w_62;
+    impl ::pest_typed::StringWrapper for r#w_62 {
         const CONTENT: &'static ::core::primitive::str = "for";
     }
     #[doc = "A wrapper for `\"u8\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_60;
-    impl ::pest_typed::StringWrapper for r#w_60 {
+    pub struct r#w_63;
+    impl ::pest_typed::StringWrapper for r#w_63 {
         const CONTENT: &'static ::core::primitive::str = "u8";
     }
     #[doc = "A wrapper for `\"u16\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_61;
-    impl ::pest_typed::StringWrapper for r#w_61 {
+    pub struct r#w_64;
+    impl ::pest_typed::StringWrapper for r#w_64 {
         const CONTENT: &'static ::core::primitive::str = "u16";
     }
     #[doc = "A wrapper for `\"u32\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_62;
-    impl ::pest_typed::StringWrapper for r#w_62 {
+    pub struct r#w_65;
+    impl ::pest_typed::StringWrapper for r#w_65 {
         const CONTENT: &'static ::core::primitive::str = "u32";
     }
     #[doc = "A wrapper for `\"u64\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_63;
-    impl ::pest_typed::StringWrapper for r#w_63 {
+    pub struct r#w_66;
+    impl ::pest_typed::StringWrapper for r#w_66 {
         const CONTENT: &'static ::core::primitive::str = "u64";
     }
     #[doc = "A wrapper for `\"usize\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_64;
-    impl ::pest_typed::StringWrapper for r#w_64 {
+    pub struct r#w_67;
+    impl ::pest_typed::StringWrapper for r#w_67 {
         const CONTENT: &'static ::core::primitive::str = "usize";
     }
     #[doc = "A wrapper for `\"i8\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_65;
-    impl ::pest_typed::StringWrapper for r#w_65 {
+    pub struct r#w_68;
+    impl ::pest_typed::StringWrapper for r#w_68 {
         const CONTENT: &'static ::core::primitive::str = "i8";
     }
     #[doc = "A wrapper for `\"i16\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_66;
-    impl ::pest_typed::StringWrapper for r#w_66 {
+    pub struct r#w_69;
+    impl ::pest_typed::StringWrapper for r#w_69 {
         const CONTENT: &'static ::core::primitive::str = "i16";
     }
     #[doc = "A wrapper for `\"i32\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_67;
-    impl ::pest_typed::StringWrapper for r#w_67 {
+    pub struct r#w_70;
+    impl ::pest_typed::StringWrapper for r#w_70 {
         const CONTENT: &'static ::core::primitive::str = "i32";
     }
     #[doc = "A wrapper for `\"i64\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_68;
-    impl ::pest_typed::StringWrapper for r#w_68 {
+    pub struct r#w_71;
+    impl ::pest_typed::StringWrapper for r#w_71 {
         const CONTENT: &'static ::core::primitive::str = "i64";
     }
     #[doc = "A wrapper for `\"isize\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_69;
-    impl ::pest_typed::StringWrapper for r#w_69 {
+    pub struct r#w_72;
+    impl ::pest_typed::StringWrapper for r#w_72 {
         const CONTENT: &'static ::core::primitive::str = "isize";
     }
     #[doc = "A wrapper for `\"RET\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_70;
-    impl ::pest_typed::StringWrapper for r#w_70 {
+    pub struct r#w_73;
+    impl ::pest_typed::StringWrapper for r#w_73 {
         const CONTENT: &'static ::core::primitive::str = "RET";
     }
     #[doc = "A wrapper for `\"bool\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_71;
-    impl ::pest_typed::StringWrapper for r#w_71 {
+    pub struct r#w_74;
+    impl ::pest_typed::StringWrapper for r#w_74 {
         const CONTENT: &'static ::core::primitive::str = "bool";
     }
     #[doc = "A wrapper for `\"str\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_72;
-    impl ::pest_typed::StringWrapper for r#w_72 {
+    pub struct r#w_75;
+    impl ::pest_typed::StringWrapper for r#w_75 {
         const CONTENT: &'static ::core::primitive::str = "str";
     }
     #[doc = "A wrapper for `\"place\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_73;
-    impl ::pest_typed::StringWrapper for r#w_73 {
+    pub struct r#w_76;
+    impl ::pest_typed::StringWrapper for r#w_76 {
         const CONTENT: &'static ::core::primitive::str = "place";
     }
     #[doc = "A wrapper for `\"where\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_74;
-    impl ::pest_typed::StringWrapper for r#w_74 {
+    pub struct r#w_77;
+    impl ::pest_typed::StringWrapper for r#w_77 {
         const CONTENT: &'static ::core::primitive::str = "where";
     }
     #[doc = "A wrapper for `\"//\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_75;
-    impl ::pest_typed::StringWrapper for r#w_75 {
+    pub struct r#w_78;
+    impl ::pest_typed::StringWrapper for r#w_78 {
         const CONTENT: &'static ::core::primitive::str = "//";
     }
     #[doc = "A wrapper for `\"/*\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_76;
-    impl ::pest_typed::StringWrapper for r#w_76 {
+    pub struct r#w_79;
+    impl ::pest_typed::StringWrapper for r#w_79 {
         const CONTENT: &'static ::core::primitive::str = "/*";
     }
     #[doc = "A wrapper for `\"*/\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_77;
-    impl ::pest_typed::StringWrapper for r#w_77 {
+    pub struct r#w_80;
+    impl ::pest_typed::StringWrapper for r#w_80 {
         const CONTENT: &'static ::core::primitive::str = "*/";
     }
     #[doc = "A wrapper for `\"*/\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_78;
-    impl ::pest_typed::StringWrapper for r#w_78 {
+    pub struct r#w_81;
+    impl ::pest_typed::StringWrapper for r#w_81 {
         const CONTENT: &'static ::core::primitive::str = "*/";
     }
     #[doc = "A wrapper for `\" \"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_79;
-    impl ::pest_typed::StringWrapper for r#w_79 {
+    pub struct r#w_82;
+    impl ::pest_typed::StringWrapper for r#w_82 {
         const CONTENT: &'static ::core::primitive::str = " ";
     }
     #[doc = "A wrapper for `\"\\t\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_80;
-    impl ::pest_typed::StringWrapper for r#w_80 {
+    pub struct r#w_83;
+    impl ::pest_typed::StringWrapper for r#w_83 {
         const CONTENT: &'static ::core::primitive::str = "\t";
     }
     #[doc = "A wrapper for `\"\\r\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_81;
-    impl ::pest_typed::StringWrapper for r#w_81 {
+    pub struct r#w_84;
+    impl ::pest_typed::StringWrapper for r#w_84 {
         const CONTENT: &'static ::core::primitive::str = "\r";
     }
     #[doc = "A wrapper for `\"\\n\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_82;
-    impl ::pest_typed::StringWrapper for r#w_82 {
+    pub struct r#w_85;
+    impl ::pest_typed::StringWrapper for r#w_85 {
         const CONTENT: &'static ::core::primitive::str = "\n";
     }
     #[doc = "A wrapper for `\"{\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_83;
-    impl ::pest_typed::StringWrapper for r#w_83 {
+    pub struct r#w_86;
+    impl ::pest_typed::StringWrapper for r#w_86 {
         const CONTENT: &'static ::core::primitive::str = "{";
     }
     #[doc = "A wrapper for `\"}\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_84;
-    impl ::pest_typed::StringWrapper for r#w_84 {
+    pub struct r#w_87;
+    impl ::pest_typed::StringWrapper for r#w_87 {
         const CONTENT: &'static ::core::primitive::str = "}";
     }
     #[doc = "A wrapper for `\"[\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_85;
-    impl ::pest_typed::StringWrapper for r#w_85 {
+    pub struct r#w_88;
+    impl ::pest_typed::StringWrapper for r#w_88 {
         const CONTENT: &'static ::core::primitive::str = "[";
     }
     #[doc = "A wrapper for `\"]\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_86;
-    impl ::pest_typed::StringWrapper for r#w_86 {
+    pub struct r#w_89;
+    impl ::pest_typed::StringWrapper for r#w_89 {
         const CONTENT: &'static ::core::primitive::str = "]";
     }
     #[doc = "A wrapper for `\"(\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_87;
-    impl ::pest_typed::StringWrapper for r#w_87 {
+    pub struct r#w_90;
+    impl ::pest_typed::StringWrapper for r#w_90 {
         const CONTENT: &'static ::core::primitive::str = "(";
     }
     #[doc = "A wrapper for `\")\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_88;
-    impl ::pest_typed::StringWrapper for r#w_88 {
+    pub struct r#w_91;
+    impl ::pest_typed::StringWrapper for r#w_91 {
         const CONTENT: &'static ::core::primitive::str = ")";
     }
     #[doc = "A wrapper for `\"<\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_89;
-    impl ::pest_typed::StringWrapper for r#w_89 {
+    pub struct r#w_92;
+    impl ::pest_typed::StringWrapper for r#w_92 {
         const CONTENT: &'static ::core::primitive::str = "<";
     }
     #[doc = "A wrapper for `\">\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_90;
-    impl ::pest_typed::StringWrapper for r#w_90 {
+    pub struct r#w_93;
+    impl ::pest_typed::StringWrapper for r#w_93 {
         const CONTENT: &'static ::core::primitive::str = ">";
     }
     #[doc = "A wrapper for `\"$\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_91;
-    impl ::pest_typed::StringWrapper for r#w_91 {
+    pub struct r#w_94;
+    impl ::pest_typed::StringWrapper for r#w_94 {
         const CONTENT: &'static ::core::primitive::str = "$";
     }
     #[doc = "A wrapper for `\"=\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_92;
-    impl ::pest_typed::StringWrapper for r#w_92 {
+    pub struct r#w_95;
+    impl ::pest_typed::StringWrapper for r#w_95 {
         const CONTENT: &'static ::core::primitive::str = "=";
     }
     #[doc = "A wrapper for `\",\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_93;
-    impl ::pest_typed::StringWrapper for r#w_93 {
+    pub struct r#w_96;
+    impl ::pest_typed::StringWrapper for r#w_96 {
         const CONTENT: &'static ::core::primitive::str = ",";
     }
     #[doc = "A wrapper for `\".\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_94;
-    impl ::pest_typed::StringWrapper for r#w_94 {
+    pub struct r#w_97;
+    impl ::pest_typed::StringWrapper for r#w_97 {
         const CONTENT: &'static ::core::primitive::str = ".";
     }
     #[doc = "A wrapper for `\"..\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_95;
-    impl ::pest_typed::StringWrapper for r#w_95 {
+    pub struct r#w_98;
+    impl ::pest_typed::StringWrapper for r#w_98 {
         const CONTENT: &'static ::core::primitive::str = "..";
     }
     #[doc = "A wrapper for `\":\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_96;
-    impl ::pest_typed::StringWrapper for r#w_96 {
+    pub struct r#w_99;
+    impl ::pest_typed::StringWrapper for r#w_99 {
         const CONTENT: &'static ::core::primitive::str = ":";
     }
     #[doc = "A wrapper for `\"::\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_97;
-    impl ::pest_typed::StringWrapper for r#w_97 {
+    pub struct r#w_100;
+    impl ::pest_typed::StringWrapper for r#w_100 {
         const CONTENT: &'static ::core::primitive::str = "::";
     }
     #[doc = "A wrapper for `\";\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_98;
-    impl ::pest_typed::StringWrapper for r#w_98 {
+    pub struct r#w_101;
+    impl ::pest_typed::StringWrapper for r#w_101 {
         const CONTENT: &'static ::core::primitive::str = ";";
     }
     #[doc = "A wrapper for `\"#\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_99;
-    impl ::pest_typed::StringWrapper for r#w_99 {
+    pub struct r#w_102;
+    impl ::pest_typed::StringWrapper for r#w_102 {
         const CONTENT: &'static ::core::primitive::str = "#";
     }
     #[doc = "A wrapper for `\"&\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_100;
-    impl ::pest_typed::StringWrapper for r#w_100 {
+    pub struct r#w_103;
+    impl ::pest_typed::StringWrapper for r#w_103 {
         const CONTENT: &'static ::core::primitive::str = "&";
     }
     #[doc = "A wrapper for `\"&&\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_101;
-    impl ::pest_typed::StringWrapper for r#w_101 {
+    pub struct r#w_104;
+    impl ::pest_typed::StringWrapper for r#w_104 {
         const CONTENT: &'static ::core::primitive::str = "&&";
     }
     #[doc = "A wrapper for `\"||\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_102;
-    impl ::pest_typed::StringWrapper for r#w_102 {
+    pub struct r#w_105;
+    impl ::pest_typed::StringWrapper for r#w_105 {
         const CONTENT: &'static ::core::primitive::str = "||";
     }
     #[doc = "A wrapper for `\"!\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_103;
-    impl ::pest_typed::StringWrapper for r#w_103 {
+    pub struct r#w_106;
+    impl ::pest_typed::StringWrapper for r#w_106 {
         const CONTENT: &'static ::core::primitive::str = "!";
     }
     #[doc = "A wrapper for `\"*\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_104;
-    impl ::pest_typed::StringWrapper for r#w_104 {
+    pub struct r#w_107;
+    impl ::pest_typed::StringWrapper for r#w_107 {
         const CONTENT: &'static ::core::primitive::str = "*";
     }
     #[doc = "A wrapper for `\"->\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_105;
-    impl ::pest_typed::StringWrapper for r#w_105 {
+    pub struct r#w_108;
+    impl ::pest_typed::StringWrapper for r#w_108 {
         const CONTENT: &'static ::core::primitive::str = "->";
     }
     #[doc = "A wrapper for `\"=>\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_106;
-    impl ::pest_typed::StringWrapper for r#w_106 {
+    pub struct r#w_109;
+    impl ::pest_typed::StringWrapper for r#w_109 {
         const CONTENT: &'static ::core::primitive::str = "=>";
     }
     #[doc = "A wrapper for `\"'\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_107;
-    impl ::pest_typed::StringWrapper for r#w_107 {
+    pub struct r#w_110;
+    impl ::pest_typed::StringWrapper for r#w_110 {
         const CONTENT: &'static ::core::primitive::str = "'";
     }
     #[doc = "A wrapper for `\"-\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_108;
-    impl ::pest_typed::StringWrapper for r#w_108 {
-        const CONTENT: &'static ::core::primitive::str = "-";
-    }
-    #[doc = "A wrapper for `\"_\"`."]
-    #[allow(non_camel_case_types)]
-    #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_109;
-    impl ::pest_typed::StringWrapper for r#w_109 {
-        const CONTENT: &'static ::core::primitive::str = "_";
-    }
-    #[doc = "A wrapper for `\"_\"`."]
-    #[allow(non_camel_case_types)]
-    #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_110;
-    impl ::pest_typed::StringWrapper for r#w_110 {
-        const CONTENT: &'static ::core::primitive::str = "_";
-    }
-    #[doc = "A wrapper for `\"0b\"`."]
-    #[allow(non_camel_case_types)]
-    #[derive(Clone, Hash, PartialEq, Eq)]
     pub struct r#w_111;
     impl ::pest_typed::StringWrapper for r#w_111 {
-        const CONTENT: &'static ::core::primitive::str = "0b";
+        const CONTENT: &'static ::core::primitive::str = "-";
     }
     #[doc = "A wrapper for `\"_\"`."]
     #[allow(non_camel_case_types)]
@@ -1078,12 +1084,12 @@ mod constant_wrappers {
     impl ::pest_typed::StringWrapper for r#w_113 {
         const CONTENT: &'static ::core::primitive::str = "_";
     }
-    #[doc = "A wrapper for `\"0o\"`."]
+    #[doc = "A wrapper for `\"0b\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
     pub struct r#w_114;
     impl ::pest_typed::StringWrapper for r#w_114 {
-        const CONTENT: &'static ::core::primitive::str = "0o";
+        const CONTENT: &'static ::core::primitive::str = "0b";
     }
     #[doc = "A wrapper for `\"_\"`."]
     #[allow(non_camel_case_types)]
@@ -1099,12 +1105,12 @@ mod constant_wrappers {
     impl ::pest_typed::StringWrapper for r#w_116 {
         const CONTENT: &'static ::core::primitive::str = "_";
     }
-    #[doc = "A wrapper for `\"0x\"`."]
+    #[doc = "A wrapper for `\"0o\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
     pub struct r#w_117;
     impl ::pest_typed::StringWrapper for r#w_117 {
-        const CONTENT: &'static ::core::primitive::str = "0x";
+        const CONTENT: &'static ::core::primitive::str = "0o";
     }
     #[doc = "A wrapper for `\"_\"`."]
     #[allow(non_camel_case_types)]
@@ -1120,67 +1126,88 @@ mod constant_wrappers {
     impl ::pest_typed::StringWrapper for r#w_119 {
         const CONTENT: &'static ::core::primitive::str = "_";
     }
-    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[doc = "A wrapper for `\"0x\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
     pub struct r#w_120;
     impl ::pest_typed::StringWrapper for r#w_120 {
+        const CONTENT: &'static ::core::primitive::str = "0x";
+    }
+    #[doc = "A wrapper for `\"_\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_121;
+    impl ::pest_typed::StringWrapper for r#w_121 {
+        const CONTENT: &'static ::core::primitive::str = "_";
+    }
+    #[doc = "A wrapper for `\"_\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_122;
+    impl ::pest_typed::StringWrapper for r#w_122 {
+        const CONTENT: &'static ::core::primitive::str = "_";
+    }
+    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_123;
+    impl ::pest_typed::StringWrapper for r#w_123 {
         const CONTENT: &'static ::core::primitive::str = "\"";
     }
     #[doc = "A wrapper for `[\"\\\"\"]`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, PartialEq)]
-    pub struct r#w_121;
-    impl ::pest_typed::StringArrayWrapper for r#w_121 {
+    pub struct r#w_124;
+    impl ::pest_typed::StringArrayWrapper for r#w_124 {
         const CONTENT: &'static [&'static ::core::primitive::str] = &["\""];
     }
     #[doc = "A wrapper for `\"\\\"\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_122;
-    impl ::pest_typed::StringWrapper for r#w_122 {
+    pub struct r#w_125;
+    impl ::pest_typed::StringWrapper for r#w_125 {
         const CONTENT: &'static ::core::primitive::str = "\"";
     }
     #[doc = "A wrapper for `\"_\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_123;
-    impl ::pest_typed::StringWrapper for r#w_123 {
+    pub struct r#w_126;
+    impl ::pest_typed::StringWrapper for r#w_126 {
         const CONTENT: &'static ::core::primitive::str = "_";
     }
     #[doc = "A wrapper for `\"-\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_124;
-    impl ::pest_typed::StringWrapper for r#w_124 {
+    pub struct r#w_127;
+    impl ::pest_typed::StringWrapper for r#w_127 {
         const CONTENT: &'static ::core::primitive::str = "-";
     }
     #[doc = "A wrapper for `\"Group\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_125;
-    impl ::pest_typed::StringWrapper for r#w_125 {
+    pub struct r#w_128;
+    impl ::pest_typed::StringWrapper for r#w_128 {
         const CONTENT: &'static ::core::primitive::str = "Group";
     }
     #[doc = "A wrapper for `\"\\\"\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_126;
-    impl ::pest_typed::StringWrapper for r#w_126 {
+    pub struct r#w_129;
+    impl ::pest_typed::StringWrapper for r#w_129 {
         const CONTENT: &'static ::core::primitive::str = "\"";
     }
     #[doc = "A wrapper for `\"\\\"\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_127;
-    impl ::pest_typed::StringWrapper for r#w_127 {
+    pub struct r#w_130;
+    impl ::pest_typed::StringWrapper for r#w_130 {
         const CONTENT: &'static ::core::primitive::str = "\"";
     }
     #[doc = "A wrapper for `\"\\\"\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_128;
-    impl ::pest_typed::StringWrapper for r#w_128 {
+    pub struct r#w_131;
+    impl ::pest_typed::StringWrapper for r#w_131 {
         const CONTENT: &'static ::core::primitive::str = "\"";
     }
 }
@@ -1240,109 +1267,115 @@ pub mod rules_impl {
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_IntToInt<'i, INHERITED> {}
         :: pest_typed :: rule ! (r#kw_Transmute , "Corresponds to expression: `(\"Transmute\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Transmute , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_24 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Transmute<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Add , "Corresponds to expression: `(\"Add\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Add , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_25 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_PointerCoercion , "Corresponds to expression: `(\"PointerCoercion\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_PointerCoercion , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_25 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#kw_PointerCoercion<'i, INHERITED> {}
+        :: pest_typed :: rule ! (r#kw_Unsize , "Corresponds to expression: `(\"Unsize\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Unsize , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_26 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Unsize<'i, INHERITED> {}
+        :: pest_typed :: rule ! (r#kw_Implicit , "Corresponds to expression: `(\"Implicit\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Implicit , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_27 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Implicit<'i, INHERITED> {}
+        :: pest_typed :: rule ! (r#kw_Add , "Corresponds to expression: `(\"Add\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Add , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_28 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Add<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Sub , "Corresponds to expression: `(\"Sub\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Sub , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_26 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Sub , "Corresponds to expression: `(\"Sub\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Sub , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_29 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Sub<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Mul , "Corresponds to expression: `(\"Mul\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Mul , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_27 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Mul , "Corresponds to expression: `(\"Mul\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Mul , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_30 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Mul<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Div , "Corresponds to expression: `(\"Div\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Div , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_28 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Div , "Corresponds to expression: `(\"Div\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Div , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_31 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Div<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Rem , "Corresponds to expression: `(\"Rem\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Rem , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_29 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Rem , "Corresponds to expression: `(\"Rem\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Rem , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_32 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Rem<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Lt , "Corresponds to expression: `(\"Lt\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Lt , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_30 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Lt , "Corresponds to expression: `(\"Lt\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Lt , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_33 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Lt<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Le , "Corresponds to expression: `(\"Le\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Le , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_31 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Le , "Corresponds to expression: `(\"Le\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Le , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_34 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Le<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Gt , "Corresponds to expression: `(\"Gt\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Gt , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_32 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Gt , "Corresponds to expression: `(\"Gt\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Gt , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_35 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Gt<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Ge , "Corresponds to expression: `(\"Ge\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Ge , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_33 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Ge , "Corresponds to expression: `(\"Ge\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Ge , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_36 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Ge<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Eq , "Corresponds to expression: `(\"Eq\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Eq , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_34 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Eq , "Corresponds to expression: `(\"Eq\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Eq , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_37 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Eq<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Ne , "Corresponds to expression: `(\"Ne\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Ne , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_35 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Ne , "Corresponds to expression: `(\"Ne\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Ne , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_38 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Ne<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Offset , "Corresponds to expression: `(\"Offset\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Offset , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_36 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Offset , "Corresponds to expression: `(\"Offset\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Offset , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_39 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Offset<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_SizeOf , "Corresponds to expression: `(\"SizeOf\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_SizeOf , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_37 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_SizeOf , "Corresponds to expression: `(\"SizeOf\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_SizeOf , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_40 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_SizeOf<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_AlignOf , "Corresponds to expression: `(\"AlignOf\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_AlignOf , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_38 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_AlignOf , "Corresponds to expression: `(\"AlignOf\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_AlignOf , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_41 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_AlignOf<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Neg , "Corresponds to expression: `(\"Neg\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Neg , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_39 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Neg , "Corresponds to expression: `(\"Neg\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Neg , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_42 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Neg<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Not , "Corresponds to expression: `(\"Not\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Not , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_40 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Not , "Corresponds to expression: `(\"Not\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Not , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_43 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Not<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_PtrMetadata , "Corresponds to expression: `(\"PtrMetadata\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_PtrMetadata , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_41 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_PtrMetadata , "Corresponds to expression: `(\"PtrMetadata\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_PtrMetadata , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_44 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_PtrMetadata<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_discriminant , "Corresponds to expression: `(\"discriminant\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_discriminant , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_42 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_discriminant , "Corresponds to expression: `(\"discriminant\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_discriminant , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_45 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_discriminant<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_Ctor , "Corresponds to expression: `(\"Ctor\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Ctor , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_43 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_Ctor , "Corresponds to expression: `(\"Ctor\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_Ctor , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_46 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_Ctor<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_from , "Corresponds to expression: `(\"from\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_from , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_44 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_from , "Corresponds to expression: `(\"from\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_from , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_47 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_from<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_of , "Corresponds to expression: `(\"of\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_of , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_45 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_of , "Corresponds to expression: `(\"of\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_of , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_48 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_of<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_raw , "Corresponds to expression: `(\"raw\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_raw , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_46 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_raw , "Corresponds to expression: `(\"raw\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_raw , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_49 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_raw<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_drop , "Corresponds to expression: `(\"drop\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_drop , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_47 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_drop , "Corresponds to expression: `(\"drop\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_drop , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_50 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_drop<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_break , "Corresponds to expression: `(\"break\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_break , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_48 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_break , "Corresponds to expression: `(\"break\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_break , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_51 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_break<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_continue , "Corresponds to expression: `(\"continue\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_continue , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_49 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_continue , "Corresponds to expression: `(\"continue\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_continue , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_52 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_continue<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_loop , "Corresponds to expression: `(\"loop\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_loop , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_50 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_loop , "Corresponds to expression: `(\"loop\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_loop , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_53 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_loop<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_switchInt , "Corresponds to expression: `(\"switchInt\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_switchInt , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_51 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_switchInt , "Corresponds to expression: `(\"switchInt\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_switchInt , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_54 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_switchInt<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_true , "Corresponds to expression: `(\"true\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_true , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_52 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_true , "Corresponds to expression: `(\"true\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_true , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_55 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_true<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_false , "Corresponds to expression: `(\"false\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_false , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_53 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_false , "Corresponds to expression: `(\"false\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_false , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_56 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_false<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_unsafe , "Corresponds to expression: `(\"unsafe\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_unsafe , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_54 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_unsafe , "Corresponds to expression: `(\"unsafe\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_unsafe , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_57 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_unsafe<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_pub , "Corresponds to expression: `(\"pub\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_pub , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_55 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_pub , "Corresponds to expression: `(\"pub\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_pub , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_58 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_pub<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_struct , "Corresponds to expression: `(\"struct\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_struct , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_56 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_struct , "Corresponds to expression: `(\"struct\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_struct , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_59 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_struct<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_enum , "Corresponds to expression: `(\"enum\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_enum , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_57 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_enum , "Corresponds to expression: `(\"enum\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_enum , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_60 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_enum<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_impl , "Corresponds to expression: `(\"impl\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_impl , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_58 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_impl , "Corresponds to expression: `(\"impl\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_impl , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_61 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_impl<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_for , "Corresponds to expression: `(\"for\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_for , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_59 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_for , "Corresponds to expression: `(\"for\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_for , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_62 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_for<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_u8 , "Corresponds to expression: `(\"u8\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_u8 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_60 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_u8 , "Corresponds to expression: `(\"u8\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_u8 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_63 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_u8<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_u16 , "Corresponds to expression: `(\"u16\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_u16 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_61 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_u16 , "Corresponds to expression: `(\"u16\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_u16 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_64 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_u16<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_u32 , "Corresponds to expression: `(\"u32\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_u32 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_62 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_u32 , "Corresponds to expression: `(\"u32\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_u32 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_65 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_u32<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_u64 , "Corresponds to expression: `(\"u64\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_u64 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_63 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_u64 , "Corresponds to expression: `(\"u64\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_u64 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_66 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_u64<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_usize , "Corresponds to expression: `(\"usize\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_usize , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_64 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_usize , "Corresponds to expression: `(\"usize\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_usize , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_67 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_usize<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_i8 , "Corresponds to expression: `(\"i8\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_i8 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_65 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_i8 , "Corresponds to expression: `(\"i8\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_i8 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_68 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_i8<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_i16 , "Corresponds to expression: `(\"i16\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_i16 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_66 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_i16 , "Corresponds to expression: `(\"i16\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_i16 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_69 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_i16<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_i32 , "Corresponds to expression: `(\"i32\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_i32 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_67 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_i32 , "Corresponds to expression: `(\"i32\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_i32 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_70 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_i32<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_i64 , "Corresponds to expression: `(\"i64\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_i64 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_68 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_i64 , "Corresponds to expression: `(\"i64\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_i64 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_71 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_i64<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_isize , "Corresponds to expression: `(\"isize\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_isize , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_69 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_isize , "Corresponds to expression: `(\"isize\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_isize , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_72 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_isize<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_RET , "Corresponds to expression: `(\"RET\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_RET , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_70 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_RET , "Corresponds to expression: `(\"RET\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_RET , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_73 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_RET<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_bool , "Corresponds to expression: `(\"bool\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_bool , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_71 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_bool , "Corresponds to expression: `(\"bool\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_bool , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_74 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_bool<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_str , "Corresponds to expression: `(\"str\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_str , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_72 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_str , "Corresponds to expression: `(\"str\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_str , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_75 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_str<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_place , "Corresponds to expression: `(\"place\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_place , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_73 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_place , "Corresponds to expression: `(\"place\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_place , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_76 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_place<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#kw_where , "Corresponds to expression: `(\"where\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_where , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_74 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#kw_where , "Corresponds to expression: `(\"where\" ~ !WordFollowing)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#kw_where , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_77 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#kw_where<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Keywords , "Corresponds to expression: `(kw_pattern | kw_patt | kw_util | kw_cstr | kw_diag | kw_meta | kw_import | kw_self | kw_Self | kw_fn | kw_mut | kw_const | kw_static | kw_lang | kw_as | kw_crate | kw_use | kw_type | kw_let | kw_move | kw_copy | kw_Len | kw_PtrToPtr | kw_IntToInt | kw_Transmute | kw_Add | kw_Sub | kw_Mul | kw_Div | kw_Rem | kw_Lt | kw_Le | kw_Gt | kw_Ge | kw_Eq | kw_Ne | kw_Offset | kw_SizeOf | kw_AlignOf | kw_Neg | kw_Not | kw_PtrMetadata | kw_discriminant | kw_Ctor | kw_from | kw_of | kw_raw | kw_drop | kw_break | kw_continue | kw_loop | kw_switchInt | kw_true | kw_false | kw_unsafe | kw_pub | kw_struct | kw_enum | kw_impl | kw_for | kw_u8 | kw_u16 | kw_u32 | kw_u64 | kw_usize | kw_i8 | kw_i16 | kw_i32 | kw_i64 | kw_isize | kw_bool | kw_str | kw_where)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Keywords , super :: super :: generics :: Choice73 :: < super :: super :: rules :: r#kw_pattern :: < 'i , 0 > , super :: super :: rules :: r#kw_patt :: < 'i , 0 > , super :: super :: rules :: r#kw_util :: < 'i , 0 > , super :: super :: rules :: r#kw_cstr :: < 'i , 0 > , super :: super :: rules :: r#kw_diag :: < 'i , 0 > , super :: super :: rules :: r#kw_meta :: < 'i , 0 > , super :: super :: rules :: r#kw_import :: < 'i , 0 > , super :: super :: rules :: r#kw_self :: < 'i , 0 > , super :: super :: rules :: r#kw_Self :: < 'i , 0 > , super :: super :: rules :: r#kw_fn :: < 'i , 0 > , super :: super :: rules :: r#kw_mut :: < 'i , 0 > , super :: super :: rules :: r#kw_const :: < 'i , 0 > , super :: super :: rules :: r#kw_static :: < 'i , 0 > , super :: super :: rules :: r#kw_lang :: < 'i , 0 > , super :: super :: rules :: r#kw_as :: < 'i , 0 > , super :: super :: rules :: r#kw_crate :: < 'i , 0 > , super :: super :: rules :: r#kw_use :: < 'i , 0 > , super :: super :: rules :: r#kw_type :: < 'i , 0 > , super :: super :: rules :: r#kw_let :: < 'i , 0 > , super :: super :: rules :: r#kw_move :: < 'i , 0 > , super :: super :: rules :: r#kw_copy :: < 'i , 0 > , super :: super :: rules :: r#kw_Len :: < 'i , 0 > , super :: super :: rules :: r#kw_PtrToPtr :: < 'i , 0 > , super :: super :: rules :: r#kw_IntToInt :: < 'i , 0 > , super :: super :: rules :: r#kw_Transmute :: < 'i , 0 > , super :: super :: rules :: r#kw_Add :: < 'i , 0 > , super :: super :: rules :: r#kw_Sub :: < 'i , 0 > , super :: super :: rules :: r#kw_Mul :: < 'i , 0 > , super :: super :: rules :: r#kw_Div :: < 'i , 0 > , super :: super :: rules :: r#kw_Rem :: < 'i , 0 > , super :: super :: rules :: r#kw_Lt :: < 'i , 0 > , super :: super :: rules :: r#kw_Le :: < 'i , 0 > , super :: super :: rules :: r#kw_Gt :: < 'i , 0 > , super :: super :: rules :: r#kw_Ge :: < 'i , 0 > , super :: super :: rules :: r#kw_Eq :: < 'i , 0 > , super :: super :: rules :: r#kw_Ne :: < 'i , 0 > , super :: super :: rules :: r#kw_Offset :: < 'i , 0 > , super :: super :: rules :: r#kw_SizeOf :: < 'i , 0 > , super :: super :: rules :: r#kw_AlignOf :: < 'i , 0 > , super :: super :: rules :: r#kw_Neg :: < 'i , 0 > , super :: super :: rules :: r#kw_Not :: < 'i , 0 > , super :: super :: rules :: r#kw_PtrMetadata :: < 'i , 0 > , super :: super :: rules :: r#kw_discriminant :: < 'i , 0 > , super :: super :: rules :: r#kw_Ctor :: < 'i , 0 > , super :: super :: rules :: r#kw_from :: < 'i , 0 > , super :: super :: rules :: r#kw_of :: < 'i , 0 > , super :: super :: rules :: r#kw_raw :: < 'i , 0 > , super :: super :: rules :: r#kw_drop :: < 'i , 0 > , super :: super :: rules :: r#kw_break :: < 'i , 0 > , super :: super :: rules :: r#kw_continue :: < 'i , 0 > , super :: super :: rules :: r#kw_loop :: < 'i , 0 > , super :: super :: rules :: r#kw_switchInt :: < 'i , 0 > , super :: super :: rules :: r#kw_true :: < 'i , 0 > , super :: super :: rules :: r#kw_false :: < 'i , 0 > , super :: super :: rules :: r#kw_unsafe :: < 'i , 0 > , super :: super :: rules :: r#kw_pub :: < 'i , 0 > , super :: super :: rules :: r#kw_struct :: < 'i , 0 > , super :: super :: rules :: r#kw_enum :: < 'i , 0 > , super :: super :: rules :: r#kw_impl :: < 'i , 0 > , super :: super :: rules :: r#kw_for :: < 'i , 0 > , super :: super :: rules :: r#kw_u8 :: < 'i , 0 > , super :: super :: rules :: r#kw_u16 :: < 'i , 0 > , super :: super :: rules :: r#kw_u32 :: < 'i , 0 > , super :: super :: rules :: r#kw_u64 :: < 'i , 0 > , super :: super :: rules :: r#kw_usize :: < 'i , 0 > , super :: super :: rules :: r#kw_i8 :: < 'i , 0 > , super :: super :: rules :: r#kw_i16 :: < 'i , 0 > , super :: super :: rules :: r#kw_i32 :: < 'i , 0 > , super :: super :: rules :: r#kw_i64 :: < 'i , 0 > , super :: super :: rules :: r#kw_isize :: < 'i , 0 > , super :: super :: rules :: r#kw_bool :: < 'i , 0 > , super :: super :: rules :: r#kw_str :: < 'i , 0 > , super :: super :: rules :: r#kw_where :: < 'i , 0 > , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Keywords , "Corresponds to expression: `(kw_pattern | kw_patt | kw_util | kw_cstr | kw_diag | kw_meta | kw_import | kw_self | kw_Self | kw_fn | kw_mut | kw_const | kw_static | kw_lang | kw_as | kw_crate | kw_use | kw_type | kw_let | kw_move | kw_copy | kw_Len | kw_PtrToPtr | kw_IntToInt | kw_Transmute | kw_PointerCoercion | kw_Add | kw_Sub | kw_Mul | kw_Div | kw_Rem | kw_Lt | kw_Le | kw_Gt | kw_Ge | kw_Eq | kw_Ne | kw_Offset | kw_SizeOf | kw_AlignOf | kw_Neg | kw_Not | kw_PtrMetadata | kw_discriminant | kw_Ctor | kw_from | kw_of | kw_raw | kw_drop | kw_break | kw_continue | kw_loop | kw_switchInt | kw_true | kw_false | kw_unsafe | kw_pub | kw_struct | kw_enum | kw_impl | kw_for | kw_u8 | kw_u16 | kw_u32 | kw_u64 | kw_usize | kw_i8 | kw_i16 | kw_i32 | kw_i64 | kw_isize | kw_bool | kw_str | kw_where)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Keywords , super :: super :: generics :: Choice74 :: < super :: super :: rules :: r#kw_pattern :: < 'i , 0 > , super :: super :: rules :: r#kw_patt :: < 'i , 0 > , super :: super :: rules :: r#kw_util :: < 'i , 0 > , super :: super :: rules :: r#kw_cstr :: < 'i , 0 > , super :: super :: rules :: r#kw_diag :: < 'i , 0 > , super :: super :: rules :: r#kw_meta :: < 'i , 0 > , super :: super :: rules :: r#kw_import :: < 'i , 0 > , super :: super :: rules :: r#kw_self :: < 'i , 0 > , super :: super :: rules :: r#kw_Self :: < 'i , 0 > , super :: super :: rules :: r#kw_fn :: < 'i , 0 > , super :: super :: rules :: r#kw_mut :: < 'i , 0 > , super :: super :: rules :: r#kw_const :: < 'i , 0 > , super :: super :: rules :: r#kw_static :: < 'i , 0 > , super :: super :: rules :: r#kw_lang :: < 'i , 0 > , super :: super :: rules :: r#kw_as :: < 'i , 0 > , super :: super :: rules :: r#kw_crate :: < 'i , 0 > , super :: super :: rules :: r#kw_use :: < 'i , 0 > , super :: super :: rules :: r#kw_type :: < 'i , 0 > , super :: super :: rules :: r#kw_let :: < 'i , 0 > , super :: super :: rules :: r#kw_move :: < 'i , 0 > , super :: super :: rules :: r#kw_copy :: < 'i , 0 > , super :: super :: rules :: r#kw_Len :: < 'i , 0 > , super :: super :: rules :: r#kw_PtrToPtr :: < 'i , 0 > , super :: super :: rules :: r#kw_IntToInt :: < 'i , 0 > , super :: super :: rules :: r#kw_Transmute :: < 'i , 0 > , super :: super :: rules :: r#kw_PointerCoercion :: < 'i , 0 > , super :: super :: rules :: r#kw_Add :: < 'i , 0 > , super :: super :: rules :: r#kw_Sub :: < 'i , 0 > , super :: super :: rules :: r#kw_Mul :: < 'i , 0 > , super :: super :: rules :: r#kw_Div :: < 'i , 0 > , super :: super :: rules :: r#kw_Rem :: < 'i , 0 > , super :: super :: rules :: r#kw_Lt :: < 'i , 0 > , super :: super :: rules :: r#kw_Le :: < 'i , 0 > , super :: super :: rules :: r#kw_Gt :: < 'i , 0 > , super :: super :: rules :: r#kw_Ge :: < 'i , 0 > , super :: super :: rules :: r#kw_Eq :: < 'i , 0 > , super :: super :: rules :: r#kw_Ne :: < 'i , 0 > , super :: super :: rules :: r#kw_Offset :: < 'i , 0 > , super :: super :: rules :: r#kw_SizeOf :: < 'i , 0 > , super :: super :: rules :: r#kw_AlignOf :: < 'i , 0 > , super :: super :: rules :: r#kw_Neg :: < 'i , 0 > , super :: super :: rules :: r#kw_Not :: < 'i , 0 > , super :: super :: rules :: r#kw_PtrMetadata :: < 'i , 0 > , super :: super :: rules :: r#kw_discriminant :: < 'i , 0 > , super :: super :: rules :: r#kw_Ctor :: < 'i , 0 > , super :: super :: rules :: r#kw_from :: < 'i , 0 > , super :: super :: rules :: r#kw_of :: < 'i , 0 > , super :: super :: rules :: r#kw_raw :: < 'i , 0 > , super :: super :: rules :: r#kw_drop :: < 'i , 0 > , super :: super :: rules :: r#kw_break :: < 'i , 0 > , super :: super :: rules :: r#kw_continue :: < 'i , 0 > , super :: super :: rules :: r#kw_loop :: < 'i , 0 > , super :: super :: rules :: r#kw_switchInt :: < 'i , 0 > , super :: super :: rules :: r#kw_true :: < 'i , 0 > , super :: super :: rules :: r#kw_false :: < 'i , 0 > , super :: super :: rules :: r#kw_unsafe :: < 'i , 0 > , super :: super :: rules :: r#kw_pub :: < 'i , 0 > , super :: super :: rules :: r#kw_struct :: < 'i , 0 > , super :: super :: rules :: r#kw_enum :: < 'i , 0 > , super :: super :: rules :: r#kw_impl :: < 'i , 0 > , super :: super :: rules :: r#kw_for :: < 'i , 0 > , super :: super :: rules :: r#kw_u8 :: < 'i , 0 > , super :: super :: rules :: r#kw_u16 :: < 'i , 0 > , super :: super :: rules :: r#kw_u32 :: < 'i , 0 > , super :: super :: rules :: r#kw_u64 :: < 'i , 0 > , super :: super :: rules :: r#kw_usize :: < 'i , 0 > , super :: super :: rules :: r#kw_i8 :: < 'i , 0 > , super :: super :: rules :: r#kw_i16 :: < 'i , 0 > , super :: super :: rules :: r#kw_i32 :: < 'i , 0 > , super :: super :: rules :: r#kw_i64 :: < 'i , 0 > , super :: super :: rules :: r#kw_isize :: < 'i , 0 > , super :: super :: rules :: r#kw_bool :: < 'i , 0 > , super :: super :: rules :: r#kw_str :: < 'i , 0 > , super :: super :: rules :: r#kw_where :: < 'i , 0 > , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Keywords<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#COMMENT , "Corresponds to expression: `((\"//\" ~ (!NEWLINE ~ ANY)*) | (\"/*\" ~ (!\"*/\" ~ ANY)* ~ \"*/\"))`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#COMMENT , super :: super :: generics :: Choice2 :: < super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_75 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#NEWLINE > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_76 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_77 > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_78 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Expression , true);
+        :: pest_typed :: rule ! (r#COMMENT , "Corresponds to expression: `((\"//\" ~ (!NEWLINE ~ ANY)*) | (\"/*\" ~ (!\"*/\" ~ ANY)* ~ \"*/\"))`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#COMMENT , super :: super :: generics :: Choice2 :: < super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_78 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: rules :: r#NEWLINE > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_79 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_80 > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_81 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Expression , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#COMMENT<'i, INHERITED> {
             #[doc = "A helper function to access [`ANY`]."]
             #[allow(non_snake_case)]
@@ -1400,61 +1433,61 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#WHITESPACE , "Corresponds to expression: `(\" \" | \"\\t\" | \"\\r\" | \"\\n\")`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#WHITESPACE , super :: super :: generics :: Choice4 :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_79 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_80 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_81 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_82 > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Expression , true);
+        :: pest_typed :: rule ! (r#WHITESPACE , "Corresponds to expression: `(\" \" | \"\\t\" | \"\\r\" | \"\\n\")`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#WHITESPACE , super :: super :: generics :: Choice4 :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_82 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_83 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_84 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_85 > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Expression , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#WHITESPACE<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#LeftBrace , "Corresponds to expression: `\"{\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#LeftBrace , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_83 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#LeftBrace , "Corresponds to expression: `\"{\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#LeftBrace , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_86 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#LeftBrace<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#RightBrace , "Corresponds to expression: `\"}\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#RightBrace , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_84 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#RightBrace , "Corresponds to expression: `\"}\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#RightBrace , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_87 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#RightBrace<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#LeftBracket , "Corresponds to expression: `\"[\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#LeftBracket , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_85 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#LeftBracket , "Corresponds to expression: `\"[\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#LeftBracket , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_88 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#LeftBracket<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#RightBracket , "Corresponds to expression: `\"]\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#RightBracket , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_86 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#RightBracket , "Corresponds to expression: `\"]\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#RightBracket , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_89 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#RightBracket<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#LeftParen , "Corresponds to expression: `\"(\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#LeftParen , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_87 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#LeftParen , "Corresponds to expression: `\"(\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#LeftParen , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_90 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#LeftParen<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#RightParen , "Corresponds to expression: `\")\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#RightParen , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_88 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#RightParen , "Corresponds to expression: `\")\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#RightParen , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_91 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#RightParen<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#LessThan , "Corresponds to expression: `\"<\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#LessThan , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_89 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#LessThan , "Corresponds to expression: `\"<\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#LessThan , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_92 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#LessThan<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#GreaterThan , "Corresponds to expression: `\">\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#GreaterThan , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_90 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#GreaterThan , "Corresponds to expression: `\">\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#GreaterThan , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_93 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#GreaterThan<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Dollar , "Corresponds to expression: `\"$\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Dollar , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_91 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Dollar , "Corresponds to expression: `\"$\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Dollar , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_94 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Dollar<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Assign , "Corresponds to expression: `\"=\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Assign , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_92 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Assign , "Corresponds to expression: `\"=\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Assign , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_95 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Assign<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Comma , "Corresponds to expression: `\",\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Comma , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_93 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Comma , "Corresponds to expression: `\",\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Comma , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_96 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Comma<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Dot , "Corresponds to expression: `\".\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Dot , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_94 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Dot , "Corresponds to expression: `\".\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Dot , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_97 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Dot<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Dot2 , "Corresponds to expression: `\"..\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Dot2 , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_95 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Dot2 , "Corresponds to expression: `\"..\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Dot2 , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_98 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Dot2<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Colon , "Corresponds to expression: `\":\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Colon , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_96 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Colon , "Corresponds to expression: `\":\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Colon , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_99 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Colon<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Colon2 , "Corresponds to expression: `\"::\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Colon2 , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_97 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Colon2 , "Corresponds to expression: `\"::\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Colon2 , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_100 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Colon2<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#SemiColon , "Corresponds to expression: `\";\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#SemiColon , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_98 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#SemiColon , "Corresponds to expression: `\";\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#SemiColon , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_101 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#SemiColon<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Hash , "Corresponds to expression: `\"#\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Hash , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_99 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Hash , "Corresponds to expression: `\"#\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Hash , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_102 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Hash<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#And , "Corresponds to expression: `\"&\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#And , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_100 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#And , "Corresponds to expression: `\"&\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#And , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_103 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#And<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#AndAnd , "Corresponds to expression: `\"&&\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#AndAnd , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_101 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#AndAnd , "Corresponds to expression: `\"&&\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#AndAnd , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_104 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#AndAnd<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#OrOr , "Corresponds to expression: `\"||\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#OrOr , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_102 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#OrOr , "Corresponds to expression: `\"||\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#OrOr , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_105 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#OrOr<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Bang , "Corresponds to expression: `\"!\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Bang , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_103 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Bang , "Corresponds to expression: `\"!\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Bang , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_106 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Bang<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Star , "Corresponds to expression: `\"*\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Star , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_104 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Star , "Corresponds to expression: `\"*\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Star , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_107 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Star<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Arrow , "Corresponds to expression: `\"->\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Arrow , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_105 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Arrow , "Corresponds to expression: `\"->\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Arrow , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_108 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Arrow<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#RightArrow , "Corresponds to expression: `\"=>\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#RightArrow , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_106 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#RightArrow , "Corresponds to expression: `\"=>\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#RightArrow , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_109 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#RightArrow<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Quote , "Corresponds to expression: `\"'\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Quote , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_107 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Quote , "Corresponds to expression: `\"'\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Quote , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_110 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Quote<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#Minus , "Corresponds to expression: `\"-\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Minus , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_108 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#Minus , "Corresponds to expression: `\"-\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Minus , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_111 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Minus<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#PlaceHolder , "Corresponds to expression: `\"_\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PlaceHolder , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_109 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#PlaceHolder , "Corresponds to expression: `\"_\"`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PlaceHolder , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_112 > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#PlaceHolder<'i, INHERITED> {}
         :: pest_typed :: rule ! (r#Literal , "Corresponds to expression: `(Integer | String | Bool)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Literal , super :: super :: generics :: Choice3 :: < super :: super :: rules :: r#Integer :: < 'i , INHERITED > , super :: super :: rules :: r#String :: < 'i , INHERITED > , super :: super :: rules :: r#Bool :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Literal<'i, INHERITED> {
@@ -1500,13 +1533,13 @@ pub mod rules_impl {
         impl<'i, const INHERITED: ::core::primitive::usize> r#DEC_DIGIT<'i, INHERITED> {}
         :: pest_typed :: rule ! (r#HEX_DIGIT , "Corresponds to expression: `(('0'..'9') | ('a'..'f') | ('A'..'F'))`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#HEX_DIGIT , super :: super :: generics :: Choice3 :: < super :: super :: generics :: CharRange :: < '0' , '9' > , super :: super :: generics :: CharRange :: < 'a' , 'f' > , super :: super :: generics :: CharRange :: < 'A' , 'F' > , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#HEX_DIGIT<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#DEC_LITERAL , "Corresponds to expression: `(DEC_DIGIT ~ (DEC_DIGIT | \"_\")*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#DEC_LITERAL , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#DEC_DIGIT :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#DEC_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_110 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#DEC_LITERAL , "Corresponds to expression: `(DEC_DIGIT ~ (DEC_DIGIT | \"_\")*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#DEC_LITERAL , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#DEC_DIGIT :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#DEC_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_113 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#DEC_LITERAL<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#BIN_LITERAL , "Corresponds to expression: `(\"0b\" ~ (BIN_DIGIT | \"_\")* ~ BIN_DIGIT ~ (BIN_DIGIT | \"_\")*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#BIN_LITERAL , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_111 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#BIN_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_112 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#BIN_DIGIT :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#BIN_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_113 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#BIN_LITERAL , "Corresponds to expression: `(\"0b\" ~ (BIN_DIGIT | \"_\")* ~ BIN_DIGIT ~ (BIN_DIGIT | \"_\")*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#BIN_LITERAL , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_114 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#BIN_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_115 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#BIN_DIGIT :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#BIN_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_116 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#BIN_LITERAL<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#OCT_LITERAL , "Corresponds to expression: `(\"0o\" ~ (OCT_DIGIT | \"_\")* ~ OCT_DIGIT ~ (OCT_DIGIT | \"_\")*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#OCT_LITERAL , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_114 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#OCT_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_115 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#OCT_DIGIT :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#OCT_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_116 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#OCT_LITERAL , "Corresponds to expression: `(\"0o\" ~ (OCT_DIGIT | \"_\")* ~ OCT_DIGIT ~ (OCT_DIGIT | \"_\")*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#OCT_LITERAL , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_117 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#OCT_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_118 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#OCT_DIGIT :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#OCT_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_119 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#OCT_LITERAL<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#HEX_LITERAL , "Corresponds to expression: `(\"0x\" ~ (HEX_DIGIT | \"_\")* ~ HEX_DIGIT ~ (HEX_DIGIT | \"_\")*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#HEX_LITERAL , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_117 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#HEX_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_118 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#HEX_DIGIT :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#HEX_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_119 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#HEX_LITERAL , "Corresponds to expression: `(\"0x\" ~ (HEX_DIGIT | \"_\")* ~ HEX_DIGIT ~ (HEX_DIGIT | \"_\")*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#HEX_LITERAL , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_120 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#HEX_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_121 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#HEX_DIGIT :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#HEX_DIGIT :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_122 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#HEX_LITERAL<'i, INHERITED> {}
         :: pest_typed :: rule ! (r#IntegerSuffix , "Corresponds to expression: `(kw_u8 | kw_u16 | kw_u32 | kw_u64 | kw_usize | kw_i8 | kw_i16 | kw_i32 | kw_i64 | kw_isize)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#IntegerSuffix , super :: super :: generics :: Choice10 :: < super :: super :: rules :: r#kw_u8 :: < 'i , INHERITED > , super :: super :: rules :: r#kw_u16 :: < 'i , INHERITED > , super :: super :: rules :: r#kw_u32 :: < 'i , INHERITED > , super :: super :: rules :: r#kw_u64 :: < 'i , INHERITED > , super :: super :: rules :: r#kw_usize :: < 'i , INHERITED > , super :: super :: rules :: r#kw_i8 :: < 'i , INHERITED > , super :: super :: rules :: r#kw_i16 :: < 'i , INHERITED > , super :: super :: rules :: r#kw_i32 :: < 'i , INHERITED > , super :: super :: rules :: r#kw_i64 :: < 'i , INHERITED > , super :: super :: rules :: r#kw_isize :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#IntegerSuffix<'i, INHERITED> {
@@ -1830,7 +1863,7 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#String , "Corresponds to expression: `(\"\\\"\" ~ (!(\"\\\"\") ~ ANY)* ~ \"\\\"\")`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#String , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_120 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Skip :: < super :: super :: constant_wrappers :: r#w_121 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_122 > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#String , "Corresponds to expression: `(\"\\\"\" ~ (!(\"\\\"\") ~ ANY)* ~ \"\\\"\")`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#String , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_123 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Skip :: < super :: super :: constant_wrappers :: r#w_124 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_125 > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#String<'i, INHERITED> {}
         :: pest_typed :: rule ! (r#Bool , "Corresponds to expression: `(kw_true | kw_false)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Bool , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#kw_true :: < 'i , INHERITED > , super :: super :: rules :: r#kw_false :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Bool<'i, INHERITED> {
@@ -1859,7 +1892,7 @@ pub mod rules_impl {
         }
         :: pest_typed :: rule ! (r#WordLeading , "Corresponds to expression: `(('a'..'z') | ('A'..'Z') | ('一'..'龥') | ('_'..'_'))`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#WordLeading , super :: super :: generics :: Choice4 :: < super :: super :: generics :: CharRange :: < 'a' , 'z' > , super :: super :: generics :: CharRange :: < 'A' , 'Z' > , super :: super :: generics :: CharRange :: < '一' , '龥' > , super :: super :: generics :: CharRange :: < '_' , '_' > , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#WordLeading<'i, INHERITED> {}
-        :: pest_typed :: rule ! (r#WordFollowing , "Corresponds to expression: `(WordLeading | \"_\" | \"-\" | ('0'..'9'))`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#WordFollowing , super :: super :: generics :: Choice4 :: < super :: super :: rules :: r#WordLeading :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_123 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_124 > , super :: super :: generics :: CharRange :: < '0' , '9' > , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#WordFollowing , "Corresponds to expression: `(WordLeading | \"_\" | \"-\" | ('0'..'9'))`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#WordFollowing , super :: super :: generics :: Choice4 :: < super :: super :: rules :: r#WordLeading :: < 'i , 0 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_126 > , super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_127 > , super :: super :: generics :: CharRange :: < '0' , '9' > , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#WordFollowing<'i, INHERITED> {}
         :: pest_typed :: rule ! (r#Word , "Corresponds to expression: `(WordLeading ~ WordFollowing*)`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Word , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#WordLeading :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: rules :: r#WordFollowing :: < 'i , 0 > > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Word<'i, INHERITED> {}
@@ -3737,7 +3770,7 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#TypeGroup , "Corresponds to expression: `(\"Group\" ~ Type)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#TypeGroup , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_125 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Type :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#TypeGroup , "Corresponds to expression: `(\"Group\" ~ Type)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#TypeGroup , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_128 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Type :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#TypeGroup<'i, INHERITED> {
             #[doc = "A helper function to access [`Type`]."]
             #[allow(non_snake_case)]
@@ -5156,8 +5189,98 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#MirCastKind , "Corresponds to expression: `(kw_PtrToPtr | kw_IntToInt | kw_Transmute)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirCastKind , super :: super :: generics :: Choice3 :: < super :: super :: rules :: r#kw_PtrToPtr :: < 'i , INHERITED > , super :: super :: rules :: r#kw_IntToInt :: < 'i , INHERITED > , super :: super :: rules :: r#kw_Transmute :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#PointerCoercion , "Corresponds to expression: `kw_Unsize`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PointerCoercion , super :: super :: rules :: r#kw_Unsize :: < 'i , INHERITED > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#PointerCoercion<'i, INHERITED> {
+            #[doc = "A helper function to access [`kw_Unsize`]."]
+            #[allow(non_snake_case)]
+            pub fn r#kw_Unsize<'s>(&'s self) -> &'s super::super::rules::r#kw_Unsize<'i, INHERITED> {
+                let res = &*self.content;
+                res
+            }
+        }
+        :: pest_typed :: rule ! (r#CoercionSource , "Corresponds to expression: `kw_Implicit`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#CoercionSource , super :: super :: rules :: r#kw_Implicit :: < 'i , INHERITED > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#CoercionSource<'i, INHERITED> {
+            #[doc = "A helper function to access [`kw_Implicit`]."]
+            #[allow(non_snake_case)]
+            pub fn r#kw_Implicit<'s>(&'s self) -> &'s super::super::rules::r#kw_Implicit<'i, INHERITED> {
+                let res = &*self.content;
+                res
+            }
+        }
+        :: pest_typed :: rule ! (r#MirCastKind , "Corresponds to expression: `(kw_PtrToPtr | kw_IntToInt | kw_Transmute | (kw_PointerCoercion ~ LeftParen ~ PointerCoercion ~ Comma ~ CoercionSource ~ RightParen))`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirCastKind , super :: super :: generics :: Choice4 :: < super :: super :: rules :: r#kw_PtrToPtr :: < 'i , INHERITED > , super :: super :: rules :: r#kw_IntToInt :: < 'i , INHERITED > , super :: super :: rules :: r#kw_Transmute :: < 'i , INHERITED > , super :: super :: generics :: Seq6 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#kw_PointerCoercion :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#PointerCoercion :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Comma :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#CoercionSource :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#MirCastKind<'i, INHERITED> {
+            #[doc = "A helper function to access [`CoercionSource`]."]
+            #[allow(non_snake_case)]
+            pub fn r#CoercionSource<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#CoercionSource<'i, INHERITED>>
+            {
+                let res = &*self.content;
+                {
+                    let res = res._3().map(|res| {
+                        let res = &res.content.4.matched;
+                        res
+                    });
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`Comma`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Comma<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#Comma<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._3().map(|res| {
+                        let res = &res.content.3.matched;
+                        res
+                    });
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`LeftParen`]."]
+            #[allow(non_snake_case)]
+            pub fn r#LeftParen<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#LeftParen<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._3().map(|res| {
+                        let res = &res.content.1.matched;
+                        res
+                    });
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`PointerCoercion`]."]
+            #[allow(non_snake_case)]
+            pub fn r#PointerCoercion<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#PointerCoercion<'i, INHERITED>>
+            {
+                let res = &*self.content;
+                {
+                    let res = res._3().map(|res| {
+                        let res = &res.content.2.matched;
+                        res
+                    });
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`RightParen`]."]
+            #[allow(non_snake_case)]
+            pub fn r#RightParen<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#RightParen<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._3().map(|res| {
+                        let res = &res.content.5.matched;
+                        res
+                    });
+                    res
+                }
+            }
             #[doc = "A helper function to access [`kw_IntToInt`]."]
             #[allow(non_snake_case)]
             pub fn r#kw_IntToInt<'s>(
@@ -5166,6 +5289,21 @@ pub mod rules_impl {
                 let res = &*self.content;
                 {
                     let res = res._1().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`kw_PointerCoercion`]."]
+            #[allow(non_snake_case)]
+            pub fn r#kw_PointerCoercion<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#kw_PointerCoercion<'i, INHERITED>>
+            {
+                let res = &*self.content;
+                {
+                    let res = res._3().map(|res| {
+                        let res = &res.content.0.matched;
+                        res
+                    });
                     res
                 }
             }
@@ -8455,15 +8593,62 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#PatternConfiguration , "Corresponds to expression: `(Identifier ~ (Minus ~ Identifier)+)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PatternConfiguration , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: RepOnce :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Minus :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#PatternConfiguration , "Corresponds to expression: `(Identifier ~ MetaVariableAssignList)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PatternConfiguration , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MetaVariableAssignList :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#PatternConfiguration<'i, INHERITED> {
             #[doc = "A helper function to access [`Identifier`]."]
             #[allow(non_snake_case)]
-            pub fn r#Identifier<'s>(
+            pub fn r#Identifier<'s>(&'s self) -> &'s super::super::rules::r#Identifier<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.0.matched;
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MetaVariableAssignList`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MetaVariableAssignList<'s>(
+                &'s self,
+            ) -> &'s super::super::rules::r#MetaVariableAssignList<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#PatternExpression , "Corresponds to expression: `(PatternConfiguration ~ (Minus ~ PatternConfiguration)*)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PatternExpression , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#PatternConfiguration :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Minus :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#PatternConfiguration :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#PatternExpression<'i, INHERITED> {
+            #[doc = "A helper function to access [`Minus`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Minus<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Minus<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res
+                            .content
+                            .iter()
+                            .map(|res| {
+                                let res = &res.matched;
+                                {
+                                    let res = &res.content.0.matched;
+                                    res
+                                }
+                            })
+                            .collect::<::pest_typed::re_exported::Vec<_>>();
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`PatternConfiguration`]."]
+            #[allow(non_snake_case)]
+            pub fn r#PatternConfiguration<'s>(
                 &'s self,
             ) -> (
-                &'s super::super::rules::r#Identifier<'i, INHERITED>,
-                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Identifier<'i, INHERITED>>,
+                &'s super::super::rules::r#PatternConfiguration<'i, INHERITED>,
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#PatternConfiguration<'i, INHERITED>>,
             ) {
                 let res = &*self.content;
                 {
@@ -8493,38 +8678,12 @@ pub mod rules_impl {
                     res
                 }
             }
-            #[doc = "A helper function to access [`Minus`]."]
-            #[allow(non_snake_case)]
-            pub fn r#Minus<'s>(
-                &'s self,
-            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Minus<'i, INHERITED>> {
-                let res = &*self.content;
-                {
-                    let res = &res.content.1.matched;
-                    {
-                        let res = res
-                            .content
-                            .iter()
-                            .map(|res| {
-                                let res = &res.matched;
-                                {
-                                    let res = &res.content.0.matched;
-                                    res
-                                }
-                            })
-                            .collect::<::pest_typed::re_exported::Vec<_>>();
-                        res
-                    }
-                }
-            }
         }
-        :: pest_typed :: rule ! (r#PatternOperation , "Corresponds to expression: `PatternConfiguration`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PatternOperation , super :: super :: rules :: r#PatternConfiguration :: < 'i , INHERITED > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#PatternOperation , "Corresponds to expression: `PatternExpression`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PatternOperation , super :: super :: rules :: r#PatternExpression :: < 'i , INHERITED > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#PatternOperation<'i, INHERITED> {
-            #[doc = "A helper function to access [`PatternConfiguration`]."]
+            #[doc = "A helper function to access [`PatternExpression`]."]
             #[allow(non_snake_case)]
-            pub fn r#PatternConfiguration<'s>(
-                &'s self,
-            ) -> &'s super::super::rules::r#PatternConfiguration<'i, INHERITED> {
+            pub fn r#PatternExpression<'s>(&'s self) -> &'s super::super::rules::r#PatternExpression<'i, INHERITED> {
                 let res = &*self.content;
                 res
             }
@@ -8765,7 +8924,7 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#diagMessageText , "Corresponds to expression: `(!(\"\\\"\" | LeftBrace) ~ ANY)+`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageText , super :: super :: generics :: RepOnce :: < 'i , 0 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: generics :: Choice2 :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_126 > , super :: super :: rules :: r#LeftBrace :: < 'i , 0 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , 0 >) , > > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#diagMessageText , "Corresponds to expression: `(!(\"\\\"\" | LeftBrace) ~ ANY)+`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageText , super :: super :: generics :: RepOnce :: < 'i , 0 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: generics :: Choice2 :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_129 > , super :: super :: rules :: r#LeftBrace :: < 'i , 0 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , 0 >) , > > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessageText<'i, INHERITED> {}
         :: pest_typed :: rule ! (r#diagMessageInner , "Corresponds to expression: `(diagMessageArg | diagMessageText)+`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageInner , super :: super :: generics :: RepOnce :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#diagMessageArg :: < 'i , 0 > , super :: super :: rules :: r#diagMessageText :: < 'i , 0 > , > > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessageInner<'i, INHERITED> {
@@ -8816,7 +8975,7 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#diagMessage , "Corresponds to expression: `(\"\\\"\" ~ diagMessageInner ~ \"\\\"\")`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessage , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_127 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessageInner :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_128 > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
+        :: pest_typed :: rule ! (r#diagMessage , "Corresponds to expression: `(\"\\\"\" ~ diagMessageInner ~ \"\\\"\")`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessage , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_130 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessageInner :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_131 > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessage<'i, INHERITED> {
             #[doc = "A helper function to access [`diagMessageInner`]."]
             #[allow(non_snake_case)]
@@ -9422,13 +9581,13 @@ pub mod generics {
         T10, _10, T11, _11, T12, _12, T13, _13,
     );
     pest_typed::choices!(
-        Choice73, choice73, 73usize, T0, _0, T1, _1, T2, _2, T3, _3, T4, _4, T5, _5, T6, _6, T7, _7, T8, _8, T9, _9,
+        Choice74, choice74, 74usize, T0, _0, T1, _1, T2, _2, T3, _3, T4, _4, T5, _5, T6, _6, T7, _7, T8, _8, T9, _9,
         T10, _10, T11, _11, T12, _12, T13, _13, T14, _14, T15, _15, T16, _16, T17, _17, T18, _18, T19, _19, T20, _20,
         T21, _21, T22, _22, T23, _23, T24, _24, T25, _25, T26, _26, T27, _27, T28, _28, T29, _29, T30, _30, T31, _31,
         T32, _32, T33, _33, T34, _34, T35, _35, T36, _36, T37, _37, T38, _38, T39, _39, T40, _40, T41, _41, T42, _42,
         T43, _43, T44, _44, T45, _45, T46, _46, T47, _47, T48, _48, T49, _49, T50, _50, T51, _51, T52, _52, T53, _53,
         T54, _54, T55, _55, T56, _56, T57, _57, T58, _58, T59, _59, T60, _60, T61, _61, T62, _62, T63, _63, T64, _64,
-        T65, _65, T66, _66, T67, _67, T68, _68, T69, _69, T70, _70, T71, _71, T72, _72,
+        T65, _65, T66, _66, T67, _67, T68, _68, T69, _69, T70, _70, T71, _71, T72, _72, T73, _73,
     );
     #[doc = r" Repeat arbitrary times."]
     pub type Rep<'i, const SKIP: ::core::primitive::usize, T> = predefined_node::Rep<T, Skipped<'i>, SKIP>;

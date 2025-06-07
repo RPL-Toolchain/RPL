@@ -11,24 +11,29 @@ kw_meta   = @{ "meta" ~ !WordFollowing }
 kw_import = @{ "import" ~ !WordFollowing }
 
 // Rust Keywords
-kw_self         = @{ "self" ~ !WordFollowing }
-kw_Self         = @{ "Self" ~ !WordFollowing }
-kw_fn           = @{ "fn" ~ !WordFollowing }
-kw_mut          = @{ "mut" ~ !WordFollowing }
-kw_const        = @{ "const" ~ !WordFollowing }
-kw_static       = @{ "static" ~ !WordFollowing }
-kw_lang         = @{ "lang" ~ !WordFollowing }
-kw_as           = @{ "as" ~ !WordFollowing }
-kw_crate        = @{ "crate" ~ !WordFollowing }
-kw_use          = @{ "use" ~ !WordFollowing }
-kw_type         = @{ "type" ~ !WordFollowing }
-kw_let          = @{ "let" ~ !WordFollowing }
-kw_move         = @{ "move" ~ !WordFollowing }
-kw_copy         = @{ "copy" ~ !WordFollowing }
-kw_Len          = @{ "Len" ~ !WordFollowing }
-kw_PtrToPtr     = @{ "PtrToPtr" ~ !WordFollowing }
-kw_IntToInt     = @{ "IntToInt" ~ !WordFollowing }
-kw_Transmute    = @{ "Transmute" ~ !WordFollowing }
+kw_self            = @{ "self" ~ !WordFollowing }
+kw_Self            = @{ "Self" ~ !WordFollowing }
+kw_fn              = @{ "fn" ~ !WordFollowing }
+kw_mut             = @{ "mut" ~ !WordFollowing }
+kw_const           = @{ "const" ~ !WordFollowing }
+kw_static          = @{ "static" ~ !WordFollowing }
+kw_lang            = @{ "lang" ~ !WordFollowing }
+kw_as              = @{ "as" ~ !WordFollowing }
+kw_crate           = @{ "crate" ~ !WordFollowing }
+kw_use             = @{ "use" ~ !WordFollowing }
+kw_type            = @{ "type" ~ !WordFollowing }
+kw_let             = @{ "let" ~ !WordFollowing }
+kw_move            = @{ "move" ~ !WordFollowing }
+kw_copy            = @{ "copy" ~ !WordFollowing }
+kw_Len             = @{ "Len" ~ !WordFollowing }
+kw_PtrToPtr        = @{ "PtrToPtr" ~ !WordFollowing }
+kw_IntToInt        = @{ "IntToInt" ~ !WordFollowing }
+kw_Transmute       = @{ "Transmute" ~ !WordFollowing }
+kw_PointerCoercion = @{ "PointerCoercion" ~ !WordFollowing }
+// Soft Keyword
+kw_Unsize = @{ "Unsize" ~ !WordFollowing }
+// Soft Keyword
+kw_Implicit     = @{ "Implicit" ~ !WordFollowing }
 kw_Add          = @{ "Add" ~ !WordFollowing }
 kw_Sub          = @{ "Sub" ~ !WordFollowing }
 kw_Mul          = @{ "Mul" ~ !WordFollowing }
@@ -106,6 +111,7 @@ Keywords = @{
   | kw_PtrToPtr
   | kw_IntToInt
   | kw_Transmute
+  | kw_PointerCoercion
   | kw_Add
   | kw_Sub
   | kw_Mul
@@ -563,10 +569,15 @@ MirRvalueLen = {
     kw_Len ~ LeftParen ~ MirPlace ~ RightParen
 }
 
+PointerCoercion = { kw_Unsize }
+
+CoercionSource = { kw_Implicit }
+
 MirCastKind = {
     kw_PtrToPtr
   | kw_IntToInt
   | kw_Transmute
+  | kw_PointerCoercion ~ LeftParen ~ PointerCoercion ~ Comma ~ CoercionSource ~ RightParen
 }
 
 MirRvalueCast = {
@@ -847,12 +858,16 @@ RustItem = { Fn | Struct | Enum | Impl }
 RustItems = { LeftBrace ~ (RustItem)+ ~ RightBrace }
 
 PatternConfiguration = {
-    Identifier ~ (Minus ~ Identifier) + 
+    Identifier ~ MetaVariableAssignList
+}
+
+PatternExpression = {
+    PatternConfiguration ~ (Minus ~ PatternConfiguration)*
 }
 
 // FIXME
 PatternOperation = {
-    PatternConfiguration
+    PatternExpression
 }
 
 RustItemsOrPatternOperation = {

@@ -510,7 +510,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
         match konst {
             Choice3::_0(_lit) => {},
             Choice3::_1(lang_item) => self.check_lang_item_with_args(mctx, lang_item),
-            Choice3::_2(ty_path) => self.check_type_path(mctx, ty_path),
+            Choice3::_2(path) => self.check_type_path(mctx, path),
         }
     }
 

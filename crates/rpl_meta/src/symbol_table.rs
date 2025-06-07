@@ -565,14 +565,16 @@ impl<'i> FnInner<'i> {
         });
     }
 
+    #[instrument(level = "trace", skip(self, path), fields(types = ?self.types.keys()))]
     fn get_type(&self, path: &'i std::path::Path, ident: &Ident<'i>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
-        self.types
-            .get(&ident.name)
-            .copied()
-            .ok_or_else(|| RPLMetaError::TypeOrPathNotDeclared {
+        self.types.get(&ident.name).copied().ok_or_else(|| {
+            eprintln!("{}", std::backtrace::Backtrace::capture());
+            RPLMetaError::TypeOrPathNotDeclared {
                 span: SpanWrapper::new(ident.span, path),
                 type_or_path: ident.name,
-            })
+                declared: self.types.keys().cloned().collect(),
+            }
+        })
     }
 
     pub fn add_import(
@@ -930,6 +932,7 @@ impl<'i> GetType<'i> for WithMetaTable<'i, &'_ FnInner<'i>> {
 }
 
 impl<'i> GetType<'i> for SymbolTable<'i> {
+    #[instrument(level = "trace", skip(self), fields(imports = ?self.imports.keys()))]
     fn get_type(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
         self.imports
             .get(&ident.name)
@@ -938,6 +941,7 @@ impl<'i> GetType<'i> for SymbolTable<'i> {
             .ok_or_else(move || RPLMetaError::TypeOrPathNotDeclared {
                 span: ident.into(),
                 type_or_path: ident.name,
+                declared: self.imports.keys().cloned().collect(),
             })
     }
 }

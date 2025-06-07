@@ -68,8 +68,9 @@ error_type!(
             307 TypeOrPathNotDeclared {
                 type_or_path: Symbol,
                 span: SpanWrapper<'i>,
+                declared: Vec<Symbol>,
             }
-                "Type or path `{type_or_path}` is not declared. \n{span}",
+                "Type or path `{type_or_path}` is not declared. Declared ones are {declared:?}. \n{span}",
             308 MethodAlreadyDeclared {
                 span: SpanWrapper<'i>,
             }

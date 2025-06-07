@@ -9,7 +9,8 @@ use rustc_abi::FieldIdx;
 use rustc_data_structures::fx::FxIndexMap;
 use rustc_hir::Target;
 use rustc_index::IndexVec;
-use rustc_middle::mir;
+use rustc_middle::mir::{self, CoercionSource};
+use rustc_middle::ty::adjustment::PointerCoercion;
 
 mod pretty;
 pub mod visitor;
@@ -636,6 +637,22 @@ pub enum TerminatorKind<'pcx> {
     PatEnd,
 }
 
+trait Cast<T> {
+    fn cast(self) -> T;
+}
+
+impl<'i> Cast<PointerCoercion> for &'i pairs::PointerCoercion<'i> {
+    fn cast(self) -> PointerCoercion {
+        PointerCoercion::Unsize
+    }
+}
+
+impl<'i> Cast<CoercionSource> for &'i pairs::CoercionSource<'i> {
+    fn cast(self) -> CoercionSource {
+        CoercionSource::Implicit
+    }
+}
+
 pub enum Rvalue<'pcx> {
     Any,
     Use(Operand<'pcx>),
@@ -667,9 +684,13 @@ impl<'pcx> Rvalue<'pcx> {
                 let operand = Operand::from(with_path(p, operand), pcx, fn_sym_tab);
                 let ty = Ty::from(WithPath::new(p, ty), pcx, fn_sym_tab);
                 let cast_kind = match cast_kind.deref() {
-                    Choice3::_0(_ptr_to_ptr) => mir::CastKind::PtrToPtr,
-                    Choice3::_1(_int_to_int) => mir::CastKind::IntToInt,
-                    Choice3::_2(_transmute) => mir::CastKind::Transmute,
+                    Choice4::_0(_ptr_to_ptr) => mir::CastKind::PtrToPtr,
+                    Choice4::_1(_int_to_int) => mir::CastKind::IntToInt,
+                    Choice4::_2(_transmute) => mir::CastKind::Transmute,
+                    Choice4::_3(pointer_coercion) => {
+                        let (_, _, pointer_coercion, _, coercion_source, _) = pointer_coercion.get_matched();
+                        mir::CastKind::PointerCoercion(pointer_coercion.cast(), coercion_source.cast())
+                    },
                 };
                 Rvalue::Cast(cast_kind, operand, ty)
             },
