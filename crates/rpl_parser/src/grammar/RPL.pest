@@ -392,7 +392,7 @@ TypesSeparatedByComma = {
 }
 
 TypeArray = {
-    LeftBracket ~ Type ~ SemiColon ~ Integer ~ RightBracket
+    LeftBracket ~ Type ~ SemiColon ~ (Integer | MetaVariable) ~ RightBracket
 }
 
 TypeGroup = {
@@ -847,7 +847,7 @@ RustItem = { Fn | Struct | Enum | Impl }
 RustItems = { LeftBrace ~ (RustItem)+ ~ RightBrace }
 
 PatternConfiguration = {
-    Identifier ~ MetaVariableAssignList
+    Identifier ~ (Minus ~ Identifier) + 
 }
 
 // FIXME

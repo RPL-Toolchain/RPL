@@ -3670,15 +3670,20 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#TypeArray , "Corresponds to expression: `(LeftBracket ~ Type ~ SemiColon ~ Integer ~ RightBracket)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#TypeArray , super :: super :: generics :: Seq5 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftBracket :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Type :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#SemiColon :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Integer :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightBracket :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#TypeArray , "Corresponds to expression: `(LeftBracket ~ Type ~ SemiColon ~ (Integer | MetaVariable) ~ RightBracket)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#TypeArray , super :: super :: generics :: Seq5 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftBracket :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Type :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#SemiColon :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#Integer :: < 'i , INHERITED > , super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightBracket :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#TypeArray<'i, INHERITED> {
             #[doc = "A helper function to access [`Integer`]."]
             #[allow(non_snake_case)]
-            pub fn r#Integer<'s>(&'s self) -> &'s super::super::rules::r#Integer<'i, INHERITED> {
+            pub fn r#Integer<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#Integer<'i, INHERITED>> {
                 let res = &*self.content;
                 {
                     let res = &res.content.3.matched;
-                    res
+                    {
+                        let res = res._0().map(|res| res);
+                        res
+                    }
                 }
             }
             #[doc = "A helper function to access [`LeftBracket`]."]
@@ -3688,6 +3693,20 @@ pub mod rules_impl {
                 {
                     let res = &res.content.0.matched;
                     res
+                }
+            }
+            #[doc = "A helper function to access [`MetaVariable`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MetaVariable<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MetaVariable<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.3.matched;
+                    {
+                        let res = res._1().map(|res| res);
+                        res
+                    }
                 }
             }
             #[doc = "A helper function to access [`RightBracket`]."]
@@ -8436,26 +8455,66 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#PatternConfiguration , "Corresponds to expression: `(Identifier ~ MetaVariableAssignList)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PatternConfiguration , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MetaVariableAssignList :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#PatternConfiguration , "Corresponds to expression: `(Identifier ~ (Minus ~ Identifier)+)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PatternConfiguration , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: RepOnce :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Minus :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#PatternConfiguration<'i, INHERITED> {
             #[doc = "A helper function to access [`Identifier`]."]
             #[allow(non_snake_case)]
-            pub fn r#Identifier<'s>(&'s self) -> &'s super::super::rules::r#Identifier<'i, INHERITED> {
+            pub fn r#Identifier<'s>(
+                &'s self,
+            ) -> (
+                &'s super::super::rules::r#Identifier<'i, INHERITED>,
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Identifier<'i, INHERITED>>,
+            ) {
                 let res = &*self.content;
                 {
-                    let res = &res.content.0.matched;
+                    let res = (
+                        {
+                            let res = &res.content.0.matched;
+                            res
+                        },
+                        {
+                            let res = &res.content.1.matched;
+                            {
+                                let res = res
+                                    .content
+                                    .iter()
+                                    .map(|res| {
+                                        let res = &res.matched;
+                                        {
+                                            let res = &res.content.1.matched;
+                                            res
+                                        }
+                                    })
+                                    .collect::<::pest_typed::re_exported::Vec<_>>();
+                                res
+                            }
+                        },
+                    );
                     res
                 }
             }
-            #[doc = "A helper function to access [`MetaVariableAssignList`]."]
+            #[doc = "A helper function to access [`Minus`]."]
             #[allow(non_snake_case)]
-            pub fn r#MetaVariableAssignList<'s>(
+            pub fn r#Minus<'s>(
                 &'s self,
-            ) -> &'s super::super::rules::r#MetaVariableAssignList<'i, INHERITED> {
+            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Minus<'i, INHERITED>> {
                 let res = &*self.content;
                 {
                     let res = &res.content.1.matched;
-                    res
+                    {
+                        let res = res
+                            .content
+                            .iter()
+                            .map(|res| {
+                                let res = &res.matched;
+                                {
+                                    let res = &res.content.0.matched;
+                                    res
+                                }
+                            })
+                            .collect::<::pest_typed::re_exported::Vec<_>>();
+                        res
+                    }
                 }
             }
         }
