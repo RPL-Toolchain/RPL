@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use rpl_meta::collect_elems_separated_by_comma;
 use rpl_meta::symbol_table::{GetType, WithPath};
 use rpl_parser::generics::Choice3;
@@ -5,23 +7,25 @@ use rpl_parser::pairs;
 use rpl_predicates::PredicateConjunction;
 use rustc_index::IndexVec;
 use rustc_span::Symbol;
-use std::ops::Deref;
 
 use crate::PatCtxt;
 use crate::pat::{Ty, with_path};
 
 rustc_index::newtype_index! {
     #[debug_format = "?T{}"]
+    #[orderable]
     pub struct TyVarIdx {}
 }
 
 rustc_index::newtype_index! {
     #[debug_format = "?C{}"]
+    #[orderable]
     pub struct ConstVarIdx {}
 }
 
 rustc_index::newtype_index! {
     #[debug_format = "?P{}"]
+    #[orderable]
     pub struct PlaceVarIdx {}
 }
 

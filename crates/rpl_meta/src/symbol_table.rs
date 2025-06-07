@@ -1,8 +1,6 @@
-use crate::check::CheckCtxt;
-use crate::collect_elems_separated_by_comma;
-use crate::context::MetaContext;
-use crate::error::{RPLMetaError, RPLMetaResult};
-use crate::utils::{Ident, Path};
+use std::ops::Deref;
+use std::sync::Arc;
+
 use derive_more::derive::{AsRef, Debug, From};
 use either::Either;
 use parser::generics::{Choice3, Choice4};
@@ -11,8 +9,12 @@ use pest_typed::Span;
 use rpl_predicates::PredicateConjunction;
 use rustc_hash::FxHashMap;
 use rustc_span::Symbol;
-use std::ops::Deref;
-use std::sync::Arc;
+
+use crate::check::CheckCtxt;
+use crate::collect_elems_separated_by_comma;
+use crate::context::MetaContext;
+use crate::error::{RPLMetaError, RPLMetaResult};
+use crate::utils::{Ident, Path};
 
 #[derive(Clone, Copy, From, Debug)]
 pub enum TypeOrPath<'i> {
@@ -40,7 +42,7 @@ impl<'i> TypeOrPath<'i> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MetaVariableType {
     Type,
     Const,
@@ -62,6 +64,18 @@ pub struct NonLocalMetaSymTab<'i> {
     const_vars: FxHashMap<Symbol, (usize, Type<'i>, PredicateConjunction)>,
     place_vars: FxHashMap<Symbol, (usize, Type<'i>, PredicateConjunction)>,
     adt_pats: FxHashMap<Symbol, AdtPatType>,
+}
+
+impl<'i> NonLocalMetaSymTab<'i> {
+    pub fn type_vars(&self) -> impl Iterator<Item = (Symbol, usize)> {
+        self.type_vars.iter().map(|(symbol, (idx, _))| (*symbol, *idx))
+    }
+    pub fn const_vars(&self) -> impl Iterator<Item = (Symbol, usize)> {
+        self.const_vars.iter().map(|(symbol, (idx, _, _))| (*symbol, *idx))
+    }
+    pub fn place_vars(&self) -> impl Iterator<Item = (Symbol, usize)> {
+        self.place_vars.iter().map(|(symbol, (idx, _, _))| (*symbol, *idx))
+    }
 }
 
 impl<'i> NonLocalMetaSymTab<'i> {

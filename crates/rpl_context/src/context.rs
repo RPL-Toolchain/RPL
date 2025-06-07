@@ -170,6 +170,9 @@ impl<'pcx> PatCtxt<'pcx> {
     pub fn new_pattern(self) -> &'pcx mut pat::Pattern<'pcx> {
         self.arena.alloc(pat::Pattern::new(self))
     }
+    pub fn alloc_pattern_item(self, item: pat::PatternItem<'pcx>) -> &'pcx mut pat::PatternItem<'pcx> {
+        self.arena.alloc(item)
+    }
     pub fn mk_mir_pattern(self, pattern: pat::FnPatternBody<'pcx>) -> &'pcx pat::FnPatternBody<'pcx> {
         self.arena.alloc(pattern)
     }
@@ -197,19 +200,35 @@ impl<'pcx> PatCtxt<'pcx> {
     ) {
         let pattern = self.new_pattern();
         // FIXME: process utils
-        let (_utils, patts, diags) = collect_blocks(main);
-        let patt_items = patts.iter().flat_map(|patt| patt.get_matched().3.iter_matched());
-        let patt_symbol_tables = &mctx.symbol_tables.get(&id).unwrap().patt_symbol_tables;
-        patt_items.for_each(|item| {
-            pattern.add_pattern_item(
-                with_path(mctx.get_active_path(), item),
-                patt_symbol_tables,
-                pat::PattOrUtil::Patt,
-            );
-        });
-        for diag in diags {
-            pattern.add_diag(diag, patt_symbol_tables)
+        let (utils, patts, diags) = collect_blocks(main);
+
+        {
+            let patt_items = utils.iter().flat_map(|patt| patt.get_matched().3.iter_matched());
+            let patt_symbol_tables = &mctx.symbol_tables.get(&id).unwrap().util_symbol_tables;
+            patt_items.for_each(|item| {
+                pattern.add_pattern_item(
+                    with_path(mctx.get_active_path(), item),
+                    patt_symbol_tables,
+                    pat::PattOrUtil::Util,
+                );
+            });
         }
+        {
+            let patt_items = patts.iter().flat_map(|patt| patt.get_matched().3.iter_matched());
+            let patt_symbol_tables = &mctx.symbol_tables.get(&id).unwrap().patt_symbol_tables;
+            patt_items.for_each(|item| {
+                pattern.add_pattern_item(
+                    with_path(mctx.get_active_path(), item),
+                    patt_symbol_tables,
+                    pat::PattOrUtil::Patt,
+                );
+            });
+
+            for diag in diags {
+                pattern.add_diag(diag, patt_symbol_tables)
+            }
+        }
+
         self.rpl_patterns.lock().insert(id, pattern);
     }
 }

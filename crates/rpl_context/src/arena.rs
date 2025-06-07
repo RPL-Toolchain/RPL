@@ -10,6 +10,7 @@ macro_rules! arena_types {
             [] fn_pattern_bodys: $crate::pat::FnPatternBody<'tcx>,
             [] ty_kinds: $crate::pat::TyKind<'tcx>,
             [] adt_pats: $crate::pat::Adt<'tcx>,
+            [] pat_items: $crate::pat::PatternItem<'tcx>,
         ]);
     )
 }

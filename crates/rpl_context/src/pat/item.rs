@@ -1,9 +1,6 @@
 use std::ops::Deref;
 use std::sync::Arc;
 
-use super::utils::mutability_from_pair_mutability;
-use super::{FnPatternBody, FnSymbolTable, NonLocalMetaVars, Path, RawDecleration, RawStatement, Ty};
-use crate::PatCtxt;
 use derive_more::derive::Debug;
 use rpl_meta::collect_elems_separated_by_comma;
 use rpl_meta::symbol_table::{Visibility, WithMetaTable, WithPath};
@@ -13,6 +10,10 @@ use rustc_data_structures::fx::{FxHashMap, FxIndexMap};
 use rustc_hir::Safety;
 use rustc_middle::mir;
 use rustc_span::Symbol;
+
+use super::utils::mutability_from_pair_mutability;
+use super::{FnPatternBody, FnSymbolTable, NonLocalMetaVars, Path, RawDecleration, RawStatement, Ty};
+use crate::PatCtxt;
 
 pub type StructInner<'pcx> = Variant<'pcx>;
 pub type Struct<'pcx> = WithMetaTable<'pcx, StructInner<'pcx>>;
@@ -274,6 +275,9 @@ impl<'pcx> Param<'pcx> {
 impl<'pcx> FnPatterns<'pcx> {
     pub fn get_fn_pat(&self, name: Symbol) -> Option<&'pcx FnPattern<'pcx>> {
         self.named_fns.get(&name).copied()
+    }
+    pub fn iter(&self) -> impl Iterator<Item = &'pcx FnPattern<'pcx>> {
+        self.into_iter()
     }
 }
 

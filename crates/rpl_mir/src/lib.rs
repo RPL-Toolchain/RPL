@@ -26,6 +26,7 @@ extern crate rustc_span;
 extern crate rustc_target;
 extern crate rustc_type_ir;
 
+extern crate either;
 extern crate smallvec;
 #[macro_use]
 extern crate tracing;
@@ -37,8 +38,11 @@ mod matches;
 use std::cell::RefCell;
 use std::iter::zip;
 
-use crate::graph::{MirControlFlowGraph, MirDataDepGraph, PatControlFlowGraph, PatDataDepGraph};
+pub use matches::artifact::*;
+pub use matches::*;
 use rpl_context::PatCtxt;
+pub use rpl_context::pat;
+pub use rpl_context::pat::MatchedMap;
 use rpl_match::{Candidates, MatchFnCtxt, MatchPlaceCtxt, MatchTyCtxt};
 use rpl_mir_graph::TerminatorEdges;
 use rustc_abi::{FieldIdx, VariantIdx};
@@ -53,8 +57,7 @@ use rustc_middle::ty::{GenericArgsRef, TyCtxt};
 use rustc_middle::{mir, ty};
 use rustc_span::Symbol;
 
-pub use matches::{Matched, StatementMatch};
-pub use rpl_context::pat;
+use crate::graph::{MirControlFlowGraph, MirDataDepGraph, PatControlFlowGraph, PatDataDepGraph};
 
 pub struct CheckMirCtxt<'a, 'pcx, 'tcx> {
     ty: MatchTyCtxt<'pcx, 'tcx>,
@@ -65,8 +68,8 @@ pub struct CheckMirCtxt<'a, 'pcx, 'tcx> {
     mir_pat: &'a pat::FnPatternBody<'pcx>,
     pat_cfg: PatControlFlowGraph,
     pat_ddg: PatDataDepGraph,
-    mir_cfg: MirControlFlowGraph,
-    mir_ddg: MirDataDepGraph,
+    mir_cfg: &'a MirControlFlowGraph,
+    mir_ddg: &'a MirDataDepGraph,
     // pat_pdg: PatProgramDepGraph,
     // mir_pdg: MirProgramDepGraph,
     locals: IndexVec<pat::Local, RefCell<MixedBitSet<mir::Local>>>,
@@ -86,8 +89,8 @@ impl<'a, 'pcx, 'tcx> CheckMirCtxt<'a, 'pcx, 'tcx> {
         pat: &'pcx pat::RustItems<'pcx>,
         pat_name: Symbol,
         fn_pat: &'a pat::FnPattern<'pcx>,
-        mir_cfg: MirControlFlowGraph,
-        mir_ddg: MirDataDepGraph,
+        mir_cfg: &'a MirControlFlowGraph,
+        mir_ddg: &'a MirDataDepGraph,
     ) -> Self {
         let typing_env = ty::TypingEnv::post_analysis(tcx, body.source.def_id());
         let ty = MatchTyCtxt::new(tcx, pcx, typing_env, pat, &fn_pat.meta);

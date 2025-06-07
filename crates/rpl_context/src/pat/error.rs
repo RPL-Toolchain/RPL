@@ -9,9 +9,8 @@ use rustc_middle::mir::Body;
 use rustc_span::{Span, Symbol};
 use sync_arena::declare_arena;
 
+use super::Matched;
 use crate::pat::{ConstVarIdx, TyVarIdx};
-
-use super::{LabelMap, Matched};
 
 /// A dynamic error that can be used to report user-defined errors
 ///
@@ -194,7 +193,7 @@ impl<'i> DynamicErrorBuilder<'i> {
                     let message = message.span.as_str();
                     level = match message {
                         "allow" => Level::Allow,
-                        "warning" => Level::Warn,
+                        "warn" => Level::Warn,
                         "deny" => Level::Deny,
                         "forbid" => Level::Forbid,
                         _ => unimplemented!("Unrecognized level: {message}",),
@@ -218,12 +217,7 @@ impl<'i> DynamicErrorBuilder<'i> {
         };
         builder
     }
-    pub(crate) fn build<'tcx>(
-        &self,
-        label_map: &LabelMap,
-        body: &Body<'tcx>,
-        matched: &impl Matched<'tcx>,
-    ) -> DynamicError {
+    pub(crate) fn build<'tcx>(&self, body: &Body<'tcx>, matched: &impl Matched<'tcx>) -> DynamicError {
         fn format<'tcx>(message: &Vec<SubMsg>, matched: &impl Matched<'tcx>) -> String {
             let mut s = String::new();
             for msg in message {
@@ -241,34 +235,21 @@ impl<'i> DynamicErrorBuilder<'i> {
             }
             s
         }
-        let primary = (
-            format(&self.primary.0, matched),
-            matched.span(label_map, body, self.primary.1),
-        );
+        let primary = (format(&self.primary.0, matched), matched.span(body, self.primary.1));
         let labels = self
             .labels
             .iter()
-            .map(|(label, span)| (format(label, matched), matched.span(label_map, body, span)))
+            .map(|(label, span)| (format(label, matched), matched.span(body, span)))
             .collect();
         let notes = self
             .notes
             .iter()
-            .map(|(note, span)| {
-                (
-                    format(note, matched),
-                    span.map(|span| matched.span(label_map, body, span)),
-                )
-            })
+            .map(|(note, span)| (format(note, matched), span.map(|span| matched.span(body, span))))
             .collect();
         let helps = self
             .helps
             .iter()
-            .map(|(help, span)| {
-                (
-                    format(help, matched),
-                    span.map(|span| matched.span(label_map, body, span)),
-                )
-            })
+            .map(|(help, span)| (format(help, matched), span.map(|span| matched.span(body, span))))
             .collect();
         let lint = self.lint;
         DynamicError {
