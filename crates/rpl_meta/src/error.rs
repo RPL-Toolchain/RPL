@@ -114,6 +114,10 @@ error_type!(
                 span: SpanWrapper<'i>,
             }
                 "The return value `RET` in MIR pattern is not declared. \n{span}",
+            321 RetAlreadyDeclared {
+                span: SpanWrapper<'i>,
+            }
+                "The return value `RET` in MIR pattern is already declared. \n{span}",
             319 UnknownPredicate {
                 pred_name: String,
                 span: SpanWrapper<'i>,

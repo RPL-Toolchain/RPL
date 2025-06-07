@@ -10,7 +10,7 @@ use std::sync::Arc;
 use super::CheckFnCtxt;
 
 pub(super) struct CheckImplCtxt<'i, 'r> {
-    pub(super) meta_vars: Arc<NonLocalMetaSymTab>,
+    pub(super) meta_vars: Arc<NonLocalMetaSymTab<'i>>,
     pub(super) impl_def: &'r mut ImplInner<'i>,
     pub(super) imports: &'r FxHashMap<Symbol, &'i pairs::Path<'i>>,
     pub(super) errors: &'r mut Vec<RPLMetaError<'i>>,

@@ -3,10 +3,9 @@ use crate::collect_elems_separated_by_comma;
 use crate::context::MetaContext;
 use crate::error::{RPLMetaError, RPLMetaResult};
 use crate::utils::{Ident, Path};
-use derive_more::derive::{Debug, From};
+use derive_more::derive::{AsRef, Debug, From};
 use either::Either;
 use parser::generics::{Choice3, Choice4};
-use parser::pairs::TypeMetaVariable;
 use parser::{SpanWrapper, pairs};
 use pest_typed::Span;
 use rpl_predicates::PredicateConjunction;
@@ -54,21 +53,23 @@ pub enum AdtPatType {
     Enum,
 }
 
+pub type Type<'i> = &'i pairs::Type<'i>;
+
 // the usize in the hashmap is the *-index of a non-local meta variable
 #[derive(Default, Clone, Debug)]
-pub struct NonLocalMetaSymTab {
+pub struct NonLocalMetaSymTab<'i> {
     type_vars: FxHashMap<Symbol, (usize, PredicateConjunction)>,
-    const_vars: FxHashMap<Symbol, (usize, PredicateConjunction)>,
-    place_vars: FxHashMap<Symbol, (usize, PredicateConjunction)>,
+    const_vars: FxHashMap<Symbol, (usize, Type<'i>, PredicateConjunction)>,
+    place_vars: FxHashMap<Symbol, (usize, Type<'i>, PredicateConjunction)>,
     adt_pats: FxHashMap<Symbol, AdtPatType>,
 }
 
-impl NonLocalMetaSymTab {
-    pub fn add_non_local_meta_var<'i>(
+impl<'i> NonLocalMetaSymTab<'i> {
+    pub fn add_non_local_meta_var(
         &mut self,
         mctx: &MetaContext<'i>,
         meta_var: Ident<'i>,
-        meta_var_ty: &pairs::MetaVariableType<'i>,
+        meta_var_ty: &'i pairs::MetaVariableType<'i>,
         preds: PredicateConjunction,
         errors: &mut Vec<RPLMetaError<'i>>,
     ) {
@@ -83,8 +84,11 @@ impl NonLocalMetaSymTab {
                     errors.push(err);
                 }
             },
-            Choice3::_1(_) => {
-                let existed = self.const_vars.insert(meta_var.name, (self.const_vars.len(), preds));
+            Choice3::_1(kind) => {
+                let (_, _, ty, _) = kind.get_matched();
+                let existed = self
+                    .const_vars
+                    .insert(meta_var.name, (self.const_vars.len(), ty, preds));
                 if existed.is_some() {
                     let err = RPLMetaError::NonLocalMetaVariableAlreadyDeclared {
                         meta_var: meta_var.name,
@@ -93,8 +97,11 @@ impl NonLocalMetaSymTab {
                     errors.push(err);
                 }
             },
-            Choice3::_2(_) => {
-                let existed = self.place_vars.insert(meta_var.name, (self.place_vars.len(), preds));
+            Choice3::_2(kind) => {
+                let (_, _, ty, _) = kind.get_matched();
+                let existed = self
+                    .place_vars
+                    .insert(meta_var.name, (self.place_vars.len(), ty, preds));
                 if existed.is_some() {
                     let err = RPLMetaError::NonLocalMetaVariableAlreadyDeclared {
                         meta_var: meta_var.name,
@@ -106,7 +113,7 @@ impl NonLocalMetaSymTab {
         }
     }
 
-    pub fn add_adt_pat<'i>(
+    pub fn add_adt_pat(
         &mut self,
         mctx: &MetaContext<'i>,
         meta_var: Ident<'i>,
@@ -126,7 +133,7 @@ impl NonLocalMetaSymTab {
             .ok()
     }
 
-    pub fn get_non_local_meta_var<'i>(
+    pub fn get_non_local_meta_var(
         &self,
         mctx: &MetaContext<'i>,
         meta_var: Ident<'i>,
@@ -142,14 +149,25 @@ impl NonLocalMetaSymTab {
         })
     }
 
+    pub fn force_non_local_meta_var(&self, meta_var: WithPath<'i, &'i pairs::MetaVariable<'i>>) -> MetaVariable<'i> {
+        let symbol = Symbol::intern(meta_var.span.as_str());
+        self.get_from_symbol(symbol).unwrap_or_else(|| {
+            let err = RPLMetaError::NonLocalMetaVariableNotDeclared {
+                meta_var: symbol,
+                span: SpanWrapper::new(meta_var.span, meta_var.path),
+            };
+            panic!("{err}");
+        })
+    }
+
     #[allow(clippy::manual_map)]
-    pub fn get_from_symbol(&self, symbol: Symbol) -> Option<MetaVariable> {
+    pub fn get_from_symbol(&self, symbol: Symbol) -> Option<MetaVariable<'i>> {
         if let Some((idx, preds)) = self.type_vars.get(&symbol) {
-            Some(MetaVariable::MetaVariable(MetaVariableType::Type, *idx, preds.clone()))
-        } else if let Some((idx, preds)) = self.const_vars.get(&symbol) {
-            Some(MetaVariable::MetaVariable(MetaVariableType::Const, *idx, preds.clone()))
-        } else if let Some((idx, preds)) = self.place_vars.get(&symbol) {
-            Some(MetaVariable::MetaVariable(MetaVariableType::Place, *idx, preds.clone()))
+            Some(MetaVariable::Type(*idx, preds.clone()))
+        } else if let Some((idx, ty, preds)) = self.const_vars.get(&symbol) {
+            Some(MetaVariable::Const(*idx, ty, preds.clone()))
+        } else if let Some((idx, ty, preds)) = self.place_vars.get(&symbol) {
+            Some(MetaVariable::Place(*idx, ty, preds.clone()))
         } else if let Some(adt_pat_ty) = self.adt_pats.get(&symbol) {
             Some(MetaVariable::AdtPat(*adt_pat_ty, symbol))
         } else {
@@ -158,14 +176,15 @@ impl NonLocalMetaSymTab {
     }
 }
 
-#[derive(Debug)]
-pub struct WithMetaTable<T> {
-    pub meta_vars: Arc<NonLocalMetaSymTab>,
+#[derive(Debug, AsRef)]
+pub struct WithMetaTable<'i, T> {
+    #[as_ref]
+    pub meta_vars: Arc<NonLocalMetaSymTab<'i>>,
     pub inner: T,
 }
 
-impl<T> From<(T, Arc<NonLocalMetaSymTab>)> for WithMetaTable<T> {
-    fn from(inner: (T, Arc<NonLocalMetaSymTab>)) -> Self {
+impl<'i, T> From<(T, Arc<NonLocalMetaSymTab<'i>>)> for WithMetaTable<'i, T> {
+    fn from(inner: (T, Arc<NonLocalMetaSymTab<'i>>)) -> Self {
         Self {
             meta_vars: inner.1,
             inner: inner.0,
@@ -228,11 +247,17 @@ macro_rules! map_inner {
     };
 }
 
-#[derive(Default)]
+pub type Imports<'i> = FxHashMap<Symbol, &'i pairs::Path<'i>>;
+
+#[derive(Default, AsRef)]
 pub struct SymbolTable<'i> {
     // meta variables in p[$T: ty]
-    pub meta_vars: Arc<NonLocalMetaSymTab>,
-    imports: FxHashMap<Symbol, &'i pairs::Path<'i>>,
+    #[as_ref]
+    pub meta_vars: Arc<NonLocalMetaSymTab<'i>>,
+    /// Should be inserted into [`FnInner::types`].
+    ///
+    /// See [`SymbolTable::imports`].
+    pub(crate) imports: Imports<'i>,
     structs: FxHashMap<Symbol, Struct<'i>>,
     enums: FxHashMap<Symbol, Enum<'i>>,
     fns: FxHashMap<Symbol, Fn<'i>>,
@@ -285,8 +310,9 @@ impl<'i> SymbolTable<'i> {
         ident: &'i pairs::FnName<'i>,
         self_ty: Option<&'i pairs::Type<'i>>,
         errors: &mut Vec<RPLMetaError<'i>>,
-    ) -> Option<&mut Fn<'i>> {
+    ) -> Option<(&mut Fn<'i>, &Imports<'i>)> {
         let (fn_name, fn_def) = FnInner::parse_from(mctx, ident, self_ty);
+        let imports = &self.imports;
         if let Some(fn_name) = fn_name {
             self.fns
                 .try_insert(fn_name.name, (fn_def, self.meta_vars.clone()).into())
@@ -303,6 +329,8 @@ impl<'i> SymbolTable<'i> {
             self.unnamed_fns.push((fn_def, self.meta_vars.clone()).into());
             Some(self.unnamed_fns.last_mut().unwrap())
         }
+        //FIXME: this is a hack to borrow the imports from the symbol table
+        .map(|fn_inner| (fn_inner, imports))
     }
 
     /// See [`SymbolTable::get_impl`].
@@ -311,7 +339,7 @@ impl<'i> SymbolTable<'i> {
         mctx: &MetaContext<'i>,
         impl_pat: &'i pairs::Impl<'i>,
         errors: &mut Vec<RPLMetaError<'i>>,
-    ) -> Option<&mut Impl<'i>> {
+    ) -> Option<(&mut Impl<'i>, &Imports<'i>)> {
         self.impls
             .try_insert(
                 (impl_pat.Type(), impl_pat.ImplKind()),
@@ -324,6 +352,8 @@ impl<'i> SymbolTable<'i> {
                 errors.push(err);
             })
             .ok()
+            //FIXME: this is a hack to borrow the imports from the symbol table
+            .map(|impl_inner| (impl_inner, &self.imports))
     }
 
     pub fn contains_adt(&self, ident: &Ident<'_>) -> bool {
@@ -350,12 +380,13 @@ impl<'i> SymbolTable<'i> {
     ) -> FxHashMap<Symbol, Self> {
         let mut symbol_tables = FxHashMap::default();
         for pat_item in pat_items {
+            //FIXME: maybe check whether the key exists before collecting the symbol table?
             let CheckCtxt {
                 name,
-                imports: _,
                 symbol_table: symbols,
                 errors: error_vec,
             } = Self::collect_symbol_table(mctx, pat_imports, pat_item);
+            debug!(?name, imports = ?symbols.imports.keys(), meta = ?symbols.meta_vars);
             errors.extend(error_vec);
             _ = symbol_tables.try_insert(name, symbols).map_err(|entry| {
                 let name = entry.entry.key();
@@ -400,7 +431,7 @@ impl<'i> SymbolTable<'i> {
     }
 }
 
-pub type Enum<'i> = WithMetaTable<EnumInner<'i>>;
+pub type Enum<'i> = WithMetaTable<'i, EnumInner<'i>>;
 
 pub struct EnumInner<'i> {
     variants: FxHashMap<Symbol, Variant<'i>>,
@@ -458,7 +489,14 @@ impl<'i> Variant<'i> {
     }
 }
 
-pub type Fn<'i> = WithMetaTable<FnInner<'i>>;
+pub type Fn<'i> = WithMetaTable<'i, FnInner<'i>>;
+
+#[derive(Clone, Copy)]
+pub enum LocalSpecial {
+    None,
+    Self_,
+    Return,
+}
 
 pub struct FnInner<'i> {
     #[expect(unused)]
@@ -472,7 +510,7 @@ pub struct FnInner<'i> {
     self_param: Option<&'i pairs::SelfParam<'i>>,
     self_ty: Option<&'i pairs::Type<'i>>,
     params: FxHashMap<Symbol, &'i pairs::Type<'i>>,
-    locals: FxHashMap<Symbol, (usize, &'i pairs::Type<'i>)>,
+    locals: FxHashMap<Symbol, (Option<Symbol>, usize, &'i pairs::Type<'i>, LocalSpecial)>,
     pub symbol_to_local_idx: FxHashMap<Symbol, usize>,
 }
 
@@ -549,16 +587,20 @@ impl<'i> FnInner<'i> {
         self.add_type_impl(mctx, ident, ty_or_path, errors);
     }
 
-    pub fn get_sorted_locals(&self) -> WithPath<'i, Vec<(Symbol, &'i pairs::Type<'i>)>> {
+    #[expect(clippy::type_complexity)]
+    pub fn get_sorted_locals(&self) -> WithPath<'i, Vec<(Option<Symbol>, Symbol, &'i pairs::Type<'i>, LocalSpecial)>> {
         let mut locals = self
             .locals
             .iter()
-            .map(|(ident, (idx, ty))| (ident, (idx, ty)))
+            .map(|(ident, (label, idx, ty, s))| (ident, (label, idx, ty, s)))
             .collect::<Vec<_>>();
-        locals.sort_by_key(|(_, (idx, _))| *idx);
+        locals.sort_by_key(|(_, (_, idx, _, _))| *idx);
         WithPath::new(
             self.path,
-            locals.into_iter().map(|(ident, (_, ty))| (*ident, *ty)).collect(),
+            locals
+                .into_iter()
+                .map(|(ident, (label, _, ty, s))| (*label, *ident, *ty, *s))
+                .collect(),
         )
     }
 
@@ -599,13 +641,15 @@ impl<'i> FnInner<'i> {
     pub fn add_local(
         &mut self,
         mctx: &MetaContext<'i>,
+        label: Option<Symbol>,
         ident: Ident<'i>,
         ty: &'i pairs::Type<'i>,
+        special: LocalSpecial,
         errors: &mut Vec<RPLMetaError<'i>>,
     ) {
         let len = self.locals.len();
         if let std::collections::hash_map::Entry::Vacant(e) = self.locals.entry(ident.name) {
-            e.insert((len, ty));
+            e.insert((label, len, ty, special));
             self.symbol_to_local_idx.insert(ident.name, len);
         } else {
             let err = RPLMetaError::SymbolAlreadyDeclared {
@@ -618,6 +662,7 @@ impl<'i> FnInner<'i> {
     pub fn add_place_local(
         &mut self,
         mctx: &MetaContext<'i>,
+        label: Option<Symbol>,
         local: &'i pairs::MirPlaceLocal<'i>,
         ty: &'i pairs::Type<'i>,
         errors: &mut Vec<RPLMetaError<'i>>,
@@ -625,18 +670,32 @@ impl<'i> FnInner<'i> {
         match local.deref() {
             Choice4::_0(_place_holder) => {},
             Choice4::_1(self_value) => {
-                self.self_value = Some(ty);
-                //FIXME: does this reasonable to be an arbitrary idx?
-                self.add_local(mctx, self_value.into(), ty, errors);
+                if self.self_value.is_some() {
+                    errors.push(RPLMetaError::SelfAlreadyDeclared {
+                        span: SpanWrapper::new(local.span, mctx.get_active_path()),
+                    });
+                } else {
+                    self.self_value = Some(ty);
+                    self.add_local(mctx, label, self_value.into(), ty, LocalSpecial::Self_, errors);
+                }
             },
-            Choice4::_2(_ret_value) => self.ret_value = Some(ty),
-            Choice4::_3(ident) => self.add_local(mctx, ident.into(), ty, errors),
+            Choice4::_2(ret_value) => {
+                if self.self_value.is_some() {
+                    errors.push(RPLMetaError::RetAlreadyDeclared {
+                        span: SpanWrapper::new(local.span, mctx.get_active_path()),
+                    });
+                } else {
+                    self.ret_value = Some(ty);
+                    self.add_local(mctx, label, ret_value.into(), ty, LocalSpecial::Return, errors);
+                }
+            },
+            Choice4::_3(ident) => self.add_local(mctx, label, ident.into(), ty, LocalSpecial::None, errors),
         }
     }
     fn get_local_impl(&self, ident: Ident<'i>) -> Option<&'i pairs::Type<'i>> {
         self.locals
             .get(&ident.name)
-            .map(|(_idx, ty)| ty)
+            .map(|(_label, _idx, ty, _)| ty)
             .or_else(|| self.params.get(&ident.name))
             .copied()
     }
@@ -692,11 +751,11 @@ pub enum Visibility {
     Private,
 }
 
-pub type Struct<'i> = WithMetaTable<StructInner<'i>>;
+pub type Struct<'i> = WithMetaTable<'i, StructInner<'i>>;
 
 pub type StructInner<'pcx> = Variant<'pcx>;
 
-pub type Impl<'i> = WithMetaTable<ImplInner<'i>>;
+pub type Impl<'i> = WithMetaTable<'i, ImplInner<'i>>;
 
 pub struct ImplInner<'i> {
     #[allow(dead_code)]
@@ -814,68 +873,59 @@ pub(crate) fn str_is_primitive(ident: &str) -> bool {
     PRIMITIVES.contains(&ident)
 }
 
-pub enum MetaVariable {
-    MetaVariable(MetaVariableType, usize, PredicateConjunction),
+pub enum MetaVariable<'i> {
+    Type(usize, PredicateConjunction),
+    Const(usize, &'i pairs::Type<'i>, PredicateConjunction),
+    Place(usize, &'i pairs::Type<'i>, PredicateConjunction),
     AdtPat(AdtPatType, Symbol),
 }
 
-impl MetaVariable {
+impl<'i> MetaVariable<'i> {
     pub fn ty(&self) -> Either<MetaVariableType, AdtPatType> {
         match self {
-            MetaVariable::MetaVariable(kind, _, _) => Either::Left(*kind),
+            MetaVariable::Type(_, _) => Either::Left(MetaVariableType::Type),
+            MetaVariable::Const(_, _, _) => Either::Left(MetaVariableType::Const),
+            MetaVariable::Place(_, _, _) => Either::Left(MetaVariableType::Place),
             MetaVariable::AdtPat(kind, _) => Either::Right(*kind),
+        }
+    }
+    pub fn expect_const(self) -> (usize, &'i pairs::Type<'i>, PredicateConjunction) {
+        match self {
+            MetaVariable::Type(_, _) => panic!("Expected type meta variable, found ADT"),
+            MetaVariable::Const(idx, ty, pred) => (idx, ty, pred),
+            MetaVariable::Place(_, _, _) => panic!("Expected place meta variable, found ADT"),
+            MetaVariable::AdtPat(_, _) => panic!("Expected const meta variable, found ADT"),
         }
     }
     pub fn expect_non_adt(self) -> (MetaVariableType, usize, PredicateConjunction) {
         match self {
-            MetaVariable::MetaVariable(kind, idx, pred) => (kind, idx, pred),
+            MetaVariable::Type(idx, pred) => (MetaVariableType::Type, idx, pred),
+            MetaVariable::Const(idx, _, pred) => (MetaVariableType::Const, idx, pred),
+            MetaVariable::Place(idx, _, pred) => (MetaVariableType::Place, idx, pred),
             MetaVariable::AdtPat(_, _) => panic!("Expected non-ADT meta variable, found ADT"),
         }
     }
 }
 
-impl From<(MetaVariableType, (usize, PredicateConjunction))> for MetaVariable {
-    fn from((kind, (idx, pred)): (MetaVariableType, (usize, PredicateConjunction))) -> Self {
-        MetaVariable::MetaVariable(kind, idx, pred)
-    }
-}
-
-impl From<(AdtPatType, Symbol)> for MetaVariable {
+impl From<(AdtPatType, Symbol)> for MetaVariable<'_> {
     fn from((kind, symbol): (AdtPatType, Symbol)) -> Self {
         MetaVariable::AdtPat(kind, symbol)
     }
 }
 
-pub trait GetType<'i> {
+pub trait GetType<'i>: AsRef<Arc<NonLocalMetaSymTab<'i>>> {
     fn get_type<'s>(&'s self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'s>, RPLMetaError<'i>>;
-    fn get_type_var<'s>(&'s self, ty_meta_var: &TypeMetaVariable<'i>) -> MetaVariable;
 }
 
 impl<'i> GetType<'i> for Fn<'i> {
     fn get_type(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
         FnInner::get_type(&self.inner, ident.path, &ident.inner)
     }
-    fn get_type_var(&self, ty_meta_var: &TypeMetaVariable) -> MetaVariable {
-        self.meta_vars
-            .get_from_symbol(Symbol::intern(ty_meta_var.span.as_str()))
-            .unwrap_or_else(|| {
-                panic!(
-                    "Type variable `{}` not found in symbol table {:?}",
-                    ty_meta_var.span.as_str(),
-                    self.meta_vars
-                )
-            })
-    }
 }
 
-impl<'i> GetType<'i> for WithMetaTable<&'_ FnInner<'i>> {
+impl<'i> GetType<'i> for WithMetaTable<'i, &'_ FnInner<'i>> {
     fn get_type(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
         FnInner::get_type(self.inner, ident.path, &ident.inner)
-    }
-    fn get_type_var(&self, ty_meta_var: &TypeMetaVariable) -> MetaVariable {
-        self.meta_vars
-            .get_from_symbol(Symbol::intern(ty_meta_var.span.as_str()))
-            .unwrap() // unwrap should be safe here because of the meta pass.
     }
 }
 
@@ -889,13 +939,5 @@ impl<'i> GetType<'i> for SymbolTable<'i> {
                 span: ident.into(),
                 type_or_path: ident.name,
             })
-    }
-    fn get_type_var(&self, ty_meta_var: &TypeMetaVariable) -> MetaVariable {
-        let symbol = Symbol::intern(ty_meta_var.span.as_str());
-        self.meta_vars
-            .get_from_symbol(symbol)
-            .or_else(|| self.get_adt(symbol).map(MetaVariable::from))
-            .unwrap()
-        // unwrap should be safe here because of the meta pass.
     }
 }

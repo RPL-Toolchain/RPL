@@ -9,6 +9,7 @@ edition.workspace = true
 
 [dependencies]
 rpl_context.workspace = true
+rpl_match.workspace = true
 rpl_meta.workspace = true
 # rpl_patterns.workspace = true
 rpl_utils.workspace = true

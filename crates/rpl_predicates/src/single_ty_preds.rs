@@ -28,7 +28,7 @@ pub fn is_all_safe_trait<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx
 #[instrument(level = "debug", skip(tcx), ret)]
 #[allow(unused_variables)]
 pub fn is_not_unpin<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, ty: Ty<'tcx>) -> bool {
-    ty.is_dyn_star()
+    !ty.is_unpin(tcx, typing_env)
 }
 
 /// Check if ty is sync.
@@ -57,6 +57,12 @@ pub fn is_integral<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, ty:
 #[allow(unused_variables)]
 pub fn is_ptr<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, ty: Ty<'tcx>) -> bool {
     ty.is_any_ptr()
+}
+
+/// Check if ty needs to be dropped.
+#[instrument(level = "debug", skip(tcx), ret)]
+pub fn needs_drop<'tcx>(tcx: TyCtxt<'tcx>, typing_env: ty::TypingEnv<'tcx>, ty: Ty<'tcx>) -> bool {
+    ty.needs_drop(tcx, typing_env)
 }
 
 /// Check if ty is a primitive type.

@@ -68,6 +68,14 @@ impl<'i> From<&pairs::Dollarself<'i>> for Ident<'i> {
     }
 }
 
+impl<'i> From<&pairs::DollarRET<'i>> for Ident<'i> {
+    fn from(ident: &pairs::DollarRET<'i>) -> Self {
+        let span = ident.span;
+        let name = Symbol::intern(span.as_str());
+        Self { name, span }
+    }
+}
+
 impl<'i> From<&pairs::MetaVariable<'i>> for Ident<'i> {
     fn from(meta: &pairs::MetaVariable<'i>) -> Self {
         let span = meta.span;
@@ -145,7 +153,6 @@ impl<'i> Path<'i> {
         }
     }
     /// Replaces the leading identifier with a new one.
-    #[instrument(level = "debug", ret)]
     pub fn replace_leading_ident(mut self, mut prefix: Self) -> Self {
         assert!(self.leading.is_none());
         prefix.segments.reserve(self.segments.len().saturating_sub(1));

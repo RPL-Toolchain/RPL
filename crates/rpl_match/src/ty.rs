@@ -27,6 +27,7 @@ pub struct MatchTyCtxt<'pcx, 'tcx> {
 }
 
 impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
+    #[instrument(level = "trace", skip(tcx, pcx, typing_env, pat))]
     pub fn new(
         tcx: TyCtxt<'tcx>,
         pcx: PatCtxt<'pcx>,
@@ -100,17 +101,19 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
                 .map(|ty_pat| self.match_ty(ty_pat, ty))
                 .unwrap_or(false)
             },
-            (pat::TyKind::AdtPat(pat), ty::Adt(adt, _))
+            (pat::TyKind::AdtPat(pat), ty::Adt(adt, _)) => {
                 if let Some(adt_pat) = self.pat.get_adt(pat)
-                    && let Some(adt_match) = self.match_adt(adt_pat, adt) =>
-            {
-                self.adt_matches
-                    .borrow_mut()
-                    .entry(pat)
-                    .or_default()
-                    .entry(adt_match.adt.did())
-                    .or_insert(adt_match);
-                true
+                    && let Some(adt_match) = self.match_adt(adt_pat, adt) {
+                    self.adt_matches
+                        .borrow_mut()
+                        .entry(pat)
+                        .or_default()
+                        .entry(adt_match.adt.did())
+                        .or_insert(adt_match);
+                    true
+                } else {
+                    false
+                }
             },
             // (pat::TyKind::Alias(alias_kind_pat, path, args), ty::Alias(alias_kind, alias)) => {
             //     alias_kind_pat == alias_kind

@@ -10,8 +10,12 @@ extern crate rustc_macros;
 extern crate rustc_middle;
 extern crate rustc_session;
 extern crate rustc_span;
+#[macro_use]
+extern crate tracing;
 
 rustc_fluent_macro::fluent_messages! { "../messages.en.ftl" }
+
+use std::convert::identity;
 
 use rpl_context::PatCtxt;
 use rpl_meta::context::MetaContext;
@@ -76,6 +80,7 @@ pub fn check_item(tcx: TyCtxt<'_>, pcx: PatCtxt<'_>, item_id: hir::ItemId) {
     check_ctxt.visit_item(item);
 }
 
+/// Used for finding pattern matches in given Rust crate.
 struct CheckFnCtxt<'pcx, 'tcx> {
     tcx: TyCtxt<'tcx>,
     pcx: PatCtxt<'pcx>,
@@ -89,9 +94,10 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
 
     fn visit_item(&mut self, item: &'tcx hir::Item<'tcx>) -> Self::Result {
         match item.kind {
-            hir::ItemKind::Trait(hir::IsAuto::No, hir::Safety::Safe, ..)
-            | hir::ItemKind::Impl(_)
-            | hir::ItemKind::Fn { .. } => {},
+            hir::ItemKind::Trait(hir::IsAuto::No, hir::Safety::Safe, ..) | hir::ItemKind::Fn { .. } => {},
+            hir::ItemKind::Impl(impl_) => self.check_impl(impl_),
+            // hir::ItemKind::Struct(struct_, generics) => self.check_struct(item.owner_id.def_id, struct_, generics),
+            // hir::ItemKind::Enum(enum_, generics) => self.check_enum(item.owner_id.def_id, enum_, generics),
             _ => return,
         }
         intravisit::walk_item(self, item);
@@ -105,6 +111,81 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
         _span: Span,
         def_id: LocalDefId,
     ) -> Self::Result {
+        self.check_fn(def_id);
+        intravisit::walk_fn(self, kind, decl, body_id, def_id);
+    }
+}
+
+impl<'tcx> CheckFnCtxt<'_, 'tcx> {
+    #[instrument(level = "debug", skip_all)]
+    fn check_impl(&mut self, impl_: &hir::Impl<'tcx>) {
+        for impl_item in impl_.items {
+            if let hir::AssocItemKind::Fn { .. } = impl_item.kind {
+                let id = impl_item.id;
+                let impl_item = self.tcx.hir().impl_item(id);
+                let def_id = impl_item.owner_id.def_id;
+                match impl_item.kind {
+                    hir::ImplItemKind::Fn(..) => {
+                        if self.tcx.is_mir_available(def_id) {
+                            let body = self.tcx.optimized_mir(def_id);
+                            let mir_cfg = rpl_mir::graph::mir_control_flow_graph(body);
+                            let mir_ddg = rpl_mir::graph::mir_data_dep_graph(body, &mir_cfg);
+                            self.pcx.for_each_rpl_pattern(|_id, pattern| {
+                                for (&name, pat_item) in &pattern.patt_block {
+                                    match pat_item {
+                                        rpl_context::pat::PatternItem::RustItems(rpl_rust_items) => {
+                                            for impl_pat in rpl_rust_items.impls.values() {
+                                                //FIXME: check impl_pat.ty and impl_pat.trait_id
+                                                for fn_pat in impl_pat.fns.values() {
+                                                    //FIXME: sometimes we need to check function name
+                                                    // if *fn_name != impl_item.ident.name {
+                                                    //     continue;
+                                                    // }
+
+                                                    // Check if the function matches the pattern
+                                                    for matched in CheckMirCtxt::new(
+                                                        self.tcx,
+                                                        self.pcx,
+                                                        body,
+                                                        rpl_rust_items,
+                                                        name,
+                                                        fn_pat,
+                                                        mir_cfg.clone(),
+                                                        mir_ddg.clone(),
+                                                    )
+                                                    .check()
+                                                    {
+                                                        let error = pattern
+                                                            .get_diag(
+                                                                name,
+                                                                &fn_pat.expect_mir_body().labels,
+                                                                body,
+                                                                &matched,
+                                                            )
+                                                            .unwrap_or_else(identity);
+                                                        self.tcx.emit_node_span_lint(
+                                                            error.lint(),
+                                                            self.tcx.local_def_id_to_hir_id(def_id),
+                                                            error.primary_span(),
+                                                            error,
+                                                        );
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        _ => unreachable!(),
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    _ => (), // Actually impossible, but we handle it gracefully.
+                }
+            }
+        }
+    }
+    #[instrument(level = "debug", skip(self))]
+    fn check_fn(&mut self, def_id: LocalDefId) {
         if self.tcx.is_mir_available(def_id) {
             let body = self.tcx.optimized_mir(def_id);
             let mir_cfg = rpl_mir::graph::mir_control_flow_graph(body);
@@ -114,6 +195,12 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
                     match pat_item {
                         rpl_context::pat::PatternItem::RustItems(rpl_rust_items) => {
                             for fn_pat in &rpl_rust_items.fns {
+                                // // FIXME: a more general way to handle this
+                                // if matches!(fn_pat.visibility, Visibility::Public)
+                                //     && !self.tcx.visibility(def_id).is_public()
+                                // {
+                                //     continue;
+                                // }
                                 for matched in CheckMirCtxt::new(
                                     self.tcx,
                                     self.pcx,
@@ -126,8 +213,9 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
                                 )
                                 .check()
                                 {
-                                    let error =
-                                        pattern.get_diag(name, &fn_pat.expect_mir_body().labels, body, &matched);
+                                    let error = pattern
+                                        .get_diag(name, &fn_pat.expect_mir_body().labels, body, &matched)
+                                        .unwrap_or_else(identity);
                                     self.tcx.emit_node_span_lint(
                                         error.lint(),
                                         self.tcx.local_def_id_to_hir_id(def_id),
@@ -142,6 +230,41 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
                 }
             });
         }
-        intravisit::walk_fn(self, kind, decl, body_id, def_id);
     }
+    // #[instrument(level = "debug", skip(self))]
+    // fn check_struct(
+    //     &mut self,
+    //     def_id: LocalDefId,
+    //     variant: hir::VariantData<'tcx>,
+    //     generics: &'tcx hir::Generics<'tcx>,
+    // ) {
+    //     let adt_def = self.tcx.adt_def(def_id);
+    //     self.pcx.for_each_rpl_pattern(|_id, pattern| {
+    //         for (&name, pat_item) in &pattern.patt_block {
+    //             match pat_item {
+    //                 rpl_context::pat::PatternItem::RustItems(rpl_rust_items) => {
+    //                     for (_, adt_pat) in &rpl_rust_items.adts {
+    //                         for matched in
+    //                             MatchAdtCtxt::new(self.tcx, self.pcx, rpl_rust_items,
+    // adt_pat).match_adt(adt_def)                         {
+    //                             let error = pattern
+    //                                 .get_diag(name, &fn_pat.expect_mir_body().labels, body, &matched)
+    //                                 .unwrap_or_else(identity);
+    //                             self.tcx.emit_node_span_lint(
+    //                                 error.lint(),
+    //                                 self.tcx.local_def_id_to_hir_id(def_id),
+    //                                 error.primary_span(),
+    //                                 error,
+    //                             );
+    //                         }
+    //                     }
+    //                 },
+    //                 _ => unreachable!(),
+    //             }
+    //         }
+    //     });
+    // }
+    // #[instrument(level = "debug", skip(self))]
+    // fn check_enum(&mut self, def_id: LocalDefId, variants: hir::EnumDef<'tcx>, generics: &'tcx
+    // hir::Generics<'tcx>) {}
 }
