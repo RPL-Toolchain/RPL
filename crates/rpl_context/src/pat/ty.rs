@@ -49,7 +49,23 @@ impl<'pcx> Ty<'pcx> {
                 let (_, ty, _, len, _) = ty_array.get_matched();
                 let ty = WithPath::new(p, ty);
                 let ty = Self::from(ty, pcx, fn_sym_tab);
-                pcx.mk_array_ty(ty, IntValue::from_integer(len).into())
+                match len {
+                    Choice2::_0(len) => pcx.mk_array_ty(ty, IntValue::from_integer(len).into()),
+                    Choice2::_1(len) => {
+                        let (const_idx, const_ty, const_pred) = fn_sym_tab
+                            .as_ref()
+                            .force_non_local_meta_var(WithPath::new(p, len))
+                            .expect_const();
+                        let len = ConstVar::from(
+                            pcx,
+                            fn_sym_tab,
+                            const_idx.into(),
+                            WithPath::new(p, const_ty),
+                            const_pred,
+                        );
+                        pcx.mk_array_ty(ty, len.into())
+                    },
+                }
             },
             Choice14::_1(ty_group) => {
                 let (_, ty) = ty_group.get_matched();
@@ -112,24 +128,22 @@ impl<'pcx> Ty<'pcx> {
                 };
                 pcx.mk_tuple_ty(&tys)
             },
-            Choice14::_8(ty_meta_var) => {
-                match fn_sym_tab.get_type_var(ty_meta_var) {
-                    MetaVariable::MetaVariable(ty, idx, pred) => {
-                        // FIXME: Information loss, the pred is not stored.
-                        // Solution:
-                        // Store the pred in the meta_pass.
-                        let ty_meta_var = match ty {
-                            rpl_meta::symbol_table::MetaVariableType::Type => TyVar {
-                                idx: idx.into(),
-                                name: Symbol::intern(ty_meta_var.span.as_str()),
-                                pred,
-                            },
-                            _ => panic!("A non-type meta variable used as a type variable"),
-                        };
-                        pcx.mk_var_ty(ty_meta_var)
-                    },
-                    MetaVariable::AdtPat(_, name) => pcx.mk_adt_pat_ty(name),
-                }
+            Choice14::_8(ty_meta_var) => match fn_sym_tab
+                .as_ref()
+                .force_non_local_meta_var(WithPath::new(p, ty_meta_var))
+            {
+                MetaVariable::Type(idx, pred) => {
+                    let ty_meta_var = TyVar {
+                        idx: idx.into(),
+                        name: Symbol::intern(ty_meta_var.span.as_str()),
+                        pred,
+                    };
+                    pcx.mk_var_ty(ty_meta_var)
+                },
+                MetaVariable::Const(..) | MetaVariable::Place(..) => {
+                    panic!("A non-type meta variable used as a type variable")
+                },
+                MetaVariable::AdtPat(_, name) => pcx.mk_adt_pat_ty(name),
             },
             Choice14::_9(_ty_self) => todo!(),
             Choice14::_10(primitive_types) => pcx.mk_ty(TyKind::from_primitive_type(primitive_types)),
@@ -720,5 +734,11 @@ impl Const<'_> {
 impl From<IntValue> for Const<'_> {
     fn from(value: IntValue) -> Self {
         Self::Value(value)
+    }
+}
+
+impl<'pcx> From<ConstVar<'pcx>> for Const<'pcx> {
+    fn from(value: ConstVar<'pcx>) -> Self {
+        Self::ConstVar(value)
     }
 }

@@ -39,6 +39,25 @@ pub struct ConstVar<'pcx> {
     pub ty: Ty<'pcx>,
 }
 
+impl<'pcx> ConstVar<'pcx> {
+    #[expect(unused_variables, reason = "predicates on const variables are not handle yet")] //FIXME
+    pub(crate) fn from(
+        pcx: PatCtxt<'pcx>,
+        fn_sym_tab: &'pcx impl GetType<'pcx>,
+        idx: usize,
+        ty: WithPath<'pcx, &'pcx pairs::Type<'pcx>>,
+        pred: rpl_predicates::PredicateConjunction,
+    ) -> Self {
+        let name = Symbol::intern(ty.span.as_str());
+        let ty = Ty::from(ty, pcx, fn_sym_tab);
+        Self {
+            idx: idx.into(),
+            name,
+            ty,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct PlaceVar<'pcx> {
     pub idx: PlaceVarIdx,

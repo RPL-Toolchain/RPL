@@ -15,10 +15,10 @@ use rustc_middle::mir;
 use rustc_span::Symbol;
 
 pub type StructInner<'pcx> = Variant<'pcx>;
-pub type Struct<'pcx> = WithMetaTable<StructInner<'pcx>>;
+pub type Struct<'pcx> = WithMetaTable<'pcx, StructInner<'pcx>>;
 
 pub type EnumInner<'pcx> = FxIndexMap<Symbol, Variant<'pcx>>;
-pub type Enum<'pcx> = WithMetaTable<EnumInner<'pcx>>;
+pub type Enum<'pcx> = WithMetaTable<'pcx, EnumInner<'pcx>>;
 
 #[derive(Debug)]
 pub struct Adt<'pcx> {

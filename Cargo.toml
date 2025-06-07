@@ -45,6 +45,7 @@ derive_more = { version = "1.0", features = [
     "from",
     "into_iterator",
     "debug",
+    "as_ref",
     "deref",
     "deref_mut",
     "display",

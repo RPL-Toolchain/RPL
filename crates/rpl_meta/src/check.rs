@@ -219,7 +219,7 @@ impl<'i> CheckCtxt<'i> {
 }
 
 struct CheckFnCtxt<'i, 'r> {
-    meta_vars: Arc<NonLocalMetaSymTab>,
+    meta_vars: Arc<NonLocalMetaSymTab<'i>>,
     #[allow(dead_code)]
     impl_def: Option<&'r ImplInner<'i>>,
     fn_def: &'r mut FnInner<'i>,
@@ -728,7 +728,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
 }
 
 struct CheckVariantCtxt<'i, 'r> {
-    _meta_vars: Arc<NonLocalMetaSymTab>,
+    _meta_vars: Arc<NonLocalMetaSymTab<'i>>,
     variant_def: &'r mut Variant<'i>,
     errors: &'r mut Vec<RPLMetaError<'i>>,
 }
@@ -762,7 +762,7 @@ impl<'i> CheckVariantCtxt<'i, '_> {
 }
 
 struct CheckEnumCtxt<'i, 'r> {
-    meta_vars: Arc<NonLocalMetaSymTab>,
+    meta_vars: Arc<NonLocalMetaSymTab<'i>>,
     enum_def: &'r mut EnumInner<'i>,
     errors: &'r mut Vec<RPLMetaError<'i>>,
 }
