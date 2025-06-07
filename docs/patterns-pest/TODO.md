@@ -28,7 +28,7 @@
 - [ ] normal::cve_2021_29941_2::check_item (should be easy)
 - [ ] normal::cve_2022_23639::check_item (should be easy)
 - [ ] inline::cve_2024_27284::check_item (should be easy)
-- [ ] others::private_or_generic_function_marked_inline::check_item
+- [ ] others::private_or_generic_function_marked_inline::check_item (requires a new predicate `is_private_or_generic` on functions)
 - [ ] inline::transmute_type_to_bool::check_item (may be easy)
 - [ ] inline::transmute_int_to_ptr::check_item (may be easy)
 - [ ] normal::manually_drop::check_item (should be easy)
