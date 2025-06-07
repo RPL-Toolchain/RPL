@@ -358,7 +358,7 @@ PathLeading = {
 }
 
 PathSegment = {
-    (Identifier | MetaVariable) ~ PathArguments?
+    Identifier ~ PathArguments?
 }
 
 TypePath = {
@@ -535,7 +535,7 @@ MirOperandCopy = {
 }
 
 MirOperandConst = {
-    kw_const ~ (Literal | LangItemWithArgs | TypePath)
+    kw_const ~ (Literal | LangItemWithArgs | TypePath | MetaVariable)
 }
 
 MirOperand = {

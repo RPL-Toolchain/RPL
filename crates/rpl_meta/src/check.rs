@@ -508,9 +508,12 @@ impl<'i> CheckFnCtxt<'i, '_> {
     fn check_mir_const_operand(&mut self, mctx: &MetaContext<'i>, konst: &'i pairs::MirOperandConst<'i>) {
         let (_, konst) = konst.get_matched();
         match konst {
-            Choice3::_0(_lit) => {},
-            Choice3::_1(lang_item) => self.check_lang_item_with_args(mctx, lang_item),
-            Choice3::_2(path) => self.check_type_path(mctx, path),
+            Choice4::_0(_lit) => {},
+            Choice4::_1(lang_item) => self.check_lang_item_with_args(mctx, lang_item),
+            Choice4::_2(path) => self.check_type_path(mctx, path),
+            Choice4::_3(ident) => {
+                let _: Option<_> = self.meta_vars.get_non_local_meta_var(mctx, ident.into(), self.errors);
+            },
         }
     }
 
@@ -661,7 +664,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
         if let Some(ident) = path.as_ident() {
             if !ident_is_primitive(&ident) {
                 WithMetaTable::from((&*self.fn_def, self.meta_vars.clone()))
-                    .get_type(&WithPath::with_ctx(mctx, ident))
+                    .get_type_or_path(&WithPath::with_ctx(mctx, ident))
                     .or_record(self.errors);
             }
         } else {

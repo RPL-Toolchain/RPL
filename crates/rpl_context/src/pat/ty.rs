@@ -176,7 +176,7 @@ impl<'pcx> Ty<'pcx> {
         // FIXME: imports logic incomplete?
         if let Some(ident) = utils::Path::from(path).as_ident() {
             // only check for the first time
-            if let Ok(TypeOrPath::Type(ty)) = fn_sym_tab.get_type(&WithPath::new(p, ident)) {
+            if let Ok(TypeOrPath::Type(ty)) = fn_sym_tab.get_type_or_path(&WithPath::new(p, ident)) {
                 let ty = WithPath::new(p, ty);
                 return Ty::from(ty, pcx, fn_sym_tab);
             }
@@ -184,7 +184,7 @@ impl<'pcx> Ty<'pcx> {
         let mut path = utils::Path::from(path);
         let mut used = FxHashSet::default();
         while let Some(ident) = path.leading_ident()
-            && let Ok(TypeOrPath::Path(mapped)) = fn_sym_tab.get_type(&WithPath::new(p, ident))
+            && let Ok(TypeOrPath::Path(mapped)) = fn_sym_tab.get_type_or_path(&WithPath::new(p, ident))
         {
             if !used.insert(mapped) {
                 break; // Avoid infinite loop
@@ -496,7 +496,7 @@ impl<'pcx> PathWithArgs<'pcx> {
         let mut path = utils::Path::from(path.inner);
         let mut used = FxHashSet::default();
         while let Some(ident) = path.leading_ident()
-            && let Ok(type_or_path) = fn_sym_tab.get_type(&WithPath::new(p, ident))
+            && let Ok(type_or_path) = fn_sym_tab.get_type_or_path(&WithPath::new(p, ident))
             && let Some(mapped) = type_or_path.try_as_path()
         {
             if !used.insert(mapped) {

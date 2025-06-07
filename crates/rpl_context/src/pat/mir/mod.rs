@@ -892,12 +892,32 @@ impl<'pcx> ConstOperand<'pcx> {
         let p = op.path;
         let (_, op) = op.get_matched();
         match op {
-            Choice3::_0(lit) => Self::from_literal(lit),
-            Choice3::_1(lang_item_with_args) => {
+            Choice4::_0(lit) => Self::from_literal(lit),
+            Choice4::_1(lang_item_with_args) => {
                 Self::from_lang_item(WithPath::new(p, lang_item_with_args), pcx, fn_sym_tab)
             },
-            Choice3::_2(type_path) => Self::from_type_path(WithPath::new(p, type_path), pcx, fn_sym_tab),
+            Choice4::_2(type_path) => Self::from_type_path(WithPath::new(p, type_path), pcx, fn_sym_tab),
+            Choice4::_3(meta_var) => Self::from_meta_var(WithPath::new(p, meta_var), pcx, fn_sym_tab),
         }
+    }
+
+    fn from_meta_var(
+        meta_var: WithPath<'pcx, &'pcx pairs::MetaVariable<'_>>,
+        pcx: PatCtxt<'pcx>,
+        fn_sym_tab: &'pcx FnSymbolTable<'pcx>,
+    ) -> Self {
+        let (idx, ty, pred) = fn_sym_tab
+            .meta_vars
+            .get_from_symbol(Symbol::intern(meta_var.span.as_str()))
+            .unwrap()
+            .expect_const();
+        Self::ConstVar(ConstVar::from(
+            pcx,
+            fn_sym_tab,
+            idx,
+            WithPath::new(meta_var.path, ty),
+            pred,
+        ))
     }
 
     fn from_type_path(

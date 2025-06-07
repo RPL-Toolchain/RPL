@@ -3238,34 +3238,15 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#PathSegment , "Corresponds to expression: `((Identifier | MetaVariable) ~ PathArguments?)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PathSegment , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#PathArguments :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#PathSegment , "Corresponds to expression: `(Identifier ~ PathArguments?)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#PathSegment , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#PathArguments :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#PathSegment<'i, INHERITED> {
             #[doc = "A helper function to access [`Identifier`]."]
             #[allow(non_snake_case)]
-            pub fn r#Identifier<'s>(
-                &'s self,
-            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#Identifier<'i, INHERITED>> {
+            pub fn r#Identifier<'s>(&'s self) -> &'s super::super::rules::r#Identifier<'i, INHERITED> {
                 let res = &*self.content;
                 {
                     let res = &res.content.0.matched;
-                    {
-                        let res = res._0().map(|res| res);
-                        res
-                    }
-                }
-            }
-            #[doc = "A helper function to access [`MetaVariable`]."]
-            #[allow(non_snake_case)]
-            pub fn r#MetaVariable<'s>(
-                &'s self,
-            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MetaVariable<'i, INHERITED>> {
-                let res = &*self.content;
-                {
-                    let res = &res.content.0.matched;
-                    {
-                        let res = res._1().map(|res| res);
-                        res
-                    }
+                    res
                 }
             }
             #[doc = "A helper function to access [`PathArguments`]."]
@@ -4835,7 +4816,7 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#MirOperandConst , "Corresponds to expression: `(kw_const ~ (Literal | LangItemWithArgs | TypePath))`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirOperandConst , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#kw_const :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Choice3 :: < super :: super :: rules :: r#Literal :: < 'i , INHERITED > , super :: super :: rules :: r#LangItemWithArgs :: < 'i , INHERITED > , super :: super :: rules :: r#TypePath :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#MirOperandConst , "Corresponds to expression: `(kw_const ~ (Literal | LangItemWithArgs | TypePath | MetaVariable))`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirOperandConst , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#kw_const :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Choice4 :: < super :: super :: rules :: r#Literal :: < 'i , INHERITED > , super :: super :: rules :: r#LangItemWithArgs :: < 'i , INHERITED > , super :: super :: rules :: r#TypePath :: < 'i , INHERITED > , super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#MirOperandConst<'i, INHERITED> {
             #[doc = "A helper function to access [`LangItemWithArgs`]."]
             #[allow(non_snake_case)]
@@ -4862,6 +4843,20 @@ pub mod rules_impl {
                     let res = &res.content.1.matched;
                     {
                         let res = res._0().map(|res| res);
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`MetaVariable`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MetaVariable<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MetaVariable<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res._3().map(|res| res);
                         res
                     }
                 }

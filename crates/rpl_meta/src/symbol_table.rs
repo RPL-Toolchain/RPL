@@ -502,7 +502,8 @@ pub struct FnInner<'i> {
     #[expect(unused)]
     span: Span<'i>,
     path: &'i std::path::Path,
-    /// Type aliases and paths imported into the function scope.
+    /// - Type aliases declared in the function scope.
+    /// - Paths imported into the function scope.
     types: FxHashMap<Symbol, TypeOrPath<'i>>,
     // FIXME: remove it when `self` parameter is implemented
     self_value: Option<&'i pairs::Type<'i>>,
@@ -565,8 +566,13 @@ impl<'i> FnInner<'i> {
         });
     }
 
+    /// Resolve an identifier to a type or path.
     #[instrument(level = "trace", skip(self, path), fields(types = ?self.types.keys()))]
-    fn get_type(&self, path: &'i std::path::Path, ident: &Ident<'i>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
+    fn get_type_or_path(
+        &self,
+        path: &'i std::path::Path,
+        ident: &Ident<'i>,
+    ) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
         self.types.get(&ident.name).copied().ok_or_else(|| {
             eprintln!("{}", std::backtrace::Backtrace::capture());
             RPLMetaError::TypeOrPathNotDeclared {
@@ -916,24 +922,24 @@ impl From<(AdtPatType, Symbol)> for MetaVariable<'_> {
 }
 
 pub trait GetType<'i>: AsRef<Arc<NonLocalMetaSymTab<'i>>> {
-    fn get_type<'s>(&'s self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'s>, RPLMetaError<'i>>;
+    fn get_type_or_path<'s>(&'s self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'s>, RPLMetaError<'i>>;
 }
 
 impl<'i> GetType<'i> for Fn<'i> {
-    fn get_type(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
-        FnInner::get_type(&self.inner, ident.path, &ident.inner)
+    fn get_type_or_path(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
+        FnInner::get_type_or_path(&self.inner, ident.path, &ident.inner)
     }
 }
 
 impl<'i> GetType<'i> for WithMetaTable<'i, &'_ FnInner<'i>> {
-    fn get_type(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
-        FnInner::get_type(self.inner, ident.path, &ident.inner)
+    fn get_type_or_path(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
+        FnInner::get_type_or_path(self.inner, ident.path, &ident.inner)
     }
 }
 
 impl<'i> GetType<'i> for SymbolTable<'i> {
     #[instrument(level = "trace", skip(self), fields(imports = ?self.imports.keys()))]
-    fn get_type(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
+    fn get_type_or_path(&self, ident: &WithPath<'i, Ident<'i>>) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
         self.imports
             .get(&ident.name)
             .copied()
