@@ -16,6 +16,7 @@ pub struct NormalizedMatched<'tcx> {
 }
 
 impl<'tcx> NormalizedMatched<'tcx> {
+    #[instrument(level = "trace", ret)]
     pub fn new(matched: &Matched<'tcx>, label_map: &pat::LabelMap) -> Self {
         let ty_vars = matched.ty_vars.clone();
         let const_vars = matched.const_vars.clone();
@@ -41,6 +42,7 @@ impl<'tcx> NormalizedMatched<'tcx> {
     ///
     /// This is useful for normalizing patterns that have been matched against a different set of
     /// meta variables.
+    #[instrument(level = "trace", ret)]
     pub fn normalize(matched_map: &MatchedMap, matched_from: &Matched<'tcx>, label_map_from: &pat::LabelMap) -> Self {
         let ty_vars = IndexVec::from_fn_n(
             |i| matched_from.ty_vars[matched_map.ty_vars[i]],
@@ -68,15 +70,36 @@ impl<'tcx> NormalizedMatched<'tcx> {
             })
             .collect();
         labels.sort_by_key(|(label, _)| *label);
-        // let labels = IndexVec::from_fn_n(
-        //     |i: u32| {
-        //         label_map_from
-        //             .get(matched_map.labels.get(labels[usize::try_from(i).unwrap()].1).unwrap())
-        //             .copied()
-        //             .unwrap()
-        //     },
-        //     matched_map.labels.len(),
-        // );
+
+        NormalizedMatched {
+            ty_vars,
+            const_vars,
+            place_vars,
+            labels,
+        }
+    }
+
+    /// Map [`Matched`] from one pattern to another.
+    ///
+    /// This is useful for normalizing patterns that have been matched against a different set of
+    /// meta variables.
+    #[instrument(level = "trace", ret)]
+    pub fn map(self, matched_map: &MatchedMap) -> Self {
+        let ty_vars = IndexVec::from_fn_n(|i| self.ty_vars[matched_map.ty_vars[i]], matched_map.ty_vars.len());
+        let const_vars = IndexVec::from_fn_n(
+            |i| self.const_vars[matched_map.const_vars[i]],
+            matched_map.const_vars.len(),
+        );
+        let place_vars = IndexVec::from_fn_n(
+            |i| self.place_vars[matched_map.place_vars[i]],
+            matched_map.place_vars.len(),
+        );
+        let mut labels: Vec<_> = self
+            .labels
+            .iter()
+            .map(|(label, spanned)| (*matched_map.labels.get(label).unwrap_or(label), *spanned))
+            .collect();
+        labels.sort_by_key(|(label, _)| *label);
 
         NormalizedMatched {
             ty_vars,

@@ -158,11 +158,16 @@ impl<'tcx, 'pcx> CheckFnCtxt<'pcx, 'tcx> {
         mir_cfg: &'a MirControlFlowGraph,
         mir_ddg: &'a MirDataDepGraph,
     ) -> impl Iterator<Item = NormalizedMatched<'tcx>> {
-        let positive = self.impl_matched_pat_item(name, pat_op.positive.0, body, mir_cfg, mir_ddg);
+        let positive = self
+            .impl_matched_pat_item(name, pat_op.positive.0, body, mir_cfg, mir_ddg)
+            .map(|matched| matched.map(&pat_op.positive.1));
         let negative: FxHashSet<_> = pat_op
             .negative
             .iter()
-            .flat_map(|negative| self.impl_matched_pat_item(name, negative.0, body, mir_cfg, mir_ddg))
+            .flat_map(|negative| {
+                self.impl_matched_pat_item(name, negative.0, body, mir_cfg, mir_ddg)
+                    .map(|matched| matched.map(&negative.1))
+            })
             .collect();
         positive
             .filter(move |matched| !negative.contains(&matched))
@@ -222,11 +227,16 @@ impl<'tcx, 'pcx> CheckFnCtxt<'pcx, 'tcx> {
         mir_cfg: &'a MirControlFlowGraph,
         mir_ddg: &'a MirDataDepGraph,
     ) -> impl Iterator<Item = NormalizedMatched<'tcx>> {
-        let positive = self.fn_matched_pat_item(name, pat_op.positive.0, body, mir_cfg, mir_ddg);
+        let positive = self
+            .fn_matched_pat_item(name, pat_op.positive.0, body, mir_cfg, mir_ddg)
+            .map(|matched| matched.map(&pat_op.positive.1));
         let negative: FxHashSet<_> = pat_op
             .negative
             .iter()
-            .flat_map(|negative| self.fn_matched_pat_item(name, negative.0, body, mir_cfg, mir_ddg))
+            .flat_map(|negative| {
+                self.fn_matched_pat_item(name, negative.0, body, mir_cfg, mir_ddg)
+                    .map(|matched| matched.map(&negative.1))
+            })
             .collect();
         positive
             .filter(move |matched| !negative.contains(&matched))

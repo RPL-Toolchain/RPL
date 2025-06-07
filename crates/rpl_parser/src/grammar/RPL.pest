@@ -305,7 +305,10 @@ MetaVariableDeclsSeparatedByComma   = {
 MetaVariableDeclList                = {
     LeftBracket ~ MetaVariableDeclsSeparatedByComma? ~ RightBracket
 }
-MetaVariableAssign                  = { MetaVariable ~ Assign ~ (Identifier | MetaVariable | Type) }
+MetaVariableAssign                  = {
+    MetaVariable ~ Assign ~ (Identifier | MetaVariable | Type)
+  | Label ~ Assign ~ Label
+}
 MetaVariableAssignsSeparatedByComma = {
     MetaVariableAssign ~ (Comma ~ MetaVariableAssign)* ~ Comma?
 }

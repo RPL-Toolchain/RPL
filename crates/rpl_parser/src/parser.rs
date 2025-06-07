@@ -2598,14 +2598,34 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#MetaVariableAssign , "Corresponds to expression: `(MetaVariable ~ Assign ~ (Identifier | MetaVariable | Type))`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MetaVariableAssign , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Choice3 :: < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , super :: super :: rules :: r#Type :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#MetaVariableAssign , "Corresponds to expression: `((MetaVariable ~ Assign ~ (Identifier | MetaVariable | Type)) | (Label ~ Assign ~ Label))`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MetaVariableAssign , super :: super :: generics :: Choice2 :: < super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Choice3 :: < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , super :: super :: rules :: r#Type :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Label :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Label :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#MetaVariableAssign<'i, INHERITED> {
             #[doc = "A helper function to access [`Assign`]."]
             #[allow(non_snake_case)]
-            pub fn r#Assign<'s>(&'s self) -> &'s super::super::rules::r#Assign<'i, INHERITED> {
+            pub fn r#Assign<'s>(
+                &'s self,
+            ) -> (
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Assign<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Assign<'i, INHERITED>>,
+            ) {
                 let res = &*self.content;
                 {
-                    let res = &res.content.1.matched;
+                    let res = (
+                        {
+                            let res = res._0().map(|res| {
+                                let res = &res.content.1.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._1().map(|res| {
+                                let res = &res.content.1.matched;
+                                res
+                            });
+                            res
+                        },
+                    );
                     res
                 }
             }
@@ -2616,36 +2636,71 @@ pub mod rules_impl {
             ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#Identifier<'i, INHERITED>> {
                 let res = &*self.content;
                 {
-                    let res = &res.content.2.matched;
-                    {
-                        let res = res._0().map(|res| res);
+                    let res = res
+                        ._0()
+                        .map(|res| {
+                            let res = &res.content.2.matched;
+                            {
+                                let res = res._0().map(|res| res);
+                                res
+                            }
+                        })
+                        .flatten();
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`Label`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Label<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<(
+                &'s super::super::rules::r#Label<'i, INHERITED>,
+                &'s super::super::rules::r#Label<'i, INHERITED>,
+            )> {
+                let res = &*self.content;
+                {
+                    let res = res._1().map(|res| {
+                        let res = (
+                            {
+                                let res = &res.content.0.matched;
+                                res
+                            },
+                            {
+                                let res = &res.content.2.matched;
+                                res
+                            },
+                        );
                         res
-                    }
+                    });
+                    res
                 }
             }
             #[doc = "A helper function to access [`MetaVariable`]."]
             #[allow(non_snake_case)]
             pub fn r#MetaVariable<'s>(
                 &'s self,
-            ) -> (
+            ) -> ::pest_typed::re_exported::Option<(
                 &'s super::super::rules::r#MetaVariable<'i, INHERITED>,
                 ::pest_typed::re_exported::Option<&'s super::super::rules::r#MetaVariable<'i, INHERITED>>,
-            ) {
+            )> {
                 let res = &*self.content;
                 {
-                    let res = (
-                        {
-                            let res = &res.content.0.matched;
-                            res
-                        },
-                        {
-                            let res = &res.content.2.matched;
+                    let res = res._0().map(|res| {
+                        let res = (
                             {
-                                let res = res._1().map(|res| res);
+                                let res = &res.content.0.matched;
                                 res
-                            }
-                        },
-                    );
+                            },
+                            {
+                                let res = &res.content.2.matched;
+                                {
+                                    let res = res._1().map(|res| res);
+                                    res
+                                }
+                            },
+                        );
+                        res
+                    });
                     res
                 }
             }
@@ -2656,11 +2711,17 @@ pub mod rules_impl {
             ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#Type<'i, INHERITED>> {
                 let res = &*self.content;
                 {
-                    let res = &res.content.2.matched;
-                    {
-                        let res = res._2().map(|res| res);
-                        res
-                    }
+                    let res = res
+                        ._0()
+                        .map(|res| {
+                            let res = &res.content.2.matched;
+                            {
+                                let res = res._2().map(|res| res);
+                                res
+                            }
+                        })
+                        .flatten();
+                    res
                 }
             }
         }

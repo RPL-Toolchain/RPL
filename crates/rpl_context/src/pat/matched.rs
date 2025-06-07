@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use rpl_meta::collect_elems_separated_by_comma;
-use rpl_parser::generics::Choice3;
+use rpl_parser::generics::{Choice2, Choice3};
 use rpl_parser::pairs;
 use rustc_index::IndexVec;
 use rustc_middle::mir::{Body, Const, PlaceRef};
@@ -29,6 +29,7 @@ pub struct MatchedMap {
 }
 
 impl MatchedMap {
+    #[instrument(level = "trace", skip(configuration), ret)]
     pub fn new(
         target: &NonLocalMetaVars<'_>,
         source: &NonLocalMetaVars<'_>,
@@ -40,22 +41,29 @@ impl MatchedMap {
         if let Some(configuration) = configuration.MetaVariableAssignsSeparatedByComma() {
             let assigns = collect_elems_separated_by_comma!(configuration);
             for assign in assigns {
-                let (source_var, _, target_var) = assign.get_matched();
-                match target_var {
-                    Choice3::_0(target_label) => {
-                        let target_label = Symbol::intern(target_label.span.as_str());
-                        let source_label = Symbol::intern(source_var.span.as_str());
-                        labels.try_insert(target_label, source_label).unwrap();
+                match &**assign {
+                    Choice2::_0(assign) => {
+                        let (source_var, _, target_var) = assign.get_matched();
+                        match target_var {
+                            Choice3::_0(_target_label) => todo!(),
+                            Choice3::_1(target_var) => {
+                                let target_var = Symbol::intern(target_var.span.as_str());
+                                let source_var = Symbol::intern(source_var.span.as_str());
+                                vars.try_insert(target_var, source_var).unwrap();
+                            },
+                            Choice3::_2(_) => todo!(),
+                        }
                     },
-                    Choice3::_1(target_var) => {
-                        let target_var = Symbol::intern(target_var.span.as_str());
-                        let source_var = Symbol::intern(source_var.span.as_str());
-                        vars.try_insert(target_var, source_var).unwrap();
+                    Choice2::_1(assign) => {
+                        let (source_label, _, target_label) = assign.get_matched();
+                        let target_label = Symbol::intern(target_label.LabelName().span.as_str());
+                        let source_label = Symbol::intern(source_label.LabelName().span.as_str());
+                        labels.try_insert(source_label, target_label).unwrap();
                     },
-                    Choice3::_2(_) => todo!(),
                 }
             }
         }
+        trace!(vars = ?vars, labels = ?labels);
         MatchedMap {
             ty_vars: target
                 .ty_vars
@@ -64,7 +72,9 @@ impl MatchedMap {
                     source
                         .ty_vars
                         .iter()
-                        .find_map(|source_var| (source_var.name == var.name).then(|| idx))
+                        .find_map(|source_var| {
+                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then(|| idx)
+                        })
                         .unwrap()
                 })
                 .collect(),
@@ -75,7 +85,9 @@ impl MatchedMap {
                     source
                         .const_vars
                         .iter()
-                        .find_map(|source_var| (source_var.name == var.name).then(|| idx))
+                        .find_map(|source_var| {
+                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then(|| idx)
+                        })
                         .unwrap()
                 })
                 .collect(),
@@ -86,7 +98,9 @@ impl MatchedMap {
                     source
                         .place_vars
                         .iter()
-                        .find_map(|source_var| (source_var.name == var.name).then(|| idx))
+                        .find_map(|source_var| {
+                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then(|| idx)
+                        })
                         .unwrap()
                 })
                 .collect(),

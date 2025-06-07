@@ -18,6 +18,7 @@ use crate::{CheckMirCtxt, pat};
 
 pub(crate) mod artifact;
 
+#[derive(Debug)]
 pub struct Matched<'tcx> {
     pub basic_blocks: IndexVec<pat::BasicBlock, MatchedBlock>,
     pub locals: IndexVec<pat::Local, mir::Local>,
@@ -78,6 +79,7 @@ impl<'tcx> pat::Matched<'tcx> for MatchedWithLabelMap<'_, 'tcx> {
     }
 }
 
+#[derive(Debug)]
 pub struct MatchedBlock {
     pub statements: Vec<StatementMatch>,
     pub start: Option<mir::BasicBlock>,
