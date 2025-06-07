@@ -29,6 +29,9 @@ jobs:
       - run: cargo fmt --check
       - run: cargo test --all
         if: github.ref_name != 'pest' && github.base_ref != 'pest'
+      # Exclude ui tests for pest branch
+      - run: cargo test --all --exclude rpl
+        if: github.ref_name == 'pest' || github.base_ref == 'pest'
       - run: cargo clippy -- -D warnings
       - run: cargo install --path .
       - run: cargo rpl --workspace --all-targets
