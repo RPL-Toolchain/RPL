@@ -1,8 +1,7 @@
+use rpl_mir_graph::{ControlFlowGraph, DataDepGraph, ProgramDepGraph, SwitchTargets, TerminatorEdges};
 use rustc_data_structures::packed::Pu128;
 use rustc_middle::mir::visit::{PlaceContext, Visitor};
 use rustc_middle::mir::{self};
-
-use rpl_mir_graph::{ControlFlowGraph, DataDepGraph, ProgramDepGraph, SwitchTargets, TerminatorEdges};
 
 use super::BlockDataDepGraphVisitor;
 

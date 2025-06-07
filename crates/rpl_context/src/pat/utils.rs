@@ -1,14 +1,14 @@
-use crate::pat::mir::Operand;
+use std::ops::Deref;
+
 use rpl_meta::collect_elems_separated_by_comma;
 use rpl_meta::symbol_table::WithPath;
 use rpl_parser::generics::{Choice2, Choice3, Choice12};
 use rpl_parser::pairs::{self};
 use rustc_middle::mir;
-use std::ops::Deref;
-
-use crate::PatCtxt;
 
 use super::{FnSymbolTable, with_path};
+use crate::PatCtxt;
+use crate::pat::mir::Operand;
 
 pub(crate) fn mutability_from_pair_mutability(pair: &pairs::Mutability<'_>) -> mir::Mutability {
     if pair.kw_mut().is_some() {

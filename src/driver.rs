@@ -16,10 +16,6 @@ extern crate rustc_session;
 #[allow(unused_extern_crates)]
 extern crate tracing;
 
-use rpl_interface::{DefaultCallbacks, RplCallbacks, RustcCallbacks};
-use rustc_session::EarlyDiagCtxt;
-use rustc_session::config::ErrorOutputType;
-
 use std::env;
 use std::fs::read_to_string;
 use std::ops::Deref;
@@ -27,6 +23,9 @@ use std::path::Path;
 use std::process::exit;
 
 use anstream::println;
+use rpl_interface::{DefaultCallbacks, RplCallbacks, RustcCallbacks};
+use rustc_session::EarlyDiagCtxt;
+use rustc_session::config::ErrorOutputType;
 
 /// If a command-line option matches `find_arg`, then apply the predicate `pred` on its value. If
 /// true, then return it. The parameter is assumed to be either `--arg=value` or `--arg value`.

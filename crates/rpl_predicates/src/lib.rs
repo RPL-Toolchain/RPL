@@ -23,7 +23,6 @@ use std::ops::Deref;
 
 use rpl_parser::generics::Choice2;
 use rpl_parser::pairs;
-
 use rustc_middle::mir;
 use rustc_middle::ty::{self, Ty, TyCtxt};
 

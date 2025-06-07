@@ -1,12 +1,13 @@
 //! Error type from RPL meta pass.
 
+use std::fmt::Debug;
+use std::path::PathBuf;
+use std::sync::Arc;
+
 use error_enum::error_type;
 use parser::{ParseError, SpanWrapper};
 use pest_typed::Span;
 use rustc_span::Symbol;
-use std::fmt::Debug;
-use std::path::PathBuf;
-use std::sync::Arc;
 
 // TODO: 排版
 error_type!(

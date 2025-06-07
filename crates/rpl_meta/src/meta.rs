@@ -1,11 +1,13 @@
+use std::path::Path;
+
+use parser::pairs;
+use rustc_data_structures::fx::FxHashMap;
+use rustc_span::Symbol;
+
 use crate::context::MetaContext;
 use crate::error::RPLMetaError;
 use crate::idx::RPLIdx;
 use crate::symbol_table::{DiagSymbolTable, SymbolTable};
-use parser::pairs;
-use rustc_data_structures::fx::FxHashMap;
-use rustc_span::Symbol;
-use std::path::Path;
 
 /// Meta data of a single rpl file.
 pub struct SymbolTables<'mcx> {

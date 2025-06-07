@@ -7,6 +7,8 @@ extern crate rustc_index;
 extern crate rustc_middle;
 extern crate rustc_span;
 
+use std::fmt::Write;
+
 use pretty_assertions::assert_eq;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -14,7 +16,6 @@ use rpl_context::{PatCtxt, PatternCtxt};
 use rpl_mir::graph::{pat_control_flow_graph, pat_data_dep_graph};
 use rpl_mir::pat::{FnPatternBody, Local};
 use rustc_span::Symbol;
-use std::fmt::Write;
 
 fn format_stmt_local((stmt, local): (usize, Local)) -> impl std::fmt::Debug {
     struct StmtLocal(usize, Local);

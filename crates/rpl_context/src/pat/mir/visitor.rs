@@ -1,6 +1,6 @@
-use super::*;
-
 pub use rustc_middle::mir::visit::{MutatingUseContext, NonMutatingUseContext, PlaceContext};
+
+use super::*;
 
 pub trait PatternVisitor<'pcx>: Sized {
     fn visit_local(&mut self, _local: Local, _pcx: PlaceContext, _location: Location) {}

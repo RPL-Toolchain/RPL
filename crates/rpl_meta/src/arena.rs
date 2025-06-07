@@ -1,5 +1,6 @@
-use parser::pairs;
 use std::path::PathBuf;
+
+use parser::pairs;
 use sync_arena::declare_arena;
 
 declare_arena!(

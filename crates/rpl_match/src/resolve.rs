@@ -2,12 +2,11 @@
 //!
 //! See <https://doc.rust-lang.org/nightly/nightly-rustc/src/clippy_utils/lib.rs.html#691>
 use rpl_context::{PatCtxt, pat};
+use rpl_resolve::{PatItemKind, def_path_res};
 use rustc_hir::LangItem;
 use rustc_hir::def::Res;
 use rustc_middle::ty::TyCtxt;
 use rustc_span::Symbol;
-
-use rpl_resolve::{PatItemKind, def_path_res};
 
 #[instrument(level = "debug", skip(pcx, tcx), ret)]
 pub fn ty_res<'tcx, 'pcx>(

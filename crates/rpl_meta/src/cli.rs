@@ -1,9 +1,10 @@
-use crate::RPLMetaError;
 use std::ffi::{OsStr, OsString};
 use std::fmt::Debug;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+
+use crate::RPLMetaError;
 
 pub fn collect_file_from_string_args(args: &[String]) -> Vec<(PathBuf, String)> {
     let mut res = vec![];

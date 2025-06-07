@@ -1,10 +1,12 @@
+use std::path::Path;
+use std::sync::RwLock;
+
+use parser::pairs;
+use rustc_data_structures::fx::FxHashMap;
+
 use crate::arena::Arena;
 use crate::idx::RPLIdx;
 use crate::meta::SymbolTables;
-use parser::pairs;
-use rustc_data_structures::fx::FxHashMap;
-use std::path::Path;
-use std::sync::RwLock;
 
 /// Provides a context for the meta data of the RPL multi-files/modularity.
 pub struct MetaContext<'mcx> {

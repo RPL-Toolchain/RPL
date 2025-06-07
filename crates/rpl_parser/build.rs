@@ -1,7 +1,8 @@
-use quote::quote;
 use std::fs::File;
 use std::io::Write as _;
 use std::process::{Command, Stdio};
+
+use quote::quote;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("cargo::rerun-if-changed=src/grammar/RPL.pest");

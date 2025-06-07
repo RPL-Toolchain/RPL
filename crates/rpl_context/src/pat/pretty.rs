@@ -1,7 +1,8 @@
+use std::fmt;
+
 use rustc_middle::mir;
 
 use super::*;
-use std::fmt;
 
 impl fmt::Debug for ItemPath<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

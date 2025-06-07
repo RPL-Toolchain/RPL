@@ -5,4 +5,5 @@ wrap_comments = true
 edition = "2024"
 error_on_line_overflow = true
 imports_granularity = "Module"
+group_imports = "StdExternalCrate"
 style_edition = "2024"

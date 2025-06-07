@@ -9,13 +9,12 @@ extern crate rustc_driver;
 extern crate rustc_errors;
 extern crate rustc_span;
 
-use pest::Stack;
-use pest_typed::tracker::Tracker;
 use std::path::Path;
 
 pub use error::ParseError;
 pub use parser::{Grammar, Rule, generics, pairs, rules};
-
+use pest::Stack;
+use pest_typed::tracker::Tracker;
 pub use position::PositionWrapper;
 pub use span::SpanWrapper;
 

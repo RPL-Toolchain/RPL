@@ -1,5 +1,6 @@
-use crate::graph::Access;
 use rustc_index::Idx;
+
+use crate::graph::Access;
 
 /// Conceptually, this is like a `Vec<Vec<RWCState>>`. But the number of
 /// RWC's can get very large, so it uses a more compact representation.

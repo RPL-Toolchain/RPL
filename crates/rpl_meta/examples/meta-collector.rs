@@ -14,13 +14,13 @@
 extern crate rustc_data_structures;
 extern crate rustc_span;
 
-use rustc_data_structures::sync::Registry;
 use std::num::NonZero;
+use std::path::PathBuf;
+use std::sync::{Arc, OnceLock};
 
 use rpl_meta::RPLMetaError;
 use rpl_meta::cli::{read_file_from_path_buf, traverse_rpl};
-use std::path::PathBuf;
-use std::sync::{Arc, OnceLock};
+use rustc_data_structures::sync::Registry;
 
 pub fn collect_file_from_args_for_test() -> Vec<(PathBuf, String)> {
     let args = std::env::args();

@@ -1,8 +1,9 @@
-use crate::collect_elems_separated_by_comma;
 use derive_more::Debug;
 use parser::pairs;
 use pest_typed::Span;
 use rustc_span::Symbol;
+
+use crate::collect_elems_separated_by_comma;
 
 /// Identifier in RPL meta language.
 #[derive(Copy, Clone, Debug)]

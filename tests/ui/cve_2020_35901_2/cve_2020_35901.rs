@@ -6,7 +6,7 @@ use std::{fmt, mem};
 extern crate futures;
 extern crate pin_project;
 
-use futures::{ready, Stream};
+use futures::{Stream, ready};
 use pin_project::pin_project;
 
 /// Type that provides this trait can be streamed to a peer.

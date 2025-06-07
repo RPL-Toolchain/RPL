@@ -1,12 +1,13 @@
 use core::default::Default;
 use std::ops::Index;
 
-use crate::rwstate::RWCStates;
 use rustc_data_structures::fx::{FxHashMap, FxIndexMap};
 use rustc_data_structures::packed::Pu128;
 use rustc_index::bit_set::MixedBitSet;
 use rustc_index::{Idx, IndexSlice, IndexVec};
 use rustc_middle::mir::visit::{MutatingUseContext, NonMutatingUseContext, PlaceContext};
+
+use crate::rwstate::RWCStates;
 
 rustc_index::newtype_index! {
     #[debug_format = "Node{}"]

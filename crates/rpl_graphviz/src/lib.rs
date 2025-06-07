@@ -10,13 +10,12 @@ mod graph;
 
 use std::io::{self, Write};
 
+pub use graph::DdgConfig;
 use gsgdt::{GraphvizSettings, NodeStyle};
 use rpl_context::pat::FnPatternBody;
 use rustc_middle::mir;
 use rustc_middle::mir::interpret::PointerArithmetic;
 use rustc_middle::ty::TyCtxt;
-
-pub use graph::DdgConfig;
 
 #[derive(Default)]
 pub struct Config {

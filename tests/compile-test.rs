@@ -2,16 +2,16 @@
 #![allow(unused_extern_crates)]
 #![feature(let_chains)]
 
-use ui_test::custom_flags::edition::Edition;
-use ui_test::custom_flags::rustfix::RustfixMode;
-use ui_test::spanned::Spanned;
-use ui_test::{Args, Config, error_on_output_conflict, status_emitter};
-
 use std::collections::BTreeMap;
 use std::env::{self, var_os};
 use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+use ui_test::custom_flags::edition::Edition;
+use ui_test::custom_flags::rustfix::RustfixMode;
+use ui_test::spanned::Spanned;
+use ui_test::{Args, Config, error_on_output_conflict, status_emitter};
 
 // Test dependencies may need an `extern crate` here to ensure that they show up
 // in the depinfo file (otherwise cargo thinks they are unused)

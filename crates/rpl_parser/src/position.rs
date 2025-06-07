@@ -1,6 +1,7 @@
-use colored::Colorize;
 use std::fmt::{Debug, Display};
 use std::path::Path;
+
+use colored::Colorize;
 
 /// Colored wrapper of [Position](pest_typed::Position).
 #[derive(Clone)]

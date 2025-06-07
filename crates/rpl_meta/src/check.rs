@@ -1,3 +1,13 @@
+use std::ops::Deref;
+use std::sync::Arc;
+
+use impls::CheckImplCtxt;
+use parser::generics::{Choice2, Choice3, Choice4, Choice5, Choice6, Choice12, Choice14};
+use parser::{SpanWrapper, pairs};
+use rpl_predicates::PredicateConjunction;
+use rustc_data_structures::fx::FxHashMap;
+use rustc_span::Symbol;
+
 use crate::context::MetaContext;
 use crate::symbol_table::{
     AdtPatType, EnumInner, FnInner, GetType as _, ImplInner, NonLocalMetaSymTab, SymbolTable, Variant, WithMetaTable,
@@ -5,14 +15,6 @@ use crate::symbol_table::{
 };
 use crate::utils::{Ident, Path, Record};
 use crate::{RPLMetaError, collect_elems_separated_by_comma};
-use impls::CheckImplCtxt;
-use parser::generics::{Choice2, Choice3, Choice4, Choice5, Choice6, Choice12, Choice14};
-use parser::{SpanWrapper, pairs};
-use rpl_predicates::PredicateConjunction;
-use rustc_data_structures::fx::FxHashMap;
-use rustc_span::Symbol;
-use std::ops::Deref;
-use std::sync::Arc;
 
 mod impls;
 

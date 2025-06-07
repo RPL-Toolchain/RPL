@@ -1,16 +1,18 @@
-use crate::SpanWrapper;
-use crate::parser::Rule;
-use crate::position::PositionWrapper;
+use std::collections::BTreeMap;
+use std::convert::identity;
+use std::fmt::{Display, Write};
+use std::path::Path;
+
 use colored::Colorize;
 use derive_more::derive::Debug;
 use pest_typed::tracker::{SpecialError, Tracker};
 use pest_typed::{Input, Position};
 use rustc_errors::{Diag, DiagCtxtHandle, Diagnostic, Level};
 use rustc_span::ErrorGuaranteed;
-use std::collections::BTreeMap;
-use std::convert::identity;
-use std::fmt::{Display, Write};
-use std::path::Path;
+
+use crate::SpanWrapper;
+use crate::parser::Rule;
+use crate::position::PositionWrapper;
 
 fn format_rule(rule: Option<Rule>, f: &mut impl Write) -> std::fmt::Result {
     match rule {

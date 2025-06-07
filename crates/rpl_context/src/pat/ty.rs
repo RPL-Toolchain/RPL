@@ -12,11 +12,10 @@ use rustc_middle::mir;
 use rustc_middle::ty::{self};
 use rustc_span::Symbol;
 
+use super::FnSymbolTable;
 use crate::PatCtxt;
 use crate::cvt_prim_ty::CvtPrimTy;
 use crate::pat::non_local_meta_vars::{ConstVar, TyVar};
-
-use super::FnSymbolTable;
 
 // FIXME: Use interning for the types
 #[derive(Clone, Copy)]

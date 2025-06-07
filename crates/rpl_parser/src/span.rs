@@ -1,8 +1,9 @@
+use std::fmt::{Debug, Display};
+use std::path::Path;
+
 use colored::Colorize;
 use serde::Serialize;
 use serde::ser::SerializeTuple;
-use std::fmt::{Debug, Display};
-use std::path::Path;
 
 /// Human-readable and serializable wrapper of [Span](pest_typed::Span).
 #[derive(Clone, Copy, Eq, PartialEq, Hash)]

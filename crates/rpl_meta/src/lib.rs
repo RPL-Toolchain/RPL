@@ -31,11 +31,12 @@ pub mod meta;
 pub mod symbol_table;
 pub mod utils;
 
+use std::path::PathBuf;
+
 use arena::Arena;
 use context::MetaContext;
 pub use error::RPLMetaError;
 use meta::SymbolTables;
-use std::path::PathBuf;
 
 pub fn parse_and_collect<'mcx>(
     arena: &'mcx Arena<'mcx>,
