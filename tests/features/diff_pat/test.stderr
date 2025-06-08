@@ -1,0 +1,13 @@
+error: pattern matching on a difference of patterns
+  --> tests/ui/features/diff_pat/test.rs:4:24
+   |
+LL |     let y = x as *const i32;
+   |             --------------- pointer created here
+LL |     let z = unsafe { y.offset(1) };
+   |                        ^^^^^^^^^ offset applied to pointer here
+   |
+   = help: this pattern matches a pointer that is the result of subtracting two other patterns
+   = note: `#[deny(rpl::diff_pat)]` on by default
+
+error: aborting due to 1 previous error
+

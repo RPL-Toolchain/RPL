@@ -1,0 +1,46 @@
+pattern diff-pat
+
+patt {
+    p[$T: type] = p_1[$T1 = $T] - p_2[$T2 = $T] - p_3[$T3 = $T]
+}
+
+util {
+    p_1[$T1: type] = {
+        fn $pattern(..) -> _ {
+            'ptr:
+            let $ptr: *const $T1 = _;
+            'offset:
+            let $ptr_1: *const $T1 = Offset(copy $ptr, _);
+        }
+    }
+    p_2[$T2: type] = {
+        fn $pattern(..) -> _ {
+            let $index: usize = _;
+            'ptr:
+            let $ptr: *const $T2 = _;
+            let $cmp: bool = Lt(copy $index, _);
+            'offset:
+            let $ptr_1: *const $T2 = Offset(copy $ptr, _);
+        }
+    }
+    p_3[$T3: type] = {
+        fn $pattern(..) -> _ {
+            let $index: usize = _;
+            'ptr:
+            let $ptr: *const $T3 = _;
+            let $cmp: bool = Gt(_, copy $index);
+            'offset:
+            let $ptr_1: *const $T3 = Offset(copy $ptr, _);
+        }
+    }
+}
+
+diag {
+    p = {
+        primary(offset) = "pattern matching on a difference of patterns",
+        label(ptr)      = "pointer created here",
+        label(offset)   = "offset applied to pointer here",
+        help            = "this pattern matches a pointer that is the result of subtracting two other patterns",
+        name            = "diff_pat",
+    }
+}
