@@ -436,6 +436,7 @@ impl<'pcx> RawDecleration<'pcx> {
 
 pub enum RawStatement<'pcx> {
     Assign(Option<Label>, Place<'pcx>, Rvalue<'pcx>),
+    Call(Option<Label>, Place<'pcx>, Call<'pcx>),
     CallIgnoreRet(Option<Label>, Call<'pcx>),
     Drop(Option<Label>, Place<'pcx>),
     Break,
@@ -470,19 +471,34 @@ impl<'pcx> RawStatement<'pcx> {
     pub fn from_assign(
         stmt: WithPath<'pcx, &'pcx pairs::MirAssign<'pcx>>,
         pcx: PatCtxt<'pcx>,
-        sym_tab: &'pcx FnSymbolTable<'pcx>,
+        fn_sym_tab: &'pcx FnSymbolTable<'pcx>,
     ) -> Self {
         let p = stmt.path;
         let (label, place, _, rvalue_or_call) = stmt.get_matched();
-        let place = Place::from(place, pcx, sym_tab);
-        let rvalue = match rvalue_or_call.deref() {
-            Choice2::_0(_call) => todo!("call in mir assign"),
-            Choice2::_1(rvalue) => Rvalue::from_rvalue(WithPath::new(p, rvalue), pcx, sym_tab),
-        };
         let label = label
             .as_ref()
             .map(|label| Symbol::intern(label.Label().LabelName().span.as_str()));
-        Self::Assign(label, place, rvalue)
+        let place = Place::from(place, pcx, fn_sym_tab);
+        match rvalue_or_call.deref() {
+            Choice2::_0(call) => Self::from_call_assign(label, p, place, call, pcx, fn_sym_tab),
+            Choice2::_1(rvalue) => {
+                let rvalue = Rvalue::from_rvalue(WithPath::new(p, rvalue), pcx, fn_sym_tab);
+                Self::Assign(label, place, rvalue)
+            },
+        }
+    }
+
+    /// See [`mir::TerminatorKind::Call`]
+    fn from_call_assign(
+        label: Option<Symbol>,
+        p: &'pcx std::path::Path,
+        place: Place<'pcx>,
+        call: &'pcx pairs::MirCall<'pcx>,
+        pcx: PatCtxt<'pcx>,
+        fn_sym_tab: &'pcx FnSymbolTable<'pcx>,
+    ) -> Self {
+        let call = Call::from(with_path(p, call), pcx, fn_sym_tab);
+        Self::Call(label, place, call)
     }
 
     pub fn from_call_ignore_ret(
@@ -653,6 +669,9 @@ impl<'i> Cast<CoercionSource> for &'i pairs::CoercionSource<'i> {
     }
 }
 
+/// A value that can be used in an rvalue.
+///
+/// See [`mir::Rvalue`].
 pub enum Rvalue<'pcx> {
     Any,
     Use(Operand<'pcx>),
@@ -1172,6 +1191,9 @@ impl<'pcx> FnPatternBodyBuilder<'pcx> {
     fn mk_raw_stmt(&mut self, kind: RawStatement<'pcx>) -> Location {
         match kind {
             RawStatement::Assign(label, place, rvalue) => self.mk_assign(label, StatementKind::Assign(place, rvalue)),
+            RawStatement::Call(label, place, Call(func, args)) => {
+                self.mk_fn_call(label, func, args.into_boxed_slice(), Some(place))
+            },
             RawStatement::CallIgnoreRet(label, Call(func, args)) => {
                 self.mk_fn_call(label, func, args.into_boxed_slice(), None)
             },
