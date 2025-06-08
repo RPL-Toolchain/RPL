@@ -4,7 +4,7 @@
 - [ ] normal::cve_2018_21000::t_to_u8::check_item (should be easy)
 - [ ] normal::cve_2018_21000::u8_to_t::check_item (should be easy)
 - [x] inline::cve_2019_15548::check_item
-- [ ] normal::cve_2019_15548::check_item (is using a few untested features)
+- [x] normal::cve_2019_15548::check_item (is using a few untested features)
 - [ ] normal::cve_2019_16138::check_item (should be easy)
 - [x] inline::cve_2020_25016::check_item
 - [ ] normal::cve_2020_35860::check_item (should be easy)
