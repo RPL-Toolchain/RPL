@@ -1,0 +1,29 @@
+pattern private-generic-inline
+
+patt {
+    p_private_inline = {
+        pub fn $func (..) -> _ {}
+    } where {
+        inline($func)
+    }
+    p_generic_inline = {
+        fn $func (..) -> _ {}
+    } where {
+        inline($func) && generic($func)
+    }
+}
+
+diag {
+    p_private_inline = {
+        primary(func) = "private inline function",
+        label(func)   = "this function is private and inlined",
+        note          = "private inline functions are not allowed in patterns",
+        name          = "private_inline_function",
+    }
+    p_generic_inline = {
+        primary(func) = "generic inline function",
+        label(func)   = "this function is generic and inlined",
+        note          = "generic inline functions are not allowed in patterns",
+        name          = "generic_inline_function",
+    }
+}
