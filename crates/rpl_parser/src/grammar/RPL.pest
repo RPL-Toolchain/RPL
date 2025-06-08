@@ -908,9 +908,25 @@ diagMessage = ${
     "\"" ~ diagMessageInner ~ "\""
 }
 
+diagAttr = {
+    Identifier ~ (LeftParen ~ diagAttrs? ~ RightParen | Assign ~ diagMessage)?
+}
+
+diagAttrs = {
+    diagAttr ~ (Comma ~ diagAttr)* ~ Comma?
+}
+
+diagItem = {
+    Identifier ~ (LeftParen ~ diagAttrs ~ RightParen)? ~ Assign ~ diagMessage
+}
+
+diagItems = {
+    diagItem ~ (Comma ~ diagItem)* ~ Comma?
+}
+
 // diag block Item
 diagBlockItem = {
-    Identifier ~ Assign ~ LeftBrace ~ (Identifier ~ (LeftParen ~ LabelName ~ RightParen)? ~ Assign ~ diagMessage ~ Comma)* ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace
+    Identifier ~ Assign ~ LeftBrace ~ diagItems ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace
 }
 
 // RPL Blocks

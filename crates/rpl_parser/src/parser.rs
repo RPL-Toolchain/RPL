@@ -274,6 +274,10 @@ pub enum Rule {
     r#diagMessageText,
     r#diagMessageInner,
     r#diagMessage,
+    r#diagAttr,
+    r#diagAttrs,
+    r#diagItem,
+    r#diagItems,
     r#diagBlockItem,
     r#pattBlock,
     r#utilBlock,
@@ -9043,25 +9047,154 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#diagBlockItem , "Corresponds to expression: `(Identifier ~ Assign ~ LeftBrace ~ (Identifier ~ (LeftParen ~ LabelName ~ RightParen)? ~ Assign ~ diagMessage ~ Comma)* ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagBlockItem , super :: super :: generics :: Seq6 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq5 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LabelName :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessage :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Comma :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#MetaVariableWithDiagMessageSeparatedByComma :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
-        impl<'i, const INHERITED: ::core::primitive::usize> r#diagBlockItem<'i, INHERITED> {
+        :: pest_typed :: rule ! (r#diagAttr , "Corresponds to expression: `(Identifier ~ ((LeftParen ~ diagAttrs? ~ RightParen) | (Assign ~ diagMessage))?)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagAttr , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: generics :: Choice2 :: < super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#diagAttrs :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessage :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagAttr<'i, INHERITED> {
             #[doc = "A helper function to access [`Assign`]."]
             #[allow(non_snake_case)]
             pub fn r#Assign<'s>(
                 &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#Assign<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res
+                            .as_ref()
+                            .map(|res| {
+                                let res = res._1().map(|res| {
+                                    let res = &res.content.0.matched;
+                                    res
+                                });
+                                res
+                            })
+                            .flatten();
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`Identifier`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Identifier<'s>(&'s self) -> &'s super::super::rules::r#Identifier<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.0.matched;
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`LeftParen`]."]
+            #[allow(non_snake_case)]
+            pub fn r#LeftParen<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#LeftParen<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res
+                            .as_ref()
+                            .map(|res| {
+                                let res = res._0().map(|res| {
+                                    let res = &res.content.0.matched;
+                                    res
+                                });
+                                res
+                            })
+                            .flatten();
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`RightParen`]."]
+            #[allow(non_snake_case)]
+            pub fn r#RightParen<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#RightParen<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res
+                            .as_ref()
+                            .map(|res| {
+                                let res = res._0().map(|res| {
+                                    let res = &res.content.2.matched;
+                                    res
+                                });
+                                res
+                            })
+                            .flatten();
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`diagAttrs`]."]
+            #[allow(non_snake_case)]
+            pub fn r#diagAttrs<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#diagAttrs<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res
+                            .as_ref()
+                            .map(|res| {
+                                let res = res
+                                    ._0()
+                                    .map(|res| {
+                                        let res = &res.content.1.matched;
+                                        {
+                                            let res = res.as_ref().map(|res| res);
+                                            res
+                                        }
+                                    })
+                                    .flatten();
+                                res
+                            })
+                            .flatten();
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`diagMessage`]."]
+            #[allow(non_snake_case)]
+            pub fn r#diagMessage<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#diagMessage<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res
+                            .as_ref()
+                            .map(|res| {
+                                let res = res._1().map(|res| {
+                                    let res = &res.content.1.matched;
+                                    res
+                                });
+                                res
+                            })
+                            .flatten();
+                        res
+                    }
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#diagAttrs , "Corresponds to expression: `(diagAttr ~ (Comma ~ diagAttr)* ~ Comma?)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagAttrs , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagAttr :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Comma :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagAttr :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#Comma :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagAttrs<'i, INHERITED> {
+            #[doc = "A helper function to access [`Comma`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Comma<'s>(
+                &'s self,
             ) -> (
-                &'s super::super::rules::r#Assign<'i, INHERITED>,
-                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Assign<'i, INHERITED>>,
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Comma<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Comma<'i, INHERITED>>,
             ) {
                 let res = &*self.content;
                 {
                     let res = (
                         {
                             let res = &res.content.1.matched;
-                            res
-                        },
-                        {
-                            let res = &res.content.3.matched;
                             {
                                 let res = res
                                     .content
@@ -9069,7 +9202,7 @@ pub mod rules_impl {
                                     .map(|res| {
                                         let res = &res.matched;
                                         {
-                                            let res = &res.content.2.matched;
+                                            let res = &res.content.0.matched;
                                             res
                                         }
                                     })
@@ -9077,41 +9210,24 @@ pub mod rules_impl {
                                 res
                             }
                         },
+                        {
+                            let res = &res.content.2.matched;
+                            {
+                                let res = res.as_ref().map(|res| res);
+                                res
+                            }
+                        },
                     );
                     res
                 }
             }
-            #[doc = "A helper function to access [`Comma`]."]
+            #[doc = "A helper function to access [`diagAttr`]."]
             #[allow(non_snake_case)]
-            pub fn r#Comma<'s>(
-                &'s self,
-            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Comma<'i, INHERITED>> {
-                let res = &*self.content;
-                {
-                    let res = &res.content.3.matched;
-                    {
-                        let res = res
-                            .content
-                            .iter()
-                            .map(|res| {
-                                let res = &res.matched;
-                                {
-                                    let res = &res.content.4.matched;
-                                    res
-                                }
-                            })
-                            .collect::<::pest_typed::re_exported::Vec<_>>();
-                        res
-                    }
-                }
-            }
-            #[doc = "A helper function to access [`Identifier`]."]
-            #[allow(non_snake_case)]
-            pub fn r#Identifier<'s>(
+            pub fn r#diagAttr<'s>(
                 &'s self,
             ) -> (
-                &'s super::super::rules::r#Identifier<'i, INHERITED>,
-                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Identifier<'i, INHERITED>>,
+                &'s super::super::rules::r#diagAttr<'i, INHERITED>,
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#diagAttr<'i, INHERITED>>,
             ) {
                 let res = &*self.content;
                 {
@@ -9121,7 +9237,123 @@ pub mod rules_impl {
                             res
                         },
                         {
-                            let res = &res.content.3.matched;
+                            let res = &res.content.1.matched;
+                            {
+                                let res = res
+                                    .content
+                                    .iter()
+                                    .map(|res| {
+                                        let res = &res.matched;
+                                        {
+                                            let res = &res.content.1.matched;
+                                            res
+                                        }
+                                    })
+                                    .collect::<::pest_typed::re_exported::Vec<_>>();
+                                res
+                            }
+                        },
+                    );
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#diagItem , "Corresponds to expression: `(Identifier ~ (LeftParen ~ diagAttrs ~ RightParen)? ~ Assign ~ diagMessage)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagItem , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagAttrs :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessage :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagItem<'i, INHERITED> {
+            #[doc = "A helper function to access [`Assign`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Assign<'s>(&'s self) -> &'s super::super::rules::r#Assign<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.2.matched;
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`Identifier`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Identifier<'s>(&'s self) -> &'s super::super::rules::r#Identifier<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.0.matched;
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`LeftParen`]."]
+            #[allow(non_snake_case)]
+            pub fn r#LeftParen<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#LeftParen<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res.as_ref().map(|res| {
+                            let res = &res.content.0.matched;
+                            res
+                        });
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`RightParen`]."]
+            #[allow(non_snake_case)]
+            pub fn r#RightParen<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#RightParen<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res.as_ref().map(|res| {
+                            let res = &res.content.2.matched;
+                            res
+                        });
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`diagAttrs`]."]
+            #[allow(non_snake_case)]
+            pub fn r#diagAttrs<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#diagAttrs<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res.as_ref().map(|res| {
+                            let res = &res.content.1.matched;
+                            res
+                        });
+                        res
+                    }
+                }
+            }
+            #[doc = "A helper function to access [`diagMessage`]."]
+            #[allow(non_snake_case)]
+            pub fn r#diagMessage<'s>(&'s self) -> &'s super::super::rules::r#diagMessage<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.3.matched;
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#diagItems , "Corresponds to expression: `(diagItem ~ (Comma ~ diagItem)* ~ Comma?)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagItems , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagItem :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Comma :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagItem :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#Comma :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagItems<'i, INHERITED> {
+            #[doc = "A helper function to access [`Comma`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Comma<'s>(
+                &'s self,
+            ) -> (
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Comma<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Comma<'i, INHERITED>>,
+            ) {
+                let res = &*self.content;
+                {
+                    let res = (
+                        {
+                            let res = &res.content.1.matched;
                             {
                                 let res = res
                                     .content
@@ -9137,40 +9369,72 @@ pub mod rules_impl {
                                 res
                             }
                         },
+                        {
+                            let res = &res.content.2.matched;
+                            {
+                                let res = res.as_ref().map(|res| res);
+                                res
+                            }
+                        },
                     );
                     res
                 }
             }
-            #[doc = "A helper function to access [`LabelName`]."]
+            #[doc = "A helper function to access [`diagItem`]."]
             #[allow(non_snake_case)]
-            pub fn r#LabelName<'s>(
+            pub fn r#diagItem<'s>(
                 &'s self,
-            ) -> ::pest_typed::re_exported::Vec<
-                ::pest_typed::re_exported::Option<&'s super::super::rules::r#LabelName<'i, INHERITED>>,
-            > {
+            ) -> (
+                &'s super::super::rules::r#diagItem<'i, INHERITED>,
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#diagItem<'i, INHERITED>>,
+            ) {
                 let res = &*self.content;
                 {
-                    let res = &res.content.3.matched;
-                    {
-                        let res = res
-                            .content
-                            .iter()
-                            .map(|res| {
-                                let res = &res.matched;
-                                {
-                                    let res = &res.content.1.matched;
-                                    {
-                                        let res = res.as_ref().map(|res| {
+                    let res = (
+                        {
+                            let res = &res.content.0.matched;
+                            res
+                        },
+                        {
+                            let res = &res.content.1.matched;
+                            {
+                                let res = res
+                                    .content
+                                    .iter()
+                                    .map(|res| {
+                                        let res = &res.matched;
+                                        {
                                             let res = &res.content.1.matched;
                                             res
-                                        });
-                                        res
-                                    }
-                                }
-                            })
-                            .collect::<::pest_typed::re_exported::Vec<_>>();
-                        res
-                    }
+                                        }
+                                    })
+                                    .collect::<::pest_typed::re_exported::Vec<_>>();
+                                res
+                            }
+                        },
+                    );
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#diagBlockItem , "Corresponds to expression: `(Identifier ~ Assign ~ LeftBrace ~ diagItems ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagBlockItem , super :: super :: generics :: Seq6 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Identifier :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Assign :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagItems :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#MetaVariableWithDiagMessageSeparatedByComma :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#diagBlockItem<'i, INHERITED> {
+            #[doc = "A helper function to access [`Assign`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Assign<'s>(&'s self) -> &'s super::super::rules::r#Assign<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`Identifier`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Identifier<'s>(&'s self) -> &'s super::super::rules::r#Identifier<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.0.matched;
+                    res
                 }
             }
             #[doc = "A helper function to access [`LeftBrace`]."]
@@ -9180,38 +9444,6 @@ pub mod rules_impl {
                 {
                     let res = &res.content.2.matched;
                     res
-                }
-            }
-            #[doc = "A helper function to access [`LeftParen`]."]
-            #[allow(non_snake_case)]
-            pub fn r#LeftParen<'s>(
-                &'s self,
-            ) -> ::pest_typed::re_exported::Vec<
-                ::pest_typed::re_exported::Option<&'s super::super::rules::r#LeftParen<'i, INHERITED>>,
-            > {
-                let res = &*self.content;
-                {
-                    let res = &res.content.3.matched;
-                    {
-                        let res = res
-                            .content
-                            .iter()
-                            .map(|res| {
-                                let res = &res.matched;
-                                {
-                                    let res = &res.content.1.matched;
-                                    {
-                                        let res = res.as_ref().map(|res| {
-                                            let res = &res.content.0.matched;
-                                            res
-                                        });
-                                        res
-                                    }
-                                }
-                            })
-                            .collect::<::pest_typed::re_exported::Vec<_>>();
-                        res
-                    }
                 }
             }
             #[doc = "A helper function to access [`MetaVariableWithDiagMessageSeparatedByComma`]."]
@@ -9239,60 +9471,13 @@ pub mod rules_impl {
                     res
                 }
             }
-            #[doc = "A helper function to access [`RightParen`]."]
+            #[doc = "A helper function to access [`diagItems`]."]
             #[allow(non_snake_case)]
-            pub fn r#RightParen<'s>(
-                &'s self,
-            ) -> ::pest_typed::re_exported::Vec<
-                ::pest_typed::re_exported::Option<&'s super::super::rules::r#RightParen<'i, INHERITED>>,
-            > {
+            pub fn r#diagItems<'s>(&'s self) -> &'s super::super::rules::r#diagItems<'i, INHERITED> {
                 let res = &*self.content;
                 {
                     let res = &res.content.3.matched;
-                    {
-                        let res = res
-                            .content
-                            .iter()
-                            .map(|res| {
-                                let res = &res.matched;
-                                {
-                                    let res = &res.content.1.matched;
-                                    {
-                                        let res = res.as_ref().map(|res| {
-                                            let res = &res.content.2.matched;
-                                            res
-                                        });
-                                        res
-                                    }
-                                }
-                            })
-                            .collect::<::pest_typed::re_exported::Vec<_>>();
-                        res
-                    }
-                }
-            }
-            #[doc = "A helper function to access [`diagMessage`]."]
-            #[allow(non_snake_case)]
-            pub fn r#diagMessage<'s>(
-                &'s self,
-            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#diagMessage<'i, INHERITED>> {
-                let res = &*self.content;
-                {
-                    let res = &res.content.3.matched;
-                    {
-                        let res = res
-                            .content
-                            .iter()
-                            .map(|res| {
-                                let res = &res.matched;
-                                {
-                                    let res = &res.content.3.matched;
-                                    res
-                                }
-                            })
-                            .collect::<::pest_typed::re_exported::Vec<_>>();
-                        res
-                    }
+                    res
                 }
             }
         }

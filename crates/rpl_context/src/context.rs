@@ -225,7 +225,7 @@ impl<'pcx> PatCtxt<'pcx> {
             });
 
             for diag in diags {
-                pattern.add_diag(diag, patt_symbol_tables)
+                pattern.add_diag(with_path(mctx.get_active_path(), diag), patt_symbol_tables)
             }
         }
 

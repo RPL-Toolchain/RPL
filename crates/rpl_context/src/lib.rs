@@ -22,6 +22,7 @@ extern crate rustc_span;
 extern crate rustc_target;
 #[macro_use]
 extern crate tracing;
+extern crate thiserror;
 
 mod arena;
 mod context;

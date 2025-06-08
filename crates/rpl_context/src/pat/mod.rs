@@ -409,14 +409,15 @@ impl<'pcx> Pattern<'pcx> {
 
     pub fn add_diag(
         &mut self,
-        diag: &'pcx pairs::diagBlock<'_>,
+        diag: WithPath<'pcx, &'pcx pairs::diagBlock<'_>>,
         symbol_tables: &'pcx FxHashMap<Symbol, rpl_meta::symbol_table::SymbolTable<'_>>,
     ) {
         for item in diag.get_matched().2.iter_matched() {
             let (ident, _, _, _, _, _) = item.get_matched();
             let name = Symbol::intern(ident.span.as_str());
             let symbol_table = symbol_tables.get(&name).unwrap();
-            let diag = DynamicErrorBuilder::from_item(item, &symbol_table.meta_vars);
+            let diag = DynamicErrorBuilder::from_item(WithPath::new(diag.path, item), &symbol_table.meta_vars)
+                .unwrap_or_else(|err| panic!("{err}"));
             let prev = self.diag_block.insert(name, diag);
             debug_assert!(prev.is_none(), "Duplicate diagnostic for {:?}", name); //FIXME: raise an error
         }
