@@ -10,7 +10,7 @@
 - [ ] normal::cve_2020_35860::check_item (should be easy)
 - [ ] inline::cve_2020_35862::check_item (long but should be easy) (not used in actual)
 - [ ] inline::cve_2020_35873::check_item (needs new syntax to express the type of `CString`?)
-- [ ] inline::cve_2020_35877::check_item (requires diff patterns)
+- [x] inline::cve_2020_35877::check_item (requires diff patterns)
 - [ ] inline::cve_2020_35881::const_const_Transmute_ver::check_item (should be easy)
 - [ ] inline::cve_2020_35881::mut_mut_Transmute_ver::check_item (should be easy)
 - [ ] inline::cve_2020_35881::mut_const_PtrToPtr_ver::check_item (should be easy)
