@@ -1,6 +1,5 @@
 #![feature(rustc_private)]
-
-#[warn(unused_qualifications)]
+#![warn(unused_qualifications)]
 extern crate rustc_data_structures;
 extern crate rustc_errors;
 extern crate rustc_fluent_macro;
@@ -127,7 +126,7 @@ impl<'tcx, 'pcx> CheckFnCtxt<'pcx, 'tcx> {
     fn impl_matched<'a>(
         &self,
         name: Symbol,
-        rpl_rust_items: &'pcx rpl_context::pat::RustItems<'pcx>,
+        rpl_rust_items: &'pcx pat::RustItems<'pcx>,
         body: &'a mir::Body<'tcx>,
         mir_cfg: &'a MirControlFlowGraph,
         mir_ddg: &'a MirDataDepGraph,
@@ -170,7 +169,7 @@ impl<'tcx, 'pcx> CheckFnCtxt<'pcx, 'tcx> {
             })
             .collect();
         positive
-            .filter(move |matched| !negative.contains(&matched))
+            .filter(move |matched| !negative.contains(matched))
             .collect::<Vec<_>>()
             .into_iter()
     }
@@ -178,7 +177,7 @@ impl<'tcx, 'pcx> CheckFnCtxt<'pcx, 'tcx> {
     fn impl_matched_pat_item<'a>(
         &self,
         name: Symbol,
-        pat_op: &'pcx rpl_context::pat::PatternItem<'pcx>,
+        pat_op: &'pcx PatternItem<'pcx>,
         body: &'a mir::Body<'tcx>,
         mir_cfg: &'a MirControlFlowGraph,
         mir_ddg: &'a MirDataDepGraph,
@@ -239,7 +238,7 @@ impl<'tcx, 'pcx> CheckFnCtxt<'pcx, 'tcx> {
             })
             .collect();
         positive
-            .filter(move |matched| !negative.contains(&matched))
+            .filter(move |matched| !negative.contains(matched))
             .collect::<Vec<_>>()
             .into_iter()
     }
@@ -247,7 +246,7 @@ impl<'tcx, 'pcx> CheckFnCtxt<'pcx, 'tcx> {
     fn fn_matched_pat_item<'a>(
         &self,
         name: Symbol,
-        pat_op: &'pcx rpl_context::pat::PatternItem<'pcx>,
+        pat_op: &'pcx PatternItem<'pcx>,
         body: &'a mir::Body<'tcx>,
         mir_cfg: &'a MirControlFlowGraph,
         mir_ddg: &'a MirDataDepGraph,
@@ -281,7 +280,7 @@ impl<'tcx> CheckFnCtxt<'_, 'tcx> {
                             self.pcx.for_each_rpl_pattern(|_id, pattern| {
                                 for (&name, pat_item) in &pattern.patt_block {
                                     match pat_item {
-                                        rpl_context::pat::PatternItem::RustItems(rpl_rust_items) => {
+                                        PatternItem::RustItems(rpl_rust_items) => {
                                             for (matched, labels) in
                                                 self.impl_matched(name, rpl_rust_items, body, &mir_cfg, &mir_ddg)
                                             {
@@ -292,7 +291,7 @@ impl<'tcx> CheckFnCtxt<'_, 'tcx> {
                                                     error.lint(),
                                                     self.tcx.local_def_id_to_hir_id(def_id),
                                                     error.primary_span(),
-                                                    error,
+                                                    *error,
                                                 );
                                             }
                                         },
@@ -306,7 +305,7 @@ impl<'tcx> CheckFnCtxt<'_, 'tcx> {
                                                     error.lint(),
                                                     self.tcx.local_def_id_to_hir_id(def_id),
                                                     error.primary_span(),
-                                                    error,
+                                                    *error,
                                                 );
                                             }
                                         },
@@ -338,7 +337,7 @@ impl<'tcx> CheckFnCtxt<'_, 'tcx> {
                                     error.lint(),
                                     self.tcx.local_def_id_to_hir_id(def_id),
                                     error.primary_span(),
-                                    error,
+                                    *error,
                                 );
                             }
                         },
@@ -349,7 +348,7 @@ impl<'tcx> CheckFnCtxt<'_, 'tcx> {
                                     error.lint(),
                                     self.tcx.local_def_id_to_hir_id(def_id),
                                     error.primary_span(),
-                                    error,
+                                    *error,
                                 );
                             }
                         },

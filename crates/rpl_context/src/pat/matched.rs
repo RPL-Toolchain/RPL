@@ -73,7 +73,7 @@ impl MatchedMap {
                         .ty_vars
                         .iter()
                         .find_map(|source_var| {
-                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then(|| idx)
+                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then_some(idx)
                         })
                         .unwrap()
                 })
@@ -86,7 +86,7 @@ impl MatchedMap {
                         .const_vars
                         .iter()
                         .find_map(|source_var| {
-                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then(|| idx)
+                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then_some(idx)
                         })
                         .unwrap()
                 })
@@ -99,7 +99,7 @@ impl MatchedMap {
                         .place_vars
                         .iter()
                         .find_map(|source_var| {
-                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then(|| idx)
+                            (&source_var.name == vars.get(&var.name).unwrap_or(&var.name)).then_some(idx)
                         })
                         .unwrap()
                 })

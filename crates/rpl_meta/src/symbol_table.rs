@@ -66,7 +66,7 @@ pub struct NonLocalMetaSymTab<'i> {
     adt_pats: FxHashMap<Symbol, AdtPatType>,
 }
 
-impl<'i> NonLocalMetaSymTab<'i> {
+impl NonLocalMetaSymTab<'_> {
     pub fn type_vars(&self) -> impl Iterator<Item = (Symbol, usize)> {
         self.type_vars.iter().map(|(symbol, (idx, _))| (*symbol, *idx))
     }

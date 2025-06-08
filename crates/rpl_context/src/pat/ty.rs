@@ -55,13 +55,7 @@ impl<'pcx> Ty<'pcx> {
                             .as_ref()
                             .force_non_local_meta_var(WithPath::new(p, len))
                             .expect_const();
-                        let len = ConstVar::from(
-                            pcx,
-                            fn_sym_tab,
-                            const_idx.into(),
-                            WithPath::new(p, const_ty),
-                            const_pred,
-                        );
+                        let len = ConstVar::from(pcx, fn_sym_tab, const_idx, WithPath::new(p, const_ty), const_pred);
                         pcx.mk_array_ty(ty, len.into())
                     },
                 }
@@ -538,7 +532,7 @@ impl<'pcx> PathWithArgs<'pcx> {
         let p = lang_item.path;
         let (_, _, _, _, lang_item, _, args) = lang_item.get_matched();
         let lang_item = LangItem::from_name(rustc_span::Symbol::intern(lang_item.span.as_str().trim_matches('"')))
-            .expect(&format!("Unknown lang item {:?}", lang_item.span.as_str()));
+            .unwrap_or_else(|| panic!("Unknown lang item {:?}", lang_item.span.as_str()));
         let args = if let Some(args) = args {
             GenericArgsRef::from_generic_arguments(
                 p,
@@ -606,28 +600,28 @@ impl IntValue {
                 let dec_str = dec.span.as_str();
                 let dec_str = &dec_str.replace('_', "");
                 u128::from_str_radix(dec_str, 10)
-                    .expect(&format!("invalid decimal integer {:?}", dec_str))
+                    .unwrap_or_else(|err| panic!("invalid decimal integer {:?}: {}", dec_str, err))
                     .into()
             },
             Choice4::_1(bin) => {
                 let bin_str = bin.span.as_str();
                 let bin_str = &bin_str.replace('_', "");
                 u128::from_str_radix(bin_str, 2)
-                    .expect(&format!("invalid binary integer {:?}", bin_str))
+                    .unwrap_or_else(|err| panic!("invalid binary integer {:?}: {}", bin_str, err))
                     .into()
             },
             Choice4::_2(oct) => {
                 let oct_str = oct.span.as_str();
                 let oct_str = &oct_str.replace('_', "");
                 u128::from_str_radix(oct_str, 8)
-                    .expect(&format!("invalid octal integer {:?}", oct_str))
+                    .unwrap_or_else(|err| panic!("invalid octal integer {:?}: {}", oct_str, err))
                     .into()
             },
             Choice4::_3(hex) => {
                 let hex_str = hex.span.as_str();
                 let hex_str = &hex_str.replace('_', "");
                 u128::from_str_radix(hex_str, 16)
-                    .expect(&format!("invalid hexadecimal integer {:?}", hex_str))
+                    .unwrap_or_else(|err| panic!("invalid hexadecimal integer {:?}: {}", hex_str, err))
                     .into()
             },
         };

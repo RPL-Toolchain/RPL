@@ -271,12 +271,13 @@ impl<'pcx> Pattern<'pcx> {
         pat_name: Symbol,
         body: &Body<'tcx>,
         matched: &impl Matched<'tcx>,
-    ) -> Result<DynamicError, DynamicError> {
-        Ok(self
-            .diag_block
-            .get(&pat_name)
-            .ok_or_else(|| DynamicError::default_diagnostic(body.span))?
-            .build(body, matched))
+    ) -> Result<Box<DynamicError>, Box<DynamicError>> {
+        Ok(Box::new(
+            self.diag_block
+                .get(&pat_name)
+                .ok_or_else(|| Box::new(DynamicError::default_diagnostic(body.span)))?
+                .build(body, matched),
+        ))
     }
 }
 
@@ -340,7 +341,7 @@ impl<'pcx> Pattern<'pcx> {
         pat_cfg: &'pcx pairs::PatternConfiguration<'pcx>,
     ) -> (&'pcx PatternItem<'pcx>, MatchedMap) {
         let item = *self.util_block.get(&Ident::from(pat_cfg.Identifier()).name).unwrap();
-        let map = MatchedMap::new(&meta, &item.meta(), pat_cfg.MetaVariableAssignList());
+        let map = MatchedMap::new(meta, item.meta(), pat_cfg.MetaVariableAssignList());
         (item, map)
     }
 
@@ -354,7 +355,7 @@ impl<'pcx> Pattern<'pcx> {
     ) {
         let (pos, neg) = patt_op.PatternConfiguration();
         let positive = self.patt_op(&meta, pos);
-        let negative = neg.iter().map(|negative| self.patt_op(&meta, &negative)).collect();
+        let negative = neg.iter().map(|negative| self.patt_op(&meta, negative)).collect();
         let pat_ops = PatternOperation {
             pcx: self.pcx,
             meta,

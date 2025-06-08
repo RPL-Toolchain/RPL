@@ -160,6 +160,7 @@ pub(crate) struct DynamicErrorBuilder<'i> {
     /// Suggestions, alternative code, their spans, and its [`Applicability`].
     ///
     /// See [`DynamicError::suggestions`].
+    #[expect(clippy::type_complexity)]
     suggestions: Vec<(Vec<SubMsg<'i>>, Vec<SubMsg<'i>>, Option<&'i str>, Applicability)>,
     lint: &'static Lint,
 }
@@ -198,7 +199,7 @@ pub enum ParseError<'i> {
 
 fn parse_ident<'i>(path: &'i std::path::Path, attrs: &pairs::diagAttrs<'i>) -> Result<&'i str, ParseError<'i>> {
     let (first, following, _trailing_comma) = attrs.get_matched();
-    if following.content.len() > 0 {
+    if !following.content.is_empty() {
         return Err(ParseError::TooManyArguments(SpanWrapper::new(attrs.span, path)));
     }
     let (ident, arguments_or_value) = first.get_matched();
