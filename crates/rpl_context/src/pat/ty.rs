@@ -537,8 +537,8 @@ impl<'pcx> PathWithArgs<'pcx> {
     ) -> Self {
         let p = lang_item.path;
         let (_, _, _, _, lang_item, _, args) = lang_item.get_matched();
-        let lang_item =
-            LangItem::from_name(rustc_span::Symbol::intern(lang_item.span.as_str())).expect("Unknown lang item");
+        let lang_item = LangItem::from_name(rustc_span::Symbol::intern(lang_item.span.as_str().trim_matches('"')))
+            .expect(&format!("Unknown lang item {:?}", lang_item.span.as_str()));
         let args = if let Some(args) = args {
             GenericArgsRef::from_generic_arguments(
                 p,
@@ -602,18 +602,34 @@ impl IntValue {
     pub fn from_integer(int: &pairs::Integer<'_>) -> Self {
         let (lit, ty) = int.get_matched();
         let value = match lit {
-            Choice4::_0(dec) => u128::from_str_radix(dec.span.as_str(), 10)
-                .expect("invalid decimal integer")
-                .into(),
-            Choice4::_1(bin) => u128::from_str_radix(bin.span.as_str(), 2)
-                .expect("invalid binary integer")
-                .into(),
-            Choice4::_2(oct) => u128::from_str_radix(oct.span.as_str(), 8)
-                .expect("invalid octal integer")
-                .into(),
-            Choice4::_3(hex) => u128::from_str_radix(hex.span.as_str(), 16)
-                .expect("invalid hexadecimal integer")
-                .into(),
+            Choice4::_0(dec) => {
+                let dec_str = dec.span.as_str();
+                let dec_str = &dec_str.replace('_', "");
+                u128::from_str_radix(dec_str, 10)
+                    .expect(&format!("invalid decimal integer {:?}", dec_str))
+                    .into()
+            },
+            Choice4::_1(bin) => {
+                let bin_str = bin.span.as_str();
+                let bin_str = &bin_str.replace('_', "");
+                u128::from_str_radix(bin_str, 2)
+                    .expect(&format!("invalid binary integer {:?}", bin_str))
+                    .into()
+            },
+            Choice4::_2(oct) => {
+                let oct_str = oct.span.as_str();
+                let oct_str = &oct_str.replace('_', "");
+                u128::from_str_radix(oct_str, 8)
+                    .expect(&format!("invalid octal integer {:?}", oct_str))
+                    .into()
+            },
+            Choice4::_3(hex) => {
+                let hex_str = hex.span.as_str();
+                let hex_str = &hex_str.replace('_', "");
+                u128::from_str_radix(hex_str, 16)
+                    .expect(&format!("invalid hexadecimal integer {:?}", hex_str))
+                    .into()
+            },
         };
         let ty = if let Some(ty) = ty {
             IntTy::from(ty)
