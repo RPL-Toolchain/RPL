@@ -587,14 +587,14 @@ impl<'i> FnInner<'i> {
         path: &'i std::path::Path,
         ident: &Ident<'i>,
     ) -> Result<TypeOrPath<'i>, RPLMetaError<'i>> {
-        self.types.get(&ident.name).copied().ok_or_else(|| {
-            eprintln!("{}", std::backtrace::Backtrace::capture());
-            RPLMetaError::TypeOrPathNotDeclared {
+        self.types
+            .get(&ident.name)
+            .copied()
+            .ok_or_else(|| RPLMetaError::TypeOrPathNotDeclared {
                 span: SpanWrapper::new(ident.span, path),
                 type_or_path: ident.name,
                 declared: self.types.keys().cloned().collect(),
-            }
-        })
+            })
     }
 
     pub fn add_import(
