@@ -18,6 +18,13 @@ fn unchecked_slice<T>(slice: &[T], index: usize) -> *const T {
 }
 
 // #[rpl::dump_mir(dump_cfg, dump_ddg)]
+fn slice_end<T>(slice: &[T], index: usize) -> *const T {
+    let p = slice.as_ptr();
+    let length = slice.len();
+    unsafe { p.add(index) }
+}
+
+// #[rpl::dump_mir(dump_cfg, dump_ddg)]
 fn checked_lt<T>(slice: &[T], index: usize) -> &T {
     let mut p: *const T = slice.as_ptr();
     let length: usize = slice.len();
