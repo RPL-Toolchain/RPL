@@ -2,6 +2,7 @@ use std::ops::Deref;
 use std::sync::Arc;
 
 use derive_more::derive::{AsRef, Debug, From};
+pub use diag::{DiagSymbolTable, DiagSymbolTables};
 use either::Either;
 use parser::generics::{Choice3, Choice4};
 use parser::{SpanWrapper, pairs};
@@ -12,10 +13,11 @@ use rustc_hash::FxHashMap;
 use rustc_span::Symbol;
 
 use crate::check::CheckCtxt;
-use crate::collect_elems_separated_by_comma;
 use crate::context::MetaContext;
 use crate::error::{RPLMetaError, RPLMetaResult};
 use crate::utils::{Ident, Path};
+
+pub(crate) mod diag;
 
 #[derive(Clone, Copy, From, Debug)]
 pub enum TypeOrPath<'i> {
@@ -834,69 +836,6 @@ impl<'i> ImplInner<'i> {
 impl<'i> ImplInner<'i> {
     pub fn get_fn(&self, name: Symbol) -> Option<&Fn<'i>> {
         self.fns.get(&name)
-    }
-}
-
-#[derive(Default)]
-pub struct DiagSymbolTable {
-    diags: FxHashMap<Symbol, String>,
-}
-
-impl DiagSymbolTable {
-    pub fn collect_symbol_tables<'i>(
-        mctx: &MetaContext<'i>,
-        diags: impl Iterator<Item = &'i pairs::diagBlockItem<'i>>,
-        errors: &mut Vec<RPLMetaError<'i>>,
-    ) -> FxHashMap<Symbol, DiagSymbolTable> {
-        let mut diag_symbols = FxHashMap::default();
-        for diag in diags {
-            let name = diag.get_matched().0;
-            let symbol_table = Self::collect_diag_symbol_table(mctx, diag, errors);
-            _ = diag_symbols
-                .try_insert(Symbol::intern(name.span.as_str()), symbol_table)
-                .map_err(|entry| {
-                    let ident = entry.entry.key();
-                    let err = RPLMetaError::SymbolAlreadyDeclared {
-                        ident: *ident,
-                        span: SpanWrapper::new(name.span, mctx.get_active_path()),
-                    };
-                    errors.push(err);
-                });
-        }
-        diag_symbols
-    }
-
-    fn collect_diag_symbol_table<'i>(
-        mctx: &MetaContext<'i>,
-        diag: &'i pairs::diagBlockItem<'i>,
-        errors: &mut Vec<RPLMetaError<'i>>,
-    ) -> DiagSymbolTable {
-        let mut diag_symbol_table = DiagSymbolTable::default();
-        let (_, _, _, _tldr, messages, _) = diag.get_matched();
-        if let Some(messages) = messages {
-            let messages = collect_elems_separated_by_comma!(messages);
-            for message in messages {
-                let (ident, _, string) = message.get_matched();
-                diag_symbol_table.add_diag(mctx, ident.into(), string.span.to_string(), errors);
-            }
-        }
-        diag_symbol_table
-    }
-
-    pub fn add_diag<'i>(
-        &mut self,
-        mctx: &MetaContext<'i>,
-        ident: Ident<'i>,
-        message: String,
-        errors: &mut Vec<RPLMetaError<'i>>,
-    ) {
-        _ = self.diags.try_insert(ident.name, message).map_err(|_entry| {
-            let err = RPLMetaError::SymbolAlreadyDeclared {
-                ident: ident.name,
-                span: SpanWrapper::new(ident.span, mctx.get_active_path()),
-            };
-            errors.push(err);
-        });
     }
 }
 

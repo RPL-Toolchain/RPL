@@ -153,13 +153,15 @@ pub enum PlaceElem<'pcx> {
 }
 
 impl PlaceElem<'_> {
+    /// See `rpl_meta::check::CheckFnCtxt::check_mir_place_field`.
     pub fn from_field(field: &pairs::MirPlaceField) -> Self {
         let (_, field) = field.get_matched();
         match field {
             Choice3::_0(ident) => PlaceElem::FieldPat(Symbol::intern(ident.span.as_str())),
             Choice3::_1(ident) => PlaceElem::Field(FieldAcc::from(Symbol::intern(ident.span.as_str()))),
             Choice3::_2(index) => {
-                let index = index.span.as_str().parse::<u32>().expect("invalid field index");
+                let index = index.span.as_str().trim();
+                let index = index.parse::<u32>().expect("invalid field index");
                 PlaceElem::Field(FieldAcc::from(index))
             },
         }
@@ -718,14 +720,15 @@ impl<'pcx> Rvalue<'pcx> {
                 let operand = Operand::from(with_path(p, operand), pcx, fn_sym_tab);
                 let ty = Ty::from(WithPath::new(p, ty), pcx, fn_sym_tab);
                 let cast_kind = match cast_kind.deref() {
-                    Choice5::_0(_ptr_to_ptr) => mir::CastKind::PtrToPtr,
-                    Choice5::_1(_int_to_int) => mir::CastKind::IntToInt,
-                    Choice5::_2(_transmute) => mir::CastKind::Transmute,
-                    Choice5::_3(pointer_coercion) => {
+                    Choice6::_0(_ptr_to_ptr) => mir::CastKind::PtrToPtr,
+                    Choice6::_1(_int_to_int) => mir::CastKind::IntToInt,
+                    Choice6::_2(_transmute) => mir::CastKind::Transmute,
+                    Choice6::_3(pointer_coercion) => {
                         let (_, _, pointer_coercion, _, coercion_source, _) = pointer_coercion.get_matched();
                         mir::CastKind::PointerCoercion(pointer_coercion.cast(), coercion_source.cast())
                     },
-                    Choice5::_4(_expose_provenance) => mir::CastKind::PointerExposeProvenance,
+                    Choice6::_4(_expose_provenance) => mir::CastKind::PointerExposeProvenance,
+                    Choice6::_5(_with_exposed_provenance) => mir::CastKind::PointerWithExposedProvenance,
                 };
                 Rvalue::Cast(cast_kind, operand, ty)
             },

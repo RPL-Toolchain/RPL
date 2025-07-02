@@ -8,12 +8,22 @@ export RUSTC_LOG_COLOR=always
 # export RUSTC_LOG="rpl=trace"
 export RPL_PATS="$1"
 
+case ${4:-} in
+    '')
+        ;;
+    *)
+        export TOOLCHAIN="+rpl-dbg" # Check toolchain name on your system
+        export RUSTC_LOG="$4"       # Such as `rpl=info`
+        ;;
+esac
+
+
 case ${3:-'--test'} in
     --test)
-        cargo uitest -- "${2:-}"
+        cargo ${TOOLCHAIN:-} uitest -- "${2:-}" | tee .ansi
         ;;
     --bless)
-        cargo uibless -- "${2:-}"
+        cargo ${TOOLCHAIN:-} uibless -- "${2:-}" | tee .ansi
         ;;
     *)
         echo "Invalid mode."

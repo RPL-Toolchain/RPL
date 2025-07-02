@@ -37,6 +37,7 @@ error_type!(
                 error: Arc<std::io::Error>,
             }
                 "Cannot locate RPL pattern file `{path:?}` at {span}. Caused by:\n{error}",
+            /* 3xx for pattern errors */
             301 SymbolAlreadyDeclared {
                 ident: Symbol,
                 span: SpanWrapper<'i>,
@@ -117,16 +118,44 @@ error_type!(
                 span: SpanWrapper<'i>,
             }
                 "The return value `RET` in MIR pattern is not declared. \n{span}",
-            321 RetAlreadyDeclared {
+            319 RetAlreadyDeclared {
                 span: SpanWrapper<'i>,
             }
                 "The return value `RET` in MIR pattern is already declared. \n{span}",
-            319 PredicateError(PredicateError<'i>)
-                "{0}",
             320 ImplAlreadyDeclared {
                 span: SpanWrapper<'i>,
             }
                 "Impl already declared. \n{span}",
+            321 PredicateError(PredicateError<'i>)
+                "{0}",
+            322 InvalidFieldIndex {
+                index: &'i str,
+                source: String,
+                span: SpanWrapper<'i>,
+            }
+                "Invalid field index `{index}` ({source}). \n{span}",
+            /* 4xx for diagnostic errors */
+            400 MissingPropertyInDiag {
+                property: &'static str,
+                span: SpanWrapper<'i>,
+            }
+                "Missing {property} in diagnostic item. \n{span}",
+            401 InvalidPropertyInDiag {
+                property: &'static str,
+                value: &'i str,
+                span: SpanWrapper<'i>,
+            }
+                "Invalid {property} {value:?} in diagnostic item. \n{span}",
+            402 UnknownPropertyInDiag {
+                property: &'i str,
+                span: SpanWrapper<'i>,
+            }
+                "Unknown {property} in diagnostic item. \n{span}",
+            403 DuplicateLint {
+                name: &'static str,
+                span: SpanWrapper<'i>,
+            }
+                "Duplicate lint {name} in diagnostic item. \n{span}",
         }
 );
 

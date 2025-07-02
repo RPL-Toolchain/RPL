@@ -1,6 +1,5 @@
 //@ revisions: inline regular
 //@[inline] compile-flags: -Z inline-mir=true
-//@[inline] check-pass
 //@[regular] compile-flags: -Z inline-mir=false
 //@[regular] check-pass
 
@@ -237,6 +236,7 @@ impl<P: UriPart> Formatter<'_, P> {
 
             if !self.prefixes.is_empty() {
                 for (i, prefix) in self.prefixes.iter().enumerate() {
+                    //~[inline]^ERROR: casting the result of `from_raw_parts` to *const [&str]
                     self.inner.write_str(prefix)?;
                     if i < self.prefixes.len() - 1 {
                         self.inner.write_str(".")?;

@@ -20,8 +20,11 @@ pub fn visit_crate(tcx: TyCtxt<'_>) {
     let mut visitor = DebugVisitor::new(tcx);
     tcx.hir().walk_toplevel_module(&mut visitor);
     if !visitor.attrs.is_empty() {
-        tcx.dcx()
-            .emit_err(crate::errors::AbortDueToDebugging::new(visitor.attrs));
+        // tcx.dcx()
+        //     .emit_err(crate::errors::AbortDueToDebugging::new(visitor.attrs));
+        visitor.attrs.iter().for_each(|span| {
+            tcx.dcx().emit_err(crate::errors::ErrorDueToDebugging { span: *span });
+        });
     }
 }
 
@@ -486,6 +489,7 @@ fn dump_mir_block((bb, block_data): (mir::BasicBlock, &mir::BasicBlockData<'_>))
     crate::errors::DumpMirBlock { block, multi_span }
 }
 
+/*
 impl crate::errors::AbortDueToDebugging {
     fn new(spans: Vec<Span>) -> Self {
         let suggs = spans.iter().copied().map(Into::into).collect();
@@ -497,6 +501,13 @@ impl crate::errors::AbortDueToDebugging {
 }
 
 impl From<Span> for crate::errors::AbortDueToDebuggingSugg {
+    fn from(span: Span) -> Self {
+        Self { span }
+    }
+}
+*/
+
+impl From<Span> for crate::errors::ErrorDueToDebugging {
     fn from(span: Span) -> Self {
         Self { span }
     }

@@ -10,10 +10,11 @@ LL | use std::sync::Arc;
 note: HirId(DefId(0:4 ~ print_hir[654a]::m).0) (`mod m {
           fn foo() { }
       }`)
-  --> tests/ui/utils/print_hir.rs:10:1
+  --> tests/ui/utils/print_hir.rs:13:1
    |
 LL | #[rpl::print_hir]
    | ----------------- HIR printed because of this attribute
+...
 LL | mod m {
    | ^^^^^
 
@@ -22,18 +23,20 @@ note: HirId(DefId(0:6 ~ print_hir[654a]::Foo).0) (`trait Foo {
           N:
           usize;
       }`)
-  --> tests/ui/utils/print_hir.rs:16:1
+  --> tests/ui/utils/print_hir.rs:22:1
    |
 LL | #[rpl::print_hir]
    | ----------------- HIR printed because of this attribute
+...
 LL | trait Foo {
    | ^^^^^^^^^
 
 note: HirId(DefId(0:7 ~ print_hir[654a]::Foo::N).0) (`const N: usize;`)
-  --> tests/ui/utils/print_hir.rs:19:5
+  --> tests/ui/utils/print_hir.rs:28:5
    |
 LL |     #[rpl::print_hir]
    |     ----------------- HIR printed because of this attribute
+...
 LL |     const N: usize;
    |     ^^^^^^^^^^^^^^
 
@@ -44,18 +47,20 @@ note: HirId(DefId(0:8 ~ print_hir[654a]::{impl#0}).0) (`impl Foo for () {
           =
           0usize;
       }`)
-  --> tests/ui/utils/print_hir.rs:23:1
+  --> tests/ui/utils/print_hir.rs:35:1
    |
 LL | #[rpl::print_hir]
    | ----------------- HIR printed because of this attribute
+...
 LL | impl Foo for () {
    | ^^^^^^^^^^^^^^^
 
 note: HirId(DefId(0:9 ~ print_hir[654a]::{impl#0}::N).0) (`const N: usize = 0usize;`)
-  --> tests/ui/utils/print_hir.rs:26:5
+  --> tests/ui/utils/print_hir.rs:41:5
    |
 LL |     #[rpl::print_hir]
    |     ----------------- HIR printed because of this attribute
+...
 LL |     const N: usize = 0_usize;
    |     ^^^^^^^^^^^^^^
 
@@ -75,34 +80,38 @@ note: HirId(DefId(0:10 ~ print_hir[654a]::main).0) (`fn main() {
                   }
                   { ::std::io::_print(format_arguments::new_const(&["test\n"])); };
               }`)
-  --> tests/ui/utils/print_hir.rs:30:1
+  --> tests/ui/utils/print_hir.rs:48:1
    |
 LL | #[rpl::print_hir]
    | ----------------- HIR printed because of this attribute
+...
 LL | fn main() {
    | ^^^^^^^^^
 
 note: HirId(DefId(0:10 ~ print_hir[654a]::main).2) (`let x = Arc::new(0usize);`)
-  --> tests/ui/utils/print_hir.rs:33:5
+  --> tests/ui/utils/print_hir.rs:54:5
    |
 LL |     #[rpl::print_hir]
    |     ----------------- HIR printed because of this attribute
+...
 LL |     let x = Arc::new(0_usize);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 note: HirId(DefId(0:11 ~ print_hir[654a]::main::foo).0) (`fn foo() { { } }`)
-  --> tests/ui/utils/print_hir.rs:36:5
+  --> tests/ui/utils/print_hir.rs:60:5
    |
 LL |     #[rpl::print_hir]
    |     ----------------- HIR printed because of this attribute
+...
 LL |     fn foo() {
    |     ^^^^^^^^
 
 note: HirId(DefId(0:11 ~ print_hir[654a]::main::foo).2) (`{ }`)
-  --> tests/ui/utils/print_hir.rs:39:9
+  --> tests/ui/utils/print_hir.rs:66:9
    |
 LL |         #[rpl::print_hir]
    |         ----------------- HIR printed because of this attribute
+...
 LL |         {}
    |         ^^
 
@@ -110,10 +119,11 @@ note: HirId(DefId(0:10 ~ print_hir[654a]::main).12) (expr `if true {
 
           } else {
           }`)
-  --> tests/ui/utils/print_hir.rs:43:5
+  --> tests/ui/utils/print_hir.rs:73:5
    |
 LL |       #[rpl::print_hir]
    |       ----------------- HIR printed because of this attribute
+...
 LL | /     if true {
 LL | |
 LL | |     } else {
@@ -127,10 +137,11 @@ note: HirId(DefId(0:10 ~ print_hir[654a]::main).20) (`std::thread::spawn(move ||
                               &[format_argument::new_display(&x)]));
                   };
               })`)
-  --> tests/ui/utils/print_hir.rs:49:5
+  --> tests/ui/utils/print_hir.rs:82:5
    |
 LL |       #[rpl::print_hir]
    |       ----------------- HIR printed because of this attribute
+...
 LL | /     std::thread::spawn(move || {
 LL | |
 LL | |         println!("{x}");
@@ -138,10 +149,11 @@ LL | |     });
    | |______^
 
 note: HirId(DefId(0:13 ~ print_hir[654a]::main::mac).0) (`macro_rules! mac { () => { #[rpl::print_hir] println!("test"); }; }`)
-  --> tests/ui/utils/print_hir.rs:55:5
+  --> tests/ui/utils/print_hir.rs:91:5
    |
 LL |     #[rpl::print_hir]
    |     ----------------- HIR printed because of this attribute
+...
 LL |     macro_rules! mac {
    |     ^^^^^^^^^^^^^^^^
 
@@ -149,111 +161,118 @@ error: abort due to debugging
   --> tests/ui/utils/print_hir.rs:3:1
    |
 LL | #[rpl::print_hir]
-   | ^^^^^^^^^^^^^^^^^
-...
-LL | #[rpl::print_hir]
-   | ^^^^^^^^^^^^^^^^^
-...
-LL | #[rpl::print_hir]
-   | ^^^^^^^^^^^^^^^^^
-...
-LL |     #[rpl::print_hir]
-   |     ^^^^^^^^^^^^^^^^^
-...
-LL | #[rpl::print_hir]
-   | ^^^^^^^^^^^^^^^^^
-...
-LL |     #[rpl::print_hir]
-   |     ^^^^^^^^^^^^^^^^^
-...
-LL | #[rpl::print_hir]
-   | ^^^^^^^^^^^^^^^^^
-...
-LL |     #[rpl::print_hir]
-   |     ^^^^^^^^^^^^^^^^^
-...
-LL |     #[rpl::print_hir]
-   |     ^^^^^^^^^^^^^^^^^
-...
-LL |         #[rpl::print_hir]
-   |         ^^^^^^^^^^^^^^^^^
-...
-LL |     #[rpl::print_hir]
-   |     ^^^^^^^^^^^^^^^^^
-...
-LL |     #[rpl::print_hir]
-   |     ^^^^^^^^^^^^^^^^^
-...
-LL |     #[rpl::print_hir]
-   |     ^^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^^^^^^^^^ help: remove this attribute
    |
    = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
    = note: this error is to remind you removing these attributes
-help: remove this attribute
-   |
-LL - #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL - #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL - #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL -     #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL - #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL -     #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL - #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL -     #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL -     #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL -         #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL -     #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL -     #[rpl::print_hir]
-LL +
-   |
-help: remove this attribute
-   |
-LL -     #[rpl::print_hir]
-LL +
-   |
 
-error: aborting due to 1 previous error
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:9:1
+   |
+LL | #[rpl::print_hir]
+   | ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:18:1
+   |
+LL | #[rpl::print_hir]
+   | ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:24:5
+   |
+LL |     #[rpl::print_hir]
+   |     ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:31:1
+   |
+LL | #[rpl::print_hir]
+   | ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:37:5
+   |
+LL |     #[rpl::print_hir]
+   |     ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:44:1
+   |
+LL | #[rpl::print_hir]
+   | ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:50:5
+   |
+LL |     #[rpl::print_hir]
+   |     ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:56:5
+   |
+LL |     #[rpl::print_hir]
+   |     ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:62:9
+   |
+LL |         #[rpl::print_hir]
+   |         ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:69:5
+   |
+LL |     #[rpl::print_hir]
+   |     ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:78:5
+   |
+LL |     #[rpl::print_hir]
+   |     ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: abort due to debugging
+  --> tests/ui/utils/print_hir.rs:87:5
+   |
+LL |     #[rpl::print_hir]
+   |     ^^^^^^^^^^^^^^^^^ help: remove this attribute
+   |
+   = note: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+   = note: this error is to remind you removing these attributes
+
+error: aborting due to 13 previous errors
 

@@ -4,6 +4,11 @@ rpl_utils_abort_due_to_debugging = abort due to debugging
 
 rpl_utils_abort_due_to_debugging_sugg = remove this attribute
 
+rpl_utils_error_due_to_debugging = abort due to debugging
+    .note = `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+    .remove_note = this error is to remind you removing these attributes
+    .suggestion = remove this attribute
+
 rpl_utils_dump_or_print_diag = {$message}
     .label = {$kind ->
         [dump_hir] HIR dumpped

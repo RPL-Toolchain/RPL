@@ -1,5 +1,6 @@
 [workspace]
-members = ["crates/*", "./"]
+members = ["./crates/rpl_*", "./crates/lintcheck"]
+exclude = ["./target/lintcheck/sources/"]
 
 [workspace.package]
 version = "0.1.0"
@@ -41,13 +42,13 @@ pretty_assertions = "1.4"
 gsgdt = "0.1.2"
 syn_derive = "0.2"
 derive_more = { version = "1.0", features = [
-    "from",
-    "into_iterator",
-    "debug",
     "as_ref",
+    "debug",
     "deref",
     "deref_mut",
     "display",
+    "from",
+    "into_iterator",
 ] }
 libc = "0.2"
 byte-slice-cast = "1.0.0"

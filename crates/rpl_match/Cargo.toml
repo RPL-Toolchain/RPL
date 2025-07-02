@@ -16,6 +16,9 @@ rpl_constraints.workspace = true
 rpl_mir_graph.workspace = true
 rpl_meta.workspace = true
 
+[features]
+strict = []
+
 [package.metadata.rust-analyzer]
 # This crate uses #[feature(rustc_private)]
 rustc_private = true

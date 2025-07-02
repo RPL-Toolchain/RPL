@@ -1,0 +1,17 @@
+digraph DataDependencyGraph {
+compound = true;
+subgraph cluster_bb0 {
+    bb0IN [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">?bb0[IN]</td></tr></table>>];
+    bb0OUT [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">?bb0[OUT]</td></tr></table>>];
+    bb0stmt0 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">_?0 = _</td></tr></table>>];
+    bb0stmt1 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">_?1 = _</td></tr></table>>];
+    bb0stmt2 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">_?2 = Le(copy _?0, _)</td></tr></table>>];
+    bb0stmt3 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">_?3 = Offset(copy _?1, _)</td></tr></table>>];
+    bb0stmt0 -> bb0OUT [label="_?0"];
+    bb0stmt1 -> bb0OUT [label="_?1"];
+    bb0stmt2 -> bb0OUT [label="_?2"];
+    bb0stmt3 -> bb0OUT [label="_?3"];
+    bb0stmt0 -> bb0stmt2 [label="_?0"];
+    bb0stmt1 -> bb0stmt3 [label="_?1"];
+}
+}

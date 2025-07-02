@@ -165,8 +165,8 @@ impl TestContext {
             defaults.require_annotations = None.into();
         }
         defaults.diagnostic_code_prefix = Some(Spanned::dummy("rpl::".into())).into();
-        // Disable rustfix for now.
-        defaults.set_custom("rustfix", RustfixMode::Disabled);
+        // Enable rustfix for now.
+        defaults.set_custom("rustfix", RustfixMode::MachineApplicable);
         config.with_args(&self.args);
         let current_exe_path = env::current_exe().unwrap();
         let deps_path = current_exe_path.parent().unwrap();

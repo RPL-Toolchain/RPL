@@ -77,7 +77,11 @@ impl<'i> PatAttr<'i> {
 
     pub fn post_process<M: Eq + Hash + Debug>(&self, iter: impl Iterator<Item = M>) -> impl Iterator<Item = M> {
         match self.deduplicate {
-            true => Either::Left(iter.collect::<FxHashSet<_>>().into_iter()),
+            true => {
+                let collected: FxHashSet<_> = iter.inspect(|matched| trace!(?matched)).collect();
+                trace!(?collected);
+                Either::Left(collected.into_iter())
+            },
             false => Either::Right(iter),
         }
     }

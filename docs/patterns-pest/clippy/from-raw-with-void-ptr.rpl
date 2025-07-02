@@ -1,0 +1,62 @@
+//! requires -Z inline-mir=false
+pattern from-raw-with-void-ptr
+
+patt {
+    use std::boxed::Box;
+    use std::ffi::c_void;
+    use std::rc::Rc;
+    use std::rc;
+    use std::sync::Arc;
+    use std::sync;
+    
+    #[diag = "from_raw_with_void_ptr"]
+    #[const(ty = "Box")]
+    from_raw_with_void_ptr_box = fn _ () {
+        'ptr:
+        let $ptr: *mut c_void = _;
+        'from_raw:
+        let $box_: Box::<c_void> = Box::from_raw(move $ptr);
+    }
+    
+    #[diag = "from_raw_with_void_ptr"]
+    #[const(ty = "Rc")]
+    from_raw_with_void_ptr_rc = fn _ () {
+        'ptr:
+        let $ptr: *const c_void = _;
+        'from_raw:
+        let $box_: Rc::<c_void> = Rc::from_raw(move $ptr);
+    }
+    #[diag = "from_raw_with_void_ptr"]
+    #[const(ty = "Arc")]
+    from_raw_with_void_ptr_arc = fn _ () {
+        'ptr:
+        let $ptr: *const c_void = _;
+        'from_raw:
+        let $box_: Arc::<c_void> = Arc::from_raw(move $ptr);
+    }
+    #[diag = "from_raw_with_void_ptr"]
+    #[const(ty = "Weak")]
+    from_raw_with_void_ptr_rc_weak = fn _ () {
+        'ptr:
+        let $ptr: *const c_void = _;
+        'from_raw:
+        let $box_: rc::Weak::<c_void> = rc::Weak::from_raw(move $ptr);
+    }
+    #[diag = "from_raw_with_void_ptr"]
+    #[const(ty = "Weak")]
+    from_raw_with_void_ptr_arc_weak = fn _ () {
+        'ptr:
+        let $ptr: *const c_void = _;
+        'from_raw:
+        let $box_: sync::Weak::<c_void> = sync::Weak::from_raw(move $ptr);
+    }
+}
+
+diag {
+    from_raw_with_void_ptr = {
+        primary(from_raw) = "creating a `{$ty}` from a void raw pointer",
+        help(ptr)         = "cast this to a pointer of the appropriate type",
+        name              = "from_raw_with_void_ptr",
+        level             = "warn",
+    }
+}

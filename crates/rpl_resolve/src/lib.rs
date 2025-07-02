@@ -7,6 +7,7 @@ extern crate rustc_driver;
 extern crate rustc_hir;
 extern crate rustc_middle;
 extern crate rustc_span;
+#[macro_use]
 extern crate tracing;
 
 use rustc_hir::def::{DefKind, Res};
@@ -45,7 +46,7 @@ use rustc_span::symbol::Ident;
 /// - [DefKind::Use]
 /// - [DefKind::ForeignMod]
 /// - [DefKind::Impl]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum PatItemKind {
     // Type namespace
     /// [DefKind::Mod]
@@ -139,7 +140,18 @@ impl PatItemKind {
 pub fn def_path_res(tcx: TyCtxt<'_>, path: &[Symbol], kind: PatItemKind) -> Vec<Res> {
     let (base, path) = match path {
         [primitive] => {
-            return vec![PrimTy::from_name(*primitive).map_or(Res::Err, Res::PrimTy)];
+            let primitive = PrimTy::from_name(*primitive);
+            match primitive {
+                Some(prim) => {
+                    // If the path is a primitive type, return it directly.
+                    return vec![Res::PrimTy(prim)];
+                },
+                None => {
+                    // If the path is not a primitive type, show an error.
+                    warn!("Unknown primitive type: {:?}", primitive);
+                    return Vec::new();
+                },
+            }
         },
         [base, path @ ..] => (base, path),
         [] => return Vec::new(),
@@ -161,7 +173,14 @@ pub fn def_path_res(tcx: TyCtxt<'_>, path: &[Symbol], kind: PatItemKind) -> Vec<
 
     // trace!(?crates);
 
-    def_path_res_with_base(tcx, crates, path, kind)
+    let resolved = def_path_res_with_base(tcx, crates, path, kind);
+
+    if resolved.is_empty() {
+        // FIXME: consider a more elegant way to show errors.
+        debug!("No items found for path {:?} with kind {:?}", path, kind);
+    }
+
+    resolved
 }
 
 /// Resolves a def path like `vec::Vec` with the base `std`.
@@ -169,7 +188,12 @@ pub fn def_path_res(tcx: TyCtxt<'_>, path: &[Symbol], kind: PatItemKind) -> Vec<
 /// This is lighter than [`def_path_res`], and should be called with [`find_crates`] looking up
 /// items from the same crate repeatedly, although should still be used sparingly.
 // #[instrument(level = "trace", skip(tcx), ret)]
-pub fn def_path_res_with_base(tcx: TyCtxt<'_>, mut base: Vec<Res>, mut path: &[Symbol], kind: PatItemKind) -> Vec<Res> {
+pub(crate) fn def_path_res_with_base(
+    tcx: TyCtxt<'_>,
+    mut base: Vec<Res>,
+    mut path: &[Symbol],
+    kind: PatItemKind,
+) -> Vec<Res> {
     while let [segment, rest @ ..] = path {
         path = rest;
         // let segment = Symbol::intern(segment);
@@ -292,7 +316,7 @@ fn item_children_by_name(tcx: TyCtxt<'_>, def_id: DefId, name: Symbol) -> Vec<Re
 }
 
 /// Finds the crates called `name`, may be multiple due to multiple major versions.
-pub fn find_crates(tcx: TyCtxt<'_>, name: Symbol) -> Vec<Res> {
+pub(crate) fn find_crates(tcx: TyCtxt<'_>, name: Symbol) -> Vec<Res> {
     tcx.crates(())
         .iter()
         .copied()

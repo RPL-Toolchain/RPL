@@ -1,0 +1,57 @@
+pattern cast-slice-from-raw-parts
+
+patt {
+    #[diag = "cast_slice_from_raw_parts"]
+    #[const(mut = "const ", alternative = "slice_from_raw_parts")]
+    cast_slice_from_raw_parts_const[$T: type] =
+        fn _ () {
+            'slice_ptr:
+            let $slice_ptr: *const $T = _;
+            'len:
+            let $len: usize = _;
+            let $slice: &[$T] = std::slice::from_raw_parts<'_, $T>(move $slice_ptr, copy $len);
+            'cast:
+            let $ptr: *const [$T] = &raw const(*$slice);
+        }
+    #[diag = "cast_slice_from_raw_parts"]
+    #[const(mut = "mut ", alternative = "slice_from_raw_parts_mut")]
+    cast_slice_from_raw_parts_mut[$T: type] =
+        fn _ () {
+            'slice_ptr:
+            let $slice_ptr: *mut $T = _;
+            'len:
+            let $len: usize = _;
+            let $slice: &mut [$T] = std::slice::from_raw_parts_mut<'_, $T>(move $slice_ptr, copy $len);
+            'cast:
+            let $ptr: *mut [$T] = &raw mut(*$slice);
+        }
+    #[diag = "cast_slice_from_raw_parts"]
+    #[const(mut = "const ", alternative = "slice_from_raw_parts")]
+    cast_slice_from_raw_parts_const_const[$T: type, $len: const(usize)] =
+        fn _ () {
+            'slice_ptr:
+            let $slice_ptr: *const $T = _;
+            let $slice: &[$T] = std::slice::from_raw_parts<'_, $T>(move $slice_ptr, const $len);
+            'cast:
+            let $ptr: *const [$T] = &raw const(*$slice);
+        }
+    #[diag = "cast_slice_from_raw_parts"]
+    #[const(mut = "mut ", alternative = "slice_from_raw_parts_mut")]
+    cast_slice_from_raw_parts_mut_const[$T: type, $len: const(usize)] =
+        fn _ () {
+            'slice_ptr:
+            let $slice_ptr: *mut $T = _;
+            let $slice: &mut [$T] = std::slice::from_raw_parts_mut<'_, $T>(move $slice_ptr, const $len);
+            'cast:
+            let $ptr: *mut [$T] = &raw mut(*$slice);
+        }
+}
+
+diag {
+    cast_slice_from_raw_parts = {
+        primary(cast)                                                                                                          = "casting the result of `from_raw_parts` to *{$mut}[{$T}]",
+        suggestion(code = "core::ptr::{$alternative}({$slice_ptr}, {$len})", span = "cast", applicability = "maybe_incorrect") = "replace with",
+        name                                                                                                                   = "cast_slice_from_raw_parts",
+        level                                                                                                                  = "warn",
+    }
+}

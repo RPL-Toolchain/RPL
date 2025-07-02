@@ -4,6 +4,7 @@ use rustc_span::Span;
 
 use crate::utils::DumpOrPrintDiagKind;
 
+/*
 #[derive(Diagnostic)]
 #[diag(rpl_utils_abort_due_to_debugging)]
 #[note]
@@ -12,6 +13,7 @@ pub(crate) struct AbortDueToDebugging {
     #[primary_span]
     pub span: MultiSpan,
     #[subdiagnostic]
+    // A `Vec` of `Subdiagnostic` now means a set of suggestions
     pub suggs: Vec<AbortDueToDebuggingSugg>,
 }
 
@@ -19,6 +21,17 @@ pub(crate) struct AbortDueToDebugging {
 #[multipart_suggestion(rpl_utils_abort_due_to_debugging_sugg, applicability = "machine-applicable")]
 pub(crate) struct AbortDueToDebuggingSugg {
     #[suggestion_part(code = "")]
+    pub span: Span,
+}
+*/
+
+#[derive(Diagnostic)]
+#[diag(rpl_utils_error_due_to_debugging)]
+#[note]
+#[note(rpl_utils_remove_note)]
+pub(crate) struct ErrorDueToDebugging {
+    #[primary_span]
+    #[suggestion(code = "", applicability = "machine-applicable")]
     pub span: Span,
 }
 

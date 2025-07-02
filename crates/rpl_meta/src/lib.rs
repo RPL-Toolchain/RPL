@@ -14,6 +14,7 @@ extern crate rustc_errors;
 extern crate rustc_hash;
 extern crate rustc_hir;
 extern crate rustc_index;
+extern crate rustc_lint;
 extern crate rustc_macros;
 extern crate rustc_middle;
 extern crate rustc_span;
@@ -37,6 +38,7 @@ use std::path::PathBuf;
 use arena::Arena;
 use context::MetaContext;
 pub use error::RPLMetaError;
+use itertools::Itertools as _;
 use meta::SymbolTables;
 
 pub fn parse_and_collect<'mcx>(
@@ -70,11 +72,18 @@ pub fn parse_and_collect<'mcx>(
             },
             Err(err) => {
                 handler(&RPLMetaError::from(err));
-                continue;
+                break;
             },
         }
         // Seems unnecessary.
         // mctx.set_active_path(None);
     }
+
+    let mut lints = mctx.collect_lints().collect_vec();
+    lints.sort_by(|a, b| a.name.cmp(b.name));
+    //FIXME: show warnings if two lints share the same name but have different configs.
+    lints.dedup_by(|a, b| a.name == b.name);
+    mctx.lints = lints;
+
     mctx
 }

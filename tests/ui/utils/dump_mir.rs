@@ -2,9 +2,8 @@
 //@ normalize-stderr-test: "see `.*/mir_dump/(.*)` for dumpped" -> "see `./mir_dump/$1` for dumpped"
 //@ normalize-stderr-test: "/.*/lib/rustlib/src/rust/library" -> "$$SRC_DIR"
 
-#[rpl::dump_mir(dump_cfg, dump_ddg)]
-//~^ ERROR: abort due to debugging
-//~| NOTE: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+#[rpl::dump_mir(dump_cfg, dump_ddg)] //~ ERROR: abort due to debugging
+//~^ NOTE: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
 //~| NOTE: this error is to remind you removing these attributes
 //~| HELP: remove this attribute
 fn test() {
@@ -36,7 +35,10 @@ fn f2() -> bool {
     unimplemented!()
 }
 
-#[rpl::dump_mir(dump_cfg, dump_ddg)] //~ HELP: remove this attribute
+#[rpl::dump_mir(dump_cfg, dump_ddg)] //~ ERROR: abort due to debugging
+//~^ HELP: remove this attribute
+//~| NOTE: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+//~| NOTE: this error is to remind you removing these attributes
 fn critical(i: i16, j: i16) -> Result<i16, ()> {
     //~^ NOTE: MIR of `critical`
     //~| NOTE: /see `.*[/\\]mir_dump[/\\]dump_mir\.critical\.-------\.dump_mir\.\.mir` for dumpped MIR/
@@ -60,7 +62,10 @@ fn critical(i: i16, j: i16) -> Result<i16, ()> {
 //~| NOTE: bb5: {
 
 fn main() {
-    #[rpl::dump_mir(dump_cfg, dump_ddg)] //~ HELP: remove this attribute
+    #[rpl::dump_mir(dump_cfg, dump_ddg)] //~ ERROR: abort due to debugging
+    //~^ HELP: remove this attribute
+    //~| NOTE: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+    //~| NOTE: this error is to remind you removing these attributes
     let _ = std::alloc::alloc;
     //~^ NOTE: MIR of `std::alloc::alloc`
     //~| NOTE: /see `.*[/\\]mir_dump[/\\]alloc\.alloc-alloc\.-------\.dump_mir\.\.mir` for dumpped MIR/
@@ -74,7 +79,10 @@ fn main() {
     //~| NOTE: bb4: {
     //~| NOTE: bb5: {
 
-    #[rpl::dump_mir(dump_cfg, dump_ddg)] //~ HELP: remove this attribute
+    #[rpl::dump_mir(dump_cfg, dump_ddg)] //~ ERROR: abort due to debugging
+    //~^ HELP: remove this attribute
+    //~| NOTE: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+    //~| NOTE: this error is to remind you removing these attributes
     let _ = |x: i32| x + 1;
     //~^ NOTE: MIR of `main::{closure#0}`
     //~| NOTE: /see `.*[/\\]mir_dump[/\\]dump_mir\.main-\{closure#0\}\.-------\.dump_mir\.\.mir` for dumpped MIR/
@@ -83,7 +91,10 @@ fn main() {
     //~| NOTE: locals and scopes in this MIR
     //~| NOTE: bb0: {
 
-    #[rpl::dump_mir(dump_cfg, dump_ddg)] //~ HELP: remove this attribute
+    #[rpl::dump_mir(dump_cfg, dump_ddg)] //~ ERROR: abort due to debugging
+    //~^ HELP: remove this attribute
+    //~| NOTE: `#[rpl::dump_hir]`, `#[rpl::print_hir]` and `#[rpl::dump_mir]` are only used for debugging
+    //~| NOTE: this error is to remind you removing these attributes
     let _ = <std::result::IntoIter<&str> as std::iter::Iterator>::next;
     //~^ NOTE: MIR of `<std::result::IntoIter<T> as std::iter::Iterator>::next`
     //~| NOTE: /see `.*[/\\]mir_dump[/\\]core\.result-\{impl#20\}-next\.-------\.dump_mir\.\.mir` for dumpped MIR/

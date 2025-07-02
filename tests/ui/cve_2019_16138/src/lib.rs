@@ -424,7 +424,6 @@ mod hdr {
             #[inline]
             fn rl_marker(pix: RGBE8Pixel) -> Option<usize> {
                 //~^ERROR: it usually isn't necessary to apply #[inline] to private functions
-                //~|ERROR: it usually isn't necessary to apply #[inline] to private functions
                 if pix.c == [1, 1, 1] {
                     Some(pix.e as usize)
                 } else {

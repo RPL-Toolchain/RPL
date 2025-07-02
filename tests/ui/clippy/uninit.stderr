@@ -1,0 +1,23 @@
+error: this call for this type may be undefined behavior
+  --> tests/ui/clippy/uninit.rs:13:29
+   |
+LL |     let _: usize = unsafe { MaybeUninit::uninit().assume_init() };
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `-D rpl::uninit-assumed-init` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::uninit_assumed_init)]`
+
+error: this call for this type may be undefined behavior
+  --> tests/ui/clippy/uninit.rs:35:29
+   |
+LL |     let _: usize = unsafe { MaybeUninit::uninit().assume_init() };
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: this call for this type may be undefined behavior
+  --> tests/ui/clippy/uninit.rs:44:29
+   |
+LL |         let _: T = unsafe { MaybeUninit::uninit().assume_init() };
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 3 previous errors
+

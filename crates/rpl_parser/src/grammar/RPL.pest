@@ -33,8 +33,9 @@ kw_PointerCoercion = @{ "PointerCoercion" ~ !WordFollowing }
 // Soft Keyword
 kw_Unsize = @{ "Unsize" ~ !WordFollowing }
 // Soft Keyword
-kw_Implicit                = @{ "Implicit" ~ !WordFollowing }
-kw_PointerExposeProvenance = @{ "PointerExposeProvenance" ~ !WordFollowing }
+kw_Implicit                     = @{ "Implicit" ~ !WordFollowing }
+kw_PointerExposeProvenance      = @{ "PointerExposeProvenance" ~ !WordFollowing }
+kw_PointerWithExposedProvenance = @{ "PointerWithExposedProvenance" ~ !WordFollowing }
 // Soft Keyword
 kw_Restricted   = @{ "restricted" ~ !WordFollowing }
 kw_Add          = @{ "Add" ~ !WordFollowing }
@@ -120,6 +121,7 @@ Keywords = @{
   | kw_Transmute
   | kw_PointerCoercion
   | kw_PointerExposeProvenance
+  | kw_PointerWithExposedProvenance
   | kw_Add
   | kw_Sub
   | kw_Mul
@@ -355,7 +357,7 @@ Region = {
 }
 
 QSelf = {
-    LessThan ~ Type ~ kw_as ~ (Identifier | MetaVariable) ~ GreaterThan
+    LessThan ~ Type ~ kw_as ~ Path ~ GreaterThan
 }
 
 Path = {
@@ -596,6 +598,7 @@ MirCastKind = {
   | kw_Transmute
   | kw_PointerCoercion ~ LeftParen ~ PointerCoercion ~ Comma ~ CoercionSource ~ RightParen
   | kw_PointerExposeProvenance
+  | kw_PointerWithExposedProvenance
 }
 
 MirRvalueCast = {
@@ -938,7 +941,7 @@ diagMessageText = @{
 }
 
 diagMessageInner = ${
-    (diagMessageArg | diagMessageText)+
+    (diagMessageArg | diagMessageText)*
 }
 
 diagMessage = ${

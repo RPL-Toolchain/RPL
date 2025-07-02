@@ -23,7 +23,7 @@ pub struct SymbolTables<'mcx> {
     /// The symbol table of the patt block
     pub patt_symbol_tables: FxHashMap<Symbol, SymbolTable<'mcx>>,
     /// The symbol table of the diag block
-    pub diag_symbol_tables: FxHashMap<Symbol, DiagSymbolTable>,
+    pub diag_symbol_tables: FxHashMap<Symbol, DiagSymbolTable<'mcx>>,
     /// errors
     pub errors: Vec<RPLMetaError<'mcx>>,
 }
@@ -86,6 +86,13 @@ impl<'mcx> SymbolTables<'mcx> {
         } else {
             info!("No error found in {:?}", self.path);
         }
+    }
+
+    pub(crate) fn collect_lints(&self) -> impl Iterator<Item = &'static rustc_lint::Lint> {
+        self.diag_symbol_tables
+            .values()
+            .flat_map(|table| table.collect_lints())
+            .copied()
     }
 }
 

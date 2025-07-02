@@ -62,6 +62,6 @@ fn main() {
         static MCTX: OnceLock<rpl_meta::context::MetaContext<'_>> = OnceLock::new();
         let mctx_arena = MCTX_ARENA.get_or_init(rpl_meta::arena::Arena::default);
         let patterns_and_paths = mctx_arena.alloc(collect_file_from_args_for_test());
-        let _mctx = MCTX.get_or_init(|| rpl_meta::parse_and_collect(&mctx_arena, patterns_and_paths, |_| ()));
+        let _mctx = MCTX.get_or_init(|| rpl_meta::parse_and_collect(mctx_arena, patterns_and_paths, |_| ()));
     });
 }
