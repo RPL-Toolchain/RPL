@@ -46,4 +46,4 @@ pub use adt::{AdtMatch, Candidates, MatchAdtCtxt};
 pub use counted::CountedMatch;
 pub use fns::MatchFnCtxt;
 pub use place::MatchPlaceCtxt;
-pub use ty::{Const, MatchTyCtxt};
+pub use ty::{Const, MatchTyCtxt, TryCmpAs};

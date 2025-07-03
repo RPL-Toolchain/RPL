@@ -18,17 +18,54 @@ fn unchecked_slice<T>(slice: &[T], index: usize) -> *const T {
 }
 
 // #[rpl::dump_mir(dump_cfg, dump_ddg)]
-fn slice_end<T>(slice: &[T], index: usize) -> *const T {
+fn slice_end<T>(slice: &[T]) -> *const T {
     let p = slice.as_ptr();
     let length = slice.len();
-    unsafe { p.add(index) }
+    unsafe { p.add(length) }
 }
 
 // #[rpl::dump_mir(dump_cfg, dump_ddg)]
-fn vec_iter(slice: &Vec<usize>) -> usize {
+fn slice_at<T>(slice: &[T], index: usize) -> *const T {
+    let p = slice.as_ptr();
+    let length = slice.len();
+    assert!(index < length);
+    unsafe { p.add(length) }
+}
+
+// #[rpl::dump_mir(dump_cfg, dump_ddg)]
+fn vec_iter(vec: &Vec<usize>) -> usize {
     let mut x = 0;
-    for i in slice {
+    for i in vec {
         x += 1000000007 % (*i + 1);
+    }
+    x
+}
+
+// #[rpl::dump_mir(dump_cfg, dump_ddg)]
+fn vec_iter_mut(vec: &mut Vec<usize>) -> usize {
+    let mut x = 0;
+    for i in vec.iter_mut() {
+        x += 1000000007 % (*i + 1);
+        *i += 1;
+    }
+    x
+}
+
+// #[rpl::dump_mir(dump_cfg, dump_ddg)]
+fn slice_iter(vec: &[usize]) -> usize {
+    let mut x = 0;
+    for i in vec {
+        x += 1000000007 % (*i + 1);
+    }
+    x
+}
+
+// #[rpl::dump_mir(dump_cfg, dump_ddg)]
+fn slice_iter_mut(vec: &mut [usize]) -> usize {
+    let mut x = 0;
+    for i in vec.iter_mut() {
+        x += 1000000007 % (*i + 1);
+        *i += 1;
     }
     x
 }
@@ -209,6 +246,7 @@ unsafe fn unsafe_unchecked_in_unsafe<T>(p: *const T) -> *const T {
     unsafe { p.add(1) }
 }
 
+// #[rpl::dump_mir(dump_cfg, dump_ddg)]
 fn unsafe_unchecked_in_safe<T>(p: *const T) -> *const T {
     // Sorry, it's in a safe function :(
     unsafe { p.add(1) }

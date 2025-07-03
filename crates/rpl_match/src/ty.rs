@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::cmp::Ordering;
 use std::iter::zip;
 
 use derive_more::derive::{Debug, Display};
@@ -37,16 +38,32 @@ impl<'tcx> Const<'tcx> {
             Self::Param(_) => None,
         }
     }
-    /// Returns if `self` may be greater than or equal to `other`.
-    #[instrument(level = "info", skip(tcx, typing_env), ret)]
-    pub fn maybe_ge(self, other: Self, tcx: TyCtxt<'tcx>, typing_env: TypingEnv<'tcx>) -> bool {
+}
+
+/// FIXME: this generic parameter is not as convenient as intended, as `self.try_cmp_as(other, tcx,
+/// typing_env)` does not provide a way to specify `T`
+pub trait TryCmpAs<'tcx, T>: Copy {
+    /// Compare two `Const` values, returning `Some(Ordering)` if they can be compared.
+    fn try_cmp_as(self, other: Self, tcx: TyCtxt<'tcx>, typing_env: TypingEnv<'tcx>) -> Option<Ordering>;
+}
+
+impl<'tcx> TryCmpAs<'tcx, usize> for Const<'tcx> {
+    #[instrument(level = "debug", skip(tcx, typing_env), ret)]
+    fn try_cmp_as(self, other: Self, tcx: TyCtxt<'tcx>, typing_env: TypingEnv<'tcx>) -> Option<Ordering> {
         match (self, other) {
             (Self::MIR(konst1), Self::MIR(konst2)) => {
                 let val1 = konst1.eval_target_usize(tcx, typing_env);
                 let val2 = konst2.eval_target_usize(tcx, typing_env);
-                val1 > val2
+                Some(val1.cmp(&val2))
             },
-            (_, _) => true,
+            (Self::Param(param1), Self::Param(param2)) => {
+                if param1.index == param2.index {
+                    Some(Ordering::Equal)
+                } else {
+                    None
+                }
+            },
+            (_, _) => None,
         }
     }
 }
