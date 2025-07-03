@@ -25,6 +25,15 @@ fn slice_end<T>(slice: &[T], index: usize) -> *const T {
 }
 
 // #[rpl::dump_mir(dump_cfg, dump_ddg)]
+fn vec_iter(slice: &Vec<usize>) -> usize {
+    let mut x = 0;
+    for i in slice {
+        x += 1000000007 % (*i + 1);
+    }
+    x
+}
+
+// #[rpl::dump_mir(dump_cfg, dump_ddg)]
 fn checked_lt<T>(slice: &[T], index: usize) -> &T {
     let mut p: *const T = slice.as_ptr();
     let length: usize = slice.len();
@@ -155,6 +164,7 @@ fn safe_unchecked_2_const_rem<T, const N: usize>(slice: &[T; N], index: usize) -
     unsafe { &*ptr.add(index % N) }
 }
 
+// #[rpl::dump_mir(dump_cfg, dump_ddg)]
 fn safe_unchecked_2_const<T, const N: usize>(slice: &[T; N]) -> &T {
     let ptr = slice.as_ptr();
     unsafe { &*ptr.add(N) }

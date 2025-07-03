@@ -1,5 +1,6 @@
 use std::iter::zip;
 
+pub use matches::{Matched, StatementMatch, local_is_arg};
 use rpl_context::PatCtxt;
 pub use rpl_context::pat;
 use rpl_mir_graph::TerminatorEdges;
