@@ -86,16 +86,16 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
                     }
                     let ptr = matches[pattern.ptr];
                     let offset = matches[pattern.offset];
-                    let span_ptr = ptr.span_no_inline(body);
-                    let span_offset = offset.span_no_inline(body);
-                    debug!(?ptr, ?offset, ?pattern.ptr, ?pattern.offset, ?span_ptr, ?span_offset, "unchecked offset found");
-                    let ptr = span_ptr;
-                    let offset = span_offset;
+                    let len = matches[pattern.len];
+                    debug!(?ptr, ?offset, ?len, ?pattern.ptr, ?pattern.offset, ?pattern.len, "unchecked offset found");
+                    let ptr = ptr.span_no_inline(body);
+                    let offset = offset.span_no_inline(body);
+                    let len = len.span_no_inline(body);
                     self.tcx.emit_node_span_lint(
                         UNCHECKED_POINTER_OFFSET,
                         self.tcx.local_def_id_to_hir_id(def_id),
                         offset,
-                        crate::errors::UncheckedPtrOffset { ptr, offset },
+                        crate::errors::UncheckedPtrPublicOffset { ptr, offset, len },
                     );
                 }
             }

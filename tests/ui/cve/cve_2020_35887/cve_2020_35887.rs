@@ -75,12 +75,14 @@ impl<T> Index<usize> for Array<T> {
     // #[rpl::dump_mir(dump_cfg, dump_ddg)]
     fn index<'a>(&'a self, idx: usize) -> &'a Self::Output {
         unsafe { self.ptr.wrapping_offset(idx as isize).as_ref() }.unwrap()
+        //~[inline]^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
     }
 }
 
 impl<T> IndexMut<usize> for Array<T> {
     fn index_mut<'a>(&'a mut self, idx: usize) -> &'a mut Self::Output {
         unsafe { self.ptr.wrapping_offset(idx as isize).as_mut() }.unwrap()
+        //~[inline]^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
     }
 }
 

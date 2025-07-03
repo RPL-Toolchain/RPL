@@ -1,6 +1,8 @@
-error: it is an undefined behavior to offset a pointer using an unchecked integer
+error: it may be an undefined behavior to offset a pointer using a passed-in integer
   --> tests/ui/cve_2020_35886/cve_2020_35886.rs:36:27
    |
+LL |     fn index<'a>(&'a self, idx: usize) -> &'a Self::Output {
+   |                            --- length passed in here
 LL |         unsafe { self.ptr.wrapping_offset(idx as isize).as_ref() }.unwrap()
    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |                           |
@@ -12,9 +14,11 @@ LL |         unsafe { self.ptr.wrapping_offset(idx as isize).as_ref() }.unwrap()
    = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
    = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
 
-error: it is an undefined behavior to offset a pointer using an unchecked integer
+error: it may be an undefined behavior to offset a pointer using a passed-in integer
   --> tests/ui/cve_2020_35886/cve_2020_35886.rs:43:27
    |
+LL |     fn index_mut<'a>(&'a mut self, idx: usize) -> &'a mut Self::Output {
+   |                                    --- length passed in here
 LL |         unsafe { self.ptr.wrapping_offset(idx as isize).as_mut() }.unwrap()
    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |                           |

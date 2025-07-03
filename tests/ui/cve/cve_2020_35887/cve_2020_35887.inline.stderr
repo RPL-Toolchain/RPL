@@ -14,5 +14,35 @@ LL |                 (*(ptr.wrapping_offset(i as isize))) = template.clone();
    = help: assigning to a dereferenced pointer will cause previous value to be dropped, and try using `ptr::write` instead
    = note: `#[deny(rpl::drop_uninit_value)]` on by default
 
-error: aborting due to 1 previous error
+error: it may be an undefined behavior to offset a pointer using a passed-in integer
+  --> tests/ui/cve_2020_35887/cve_2020_35887.rs:77:27
+   |
+LL |     fn index<'a>(&'a self, idx: usize) -> &'a Self::Output {
+   |                            --- length passed in here
+LL |         unsafe { self.ptr.wrapping_offset(idx as isize).as_ref() }.unwrap()
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |                           |
+   |                           offset here
+   |                           pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+
+error: it may be an undefined behavior to offset a pointer using a passed-in integer
+  --> tests/ui/cve_2020_35887/cve_2020_35887.rs:84:27
+   |
+LL |     fn index_mut<'a>(&'a mut self, idx: usize) -> &'a mut Self::Output {
+   |                                    --- length passed in here
+LL |         unsafe { self.ptr.wrapping_offset(idx as isize).as_mut() }.unwrap()
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |                           |
+   |                           offset here
+   |                           pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: aborting due to 3 previous errors
 
