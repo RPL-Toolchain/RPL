@@ -48,7 +48,7 @@ impl<'tcx> Visitor<'tcx> for CheckFnCtxt<'_, 'tcx> {
         _span: Span,
         def_id: LocalDefId,
     ) -> Self::Result {
-        if self.tcx.visibility(def_id).is_public() && self.tcx.is_mir_available(def_id) {
+        if self.tcx.is_mir_available(def_id) {
             let body = self.tcx.optimized_mir(def_id);
             let pattern = pattern_vec_set_len_to_extend(self.pcx);
             let mut records = HashSet::new();
