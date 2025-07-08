@@ -6,6 +6,19 @@ LL |                 for (i, prefix) in self.prefixes.iter().enumerate() {
    |
    = note: `-D rpl::cast-slice-from-raw-parts` implied by `-D warnings`
    = help: to override `-D warnings` add `#[allow(rpl::cast_slice_from_raw_parts)]`
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2021_29935/simplified.rs:239:50
+   |
+LL |                 for (i, prefix) in self.prefixes.iter().enumerate() {
+   |                                                  ^^^^^^
+   |                                                  |
+   |                                                  offset here
+   |                                                  pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
 
 error: aborting due to 1 previous error
 

@@ -52,9 +52,9 @@ fn vec_iter_mut(vec: &mut Vec<usize>) -> usize {
 }
 
 // #[rpl::dump_mir(dump_cfg, dump_ddg)]
-fn slice_iter(vec: &[usize]) -> usize {
+fn slice_iter(slice: &[usize]) -> usize {
     let mut x = 0;
-    for i in vec {
+    for i in slice {
         x += 1000000007 % (*i + 1);
     }
     x

@@ -1,8 +1,19 @@
-error: it may be an undefined behavior to offset a pointer using a passed-in integer
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2020_35892_3/cve_2020_35892_3.rs:16:41
+   |
+LL |                 let elem_ptr = self.mem.offset(x as isize);
+   |                                -------- ^^^^^^^^^^^^^^^^^^ offset here
+   |                                |
+   |                                pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
   --> tests/ui/cve_2020_35892_3/cve_2020_35892_3.rs:28:31
    |
-LL |     fn index(&self, index: usize) -> &Self::Output {
-   |                     ----- length passed in here
 LL |         unsafe { &(*(self.mem.offset(index as isize))) }
    |                      -------- ^^^^^^^^^^^^^^^^^^^^^^ offset here
    |                      |
@@ -10,19 +21,25 @@ LL |         unsafe { &(*(self.mem.offset(index as isize))) }
    |
    = help: check whether it's in bound before offsetting
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
-   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
-   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
 
-error: it may be an undefined behavior to offset a pointer using a passed-in integer
+error: it is an undefined behavior to offset a pointer using an unchecked integer
   --> tests/ui/cve_2020_35892_3/cve_2020_35892_3.rs:49:33
    |
-LL |     pub fn remove(&mut self, offset: usize) -> T {
-   |                              ------ length passed in here
-...
 LL |             elem_ptr = self.mem.offset(offset as isize);
    |                        -------- ^^^^^^^^^^^^^^^^^^^^^^^ offset here
    |                        |
    |                        pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2020_35892_3/cve_2020_35892_3.rs:50:38
+   |
+LL |             last_elem_ptr = self.mem.offset(self.len as isize);
+   |                             -------- ^^^^^^^^^^^^^^^^^^^^^^^^^ offset here
+   |                             |
+   |                             pointer used here
    |
    = help: check whether it's in bound before offsetting
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
@@ -62,5 +79,5 @@ LL | |     }
    = note: `-D rpl::generic-function-marked-inline` implied by `-D warnings`
    = help: to override `-D warnings` add `#[allow(rpl::generic_function_marked_inline)]`
 
-error: aborting due to 4 previous errors
+error: aborting due to 6 previous errors
 

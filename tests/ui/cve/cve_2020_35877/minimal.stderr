@@ -75,5 +75,5 @@ LL |     unsafe { p.add(1) }
    = help: check whether it's in bound before offsetting
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
-error: aborting due to 7 previous errors
+error: aborting due to 9 previous errors
 

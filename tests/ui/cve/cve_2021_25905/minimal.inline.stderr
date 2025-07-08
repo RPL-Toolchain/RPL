@@ -1,0 +1,64 @@
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2021_25905/minimal.rs:20:38
+   |
+LL |                     buf.as_mut_ptr().offset(b as isize),
+   |                         ------------ ^^^^^^^^^^^^^^^^^^ offset here
+   |                         |
+   |                         pointer used here
+...
+LL |     cases!(Vec::new());
+   |     ------------------ in this macro invocation
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+   = note: this error originates in the macro `cases` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2021_25905/minimal.rs:20:38
+   |
+LL |                     buf.as_mut_ptr().offset(b as isize),
+   |                         ------------ ^^^^^^^^^^^^^^^^^^ offset here
+   |                         |
+   |                         pointer used here
+...
+LL |     cases!(vec![1, 2, 3]);
+   |     --------------------- in this macro invocation
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: this error originates in the macro `cases` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2021_25905/minimal.rs:20:38
+   |
+LL |                     buf.as_mut_ptr().offset(b as isize),
+   |                         ------------ ^^^^^^^^^^^^^^^^^^ offset here
+   |                         |
+   |                         pointer used here
+...
+LL |     cases!(Vec::with_capacity(0));
+   |     ----------------------------- in this macro invocation
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: this error originates in the macro `cases` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2021_25905/minimal.rs:20:38
+   |
+LL |                     buf.as_mut_ptr().offset(b as isize),
+   |                         ------------ ^^^^^^^^^^^^^^^^^^ offset here
+   |                         |
+   |                         pointer used here
+...
+LL |     cases!(Vec::with_capacity(1));
+   |     ----------------------------- in this macro invocation
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: this error originates in the macro `cases` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: aborting due to 4 previous errors
+
