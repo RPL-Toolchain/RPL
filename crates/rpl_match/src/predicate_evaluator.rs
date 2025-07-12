@@ -69,7 +69,7 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
             let instance = self.instantiate_arg(arg).unwrap();
             arg_instance.push(instance);
         }
-        match term.kind {
+        let result = match term.kind {
             PredicateKind::Ty(p) => {
                 assert!(
                     arg_instance.len() == 1,
@@ -128,6 +128,16 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
                     ),
                 }
             },
+            PredicateKind::SingleConst(p) => {
+                assert!(
+                    arg_instance.len() == 1,
+                    "PredicateKind::SingleConst should have exactly one argument"
+                );
+                match &arg_instance[0] {
+                    PredicateArgInstance::Const(konst) => p(self.tcx, self.typing_env, *konst),
+                    _ => panic!("PredicateArgInstance::Const expected, got {:?}", arg_instance[0]),
+                }
+            },
             PredicateKind::MultipleConsts(p) => {
                 let mut args = Vec::new();
                 for arg in arg_instance.iter() {
@@ -138,7 +148,8 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
                 }
                 p(self.tcx, self.typing_env, args)
             },
-        }
+        };
+        if term.is_neg { !result } else { result }
     }
 
     fn instantiate_arg(&self, arg: &PredicateArg) -> Result<PredicateArgInstance<'tcx>, String> {

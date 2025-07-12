@@ -87,6 +87,12 @@ impl<'pcx> PatternItem<'pcx> {
             PatternItem::RPLPatternOperation(op) => op.table_head(),
         }
     }
+    pub fn expect_rust_items(&self) -> &RustItems<'pcx> {
+        match self {
+            PatternItem::RustItems(items) => items,
+            PatternItem::RPLPatternOperation(_) => panic!("Expected RustItems, found PatternOperation"),
+        }
+    }
 }
 
 pub struct RustItems<'pcx> {
@@ -120,7 +126,7 @@ impl<'pcx> RustItems<'pcx> {
         let path = item.path;
         let (attr, item, where_block) = item.get_matched();
         let constraints = Constraints::from_where_block_opt(attr.iter_matched(), where_block, path)
-            .expect("unexpected error in constraints");
+            .unwrap_or_else(|err| panic!("unexpected error in constraints:\n{err}"));
         match item.deref() {
             Choice4::_0(rust_fn) => {
                 let fn_name = Symbol::intern(rust_fn.FnSig().FnName().span.as_str());
@@ -327,14 +333,18 @@ impl<'pcx> RustItems<'pcx> {
 pub struct PatternOperation<'pcx> {
     pub pcx: PatCtxt<'pcx>,
     pub meta: Arc<NonLocalMetaVars<'pcx>>,
-    pub positive: (Symbol, &'pcx PatternItem<'pcx>, MatchedMap),
+    pub positive: Vec<(Symbol, &'pcx PatternItem<'pcx>, MatchedMap)>,
     pub negative: Vec<(Symbol, &'pcx PatternItem<'pcx>, MatchedMap)>,
     pub attr: PatAttr<'pcx>,
 }
 
 impl PatternOperation<'_> {
     fn table_head(&self) -> TableHead {
-        let head = self.positive.1.table_head();
+        let head = self.positive.first().unwrap().1.table_head();
+        debug_assert!(
+            self.positive.iter().all(|(_, item, _)| item.table_head() == head),
+            "All positive pattern items should have the same table head"
+        );
         debug_assert!(
             self.negative.iter().all(|(_, item, _)| item.table_head() == head),
             "All negative pattern items should have the same table head as the positive one"
@@ -473,9 +483,16 @@ impl<'pcx> Pattern<'pcx> {
         meta: Arc<NonLocalMetaVars<'pcx>>,
         block_type: PattOrUtil,
     ) {
-        let (pos, neg) = patt_op.PatternConfiguration();
-        let positive = self.patt_op(&meta, pos);
-        let negative = neg.iter().map(|negative| self.patt_op(&meta, negative)).collect();
+        let patt_op = patt_op.PatternExpression();
+        let (pos, pos_, neg) = patt_op.get_matched();
+        let positive = std::iter::once(pos)
+            .chain(pos_.iter_matched().map(|pos_| pos_.get_matched().1))
+            .map(|pos| self.patt_op(&meta, pos))
+            .collect();
+        let negative = neg
+            .iter_matched()
+            .map(|negative| self.patt_op(&meta, negative.get_matched().1))
+            .collect();
         let attr = PatAttr::parse_all(attr);
         let pat_ops = PatternOperation {
             pcx: self.pcx,
@@ -535,6 +552,7 @@ impl<'pcx> Pattern<'pcx> {
     pub fn add_diag(
         &mut self,
         diag: WithPath<'pcx, &'pcx pairs::diagBlock<'_>>,
+        diag_symbol_tables: &'pcx rpl_meta::symbol_table::DiagSymbolTables<'_>,
         symbol_tables: &'pcx FxHashMap<Symbol, rpl_meta::symbol_table::SymbolTable<'_>>,
     ) {
         let mut items = FxHashMap::default();
@@ -556,6 +574,9 @@ impl<'pcx> Pattern<'pcx> {
                     &symbol_table.meta_vars,
                     pat_item.consts(),
                     &labels.collect(),
+                    diag_symbol_tables
+                        .get(&diag_name)
+                        .unwrap_or_else(|| panic!("No diagnostic symbol table found for {diag_name}")),
                 )
                 .unwrap_or_else(|err| panic!("{err}"));
                 let prev = self.diag_block.insert(*name, diag);

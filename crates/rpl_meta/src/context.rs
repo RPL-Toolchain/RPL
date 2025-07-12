@@ -18,6 +18,7 @@ pub struct MetaContext<'mcx> {
     pub syntax_trees: IndexVec<RPLIdx, &'mcx pairs::main<'mcx>>,
     pub symbol_tables: IndexVec<RPLIdx, SymbolTables<'mcx>>,
     active_path: RwLock<Option<&'mcx Path>>,
+    pub(crate) lints: Vec<&'static rustc_lint::Lint>,
 }
 
 mod test {
@@ -39,6 +40,7 @@ impl<'mcx> MetaContext<'mcx> {
             syntax_trees: IndexVec::new(),
             symbol_tables: IndexVec::new(),
             active_path: RwLock::new(None),
+            lints: Vec::new(),
         }
     }
 
@@ -78,5 +80,15 @@ impl<'mcx> MetaContext<'mcx> {
 
     pub(crate) fn alloc_ast(&self, value: pairs::main<'mcx>) -> &'mcx pairs::main<'mcx> {
         self.arena.alloc(value)
+    }
+
+    pub(crate) fn collect_lints(&self) -> impl Iterator<Item = &'static rustc_lint::Lint> {
+        self.symbol_tables
+            .iter()
+            .flat_map(|symbol_table| symbol_table.collect_lints())
+    }
+    /// Register the lints in the lint store.
+    pub fn register_lints(&self, lint_store: &mut rustc_lint::LintStore) {
+        lint_store.register_lints(&self.lints);
     }
 }

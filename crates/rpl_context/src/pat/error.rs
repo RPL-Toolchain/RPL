@@ -7,11 +7,10 @@
 //     clippy::manual_assert,
 //     clippy::missing_panics_doc
 // )]
-use std::sync::LazyLock;
 
 use derive_more::{Debug, Display};
 use rpl_meta::collect_elems_separated_by_comma;
-use rpl_meta::symbol_table::{MetaVariableType, NonLocalMetaSymTab, WithPath};
+use rpl_meta::symbol_table::{DiagSymbolTable, MetaVariableType, NonLocalMetaSymTab, WithPath};
 use rpl_parser::generics::Choice2;
 use rpl_parser::pairs::diagMessageInner;
 use rpl_parser::{SpanWrapper, pairs};
@@ -22,7 +21,6 @@ use rustc_lint::{Level, Lint};
 use rustc_middle::mir::Body;
 use rustc_span::source_map::SourceMap;
 use rustc_span::{Span, Symbol};
-use sync_arena::declare_arena;
 use thiserror::Error;
 
 use super::Matched;
@@ -53,33 +51,6 @@ pub struct DynamicError {
 }
 
 impl LintDiagnostic<'_, ()> for Box<DynamicError> {
-    fn decorate_lint(self, diag: &mut rustc_errors::Diag<'_, ()>) {
-        let primary_message = self.primary.0;
-        diag.primary_message(primary_message);
-        for (label, span) in self.labels {
-            diag.span_label(span, label);
-        }
-        for (help, span_help) in self.helps {
-            if let Some(span_help) = span_help {
-                diag.span_help(span_help, help);
-            } else {
-                diag.help(help);
-            }
-        }
-        for (note, span_note) in self.notes {
-            if let Some(span_note) = span_note {
-                diag.span_note(span_note, note);
-            } else {
-                diag.note(note);
-            }
-        }
-        for (suggestion, code, span, applicability) in self.suggestions {
-            diag.span_suggestion(span, suggestion, code, applicability);
-        }
-    }
-}
-
-impl LintDiagnostic<'_, ()> for DynamicError {
     fn decorate_lint(self, diag: &mut rustc_errors::Diag<'_, ()>) {
         let primary_message = self.primary.0;
         diag.primary_message(primary_message);
@@ -360,14 +331,6 @@ pub(crate) struct DynamicErrorBuilder<'i> {
     lint: &'static Lint,
 }
 
-declare_arena!(
-    [
-        [] _phantom: &'tcx (),
-    ]
-);
-
-static ARENA: LazyLock<Arena<'static>> = LazyLock::new(Arena::default);
-
 #[derive(Debug, Display, Error)]
 pub enum ParseError<'i> {
     #[display("Primary message not found:\n{_0}")]
@@ -423,7 +386,7 @@ fn parse_suggestion<'i>(
                 "code" => code = Some(message.diagMessageInner()),
                 "span" => span = Some(message.diagMessageInner().span.as_str()),
                 "applicability" => {
-                    let msg = message.span.as_str();
+                    let msg = message.diagMessageInner().span.as_str();
                     applicability = Some(match msg {
                         "machine_applicable" => Applicability::MachineApplicable,
                         "maybe_incorrect" => Applicability::MaybeIncorrect,
@@ -451,11 +414,16 @@ fn parse_suggestion<'i>(
 impl<'i> DynamicErrorBuilder<'i> {
     // FIXME: this function has a lot of `unwrap` calls, which can panic if the input is malformed.
     /// Create a [`DynamicErrorBuilder`] from a [`pairs::diagBlockItem`].
+    ///
+    /// # Note
+    ///
+    /// See [`rpl_meta::symbol_table::DiagSymbolTable`] for earlier passes.
     pub(super) fn from_item(
         item: WithPath<'i, &'i pairs::diagBlockItem<'i>>,
         meta_vars: &NonLocalMetaSymTab,
         consts: &FxHashMap<Symbol, &'i str>,
         locals: &FxHashSet<Symbol>,
+        table: &DiagSymbolTable,
     ) -> Result<Self, ParseError<'i>> {
         let path = item.path;
         let (_, _, _, diags, _, _) = item.get_matched();
@@ -464,7 +432,6 @@ impl<'i> DynamicErrorBuilder<'i> {
         let mut notes = Vec::new();
         let mut helps = Vec::new();
         let mut suggestions = Vec::new();
-        let mut level = Level::Deny;
         let mut name = None;
 
         for diag in collect_elems_separated_by_comma!(diags) {
@@ -505,20 +472,7 @@ impl<'i> DynamicErrorBuilder<'i> {
                     }
                     name = Some(message);
                 },
-                "level" => {
-                    let message = message.span.as_str();
-                    level = match message {
-                        "allow" => Level::Allow,
-                        "warn" => Level::Warn,
-                        "deny" => Level::Deny,
-                        "forbid" => Level::Forbid,
-                        _ => Err(ParseError::UnrecognizedEnum(
-                            "level",
-                            message,
-                            SpanWrapper::new(diag.span, path),
-                        ))?,
-                    };
-                },
+                "level" => (),
                 "suggestion" => {
                     let args = args.ok_or_else(|| ParseError::Empty(SpanWrapper::new(diag.span, path)))?;
                     let (code, span, applicability) = parse_suggestion(path, args)?;
@@ -534,17 +488,22 @@ impl<'i> DynamicErrorBuilder<'i> {
             .ok_or_else(|| ParseError::MissingName(SpanWrapper::new(item.span, path)))?
             .span
             .as_str();
+        let lint = table.get(name).unwrap_or_else(|| {
+            panic!(
+                "Lint `{}` not found in the symbol table:\n    symbol table: {:?}\n    locals: {:?}",
+                name,
+                table.lints(),
+                locals
+            )
+        });
+        // trace!(?primary, ?labels, ?notes, ?helps, ?suggestions);
         let builder = DynamicErrorBuilder {
             primary,
             labels,
             notes,
             helps,
             suggestions,
-            lint: ARENA.alloc(Lint {
-                name: ARENA.alloc_str(&format!("rpl::{name}")),
-                default_level: level,
-                ..Lint::default_fields_for_macro()
-            }),
+            lint,
         };
         Ok(builder)
     }

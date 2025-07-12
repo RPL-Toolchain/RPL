@@ -5,6 +5,7 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::ty::{self, TyCtxt};
 
 use crate::MatchTyCtxt;
+use crate::ty::MatchTy as _;
 
 pub struct MatchFnCtxt<'a, 'pcx, 'tcx> {
     ty: MatchTyCtxt<'pcx, 'tcx>,

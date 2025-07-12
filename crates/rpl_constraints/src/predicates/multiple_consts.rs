@@ -5,6 +5,7 @@ use rustc_middle::ty::{self, TyCtxt};
 pub type MultipleConstsPredsFnPtr = for<'tcx> fn(TyCtxt<'tcx>, ty::TypingEnv<'tcx>, Vec<mir::Const<'tcx>>) -> bool;
 
 /// Check if those constants are in a strictly increasing order
+#[instrument(level = "debug", skip(tcx), ret)]
 pub fn usize_lt<'tcx>(tcx: TyCtxt<'tcx>, _: ty::TypingEnv<'tcx>, consts: Vec<mir::Const<'tcx>>) -> bool {
     consts.windows(2).all(|w| {
         if let (Some(c1), Some(c2)) = (w[0].try_to_scalar_int(), w[1].try_to_scalar_int()) {

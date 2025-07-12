@@ -193,6 +193,7 @@ impl<'pcx> FnPattern<'pcx> {
         builder.mk_raw_decls(raw_decls);
         builder.mk_raw_stmts(raw_stmts);
         let mir = builder.build(name, constraints.attrs.output_name);
+        debug!(self_idx = ?mir.self_idx, return_idx = ?mir.return_idx, params_idx = ?mir.params_idx, "create mir pattern");
         let body = Some(pcx.mk_mir_pattern(mir));
 
         Self {

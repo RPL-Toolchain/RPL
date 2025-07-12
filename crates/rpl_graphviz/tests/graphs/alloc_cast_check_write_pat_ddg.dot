@@ -1,0 +1,27 @@
+digraph DataDependencyGraph {
+compound = true;
+subgraph cluster_bb0 {
+    bb0IN [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">?bb0[IN]</td></tr></table>>];
+    bb0OUT [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">?bb0[OUT]</td></tr></table>>];
+    bb0stmt0 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">_?0 = alloc::alloc::__rust_alloc(_, _) -&gt; ?bb1</td></tr></table>>];
+    bb0stmt0 -> bb0OUT [label="_?0"];
+    bb0IN -> bb0OUT [label="_?1,_?2,_?3"];
+}
+subgraph cluster_bb1 {
+    bb1IN [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">?bb1[IN]</td></tr></table>>];
+    bb1OUT [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">?bb1[OUT]</td></tr></table>>];
+    bb1stmt0 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">_?1 = move _?0 as *mut ?T0 (PtrToPtr)</td></tr></table>>];
+    bb1stmt1 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">_?2 = copy _?1 as *const u8 (PtrToPtr)</td></tr></table>>];
+    bb1stmt2 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">_?3 = copy _?2 as usize (Transmute)</td></tr></table>>];
+    bb1stmt3 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1"></td></tr><tr><td align="left">(*_?1) = _</td></tr></table>>];
+    bb1IN -> bb1stmt0 [label="_?0"];
+    bb1stmt3 -> bb1OUT [label="_?1"];
+    bb1stmt1 -> bb1OUT [label="_?2"];
+    bb1stmt2 -> bb1OUT [label="_?3"];
+    bb1stmt0 -> bb1stmt1 [label="_?1"];
+    bb1stmt0 -> bb1stmt3 [label="_?1"];
+    bb1stmt1 -> bb1stmt2 [label="_?2"];
+}
+    bb0OUT -> bb1IN [label="return"];
+    bb0stmt0 -> bb1stmt0 [label="_?0"];
+}

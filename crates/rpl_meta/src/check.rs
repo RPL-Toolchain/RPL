@@ -10,8 +10,8 @@ use rustc_span::Symbol;
 
 use crate::context::MetaContext;
 use crate::symbol_table::{
-    AdtPatType, EnumInner, FnInner, GetType as _, ImplInner, NonLocalMetaSymTab, SymbolTable, Variant, WithMetaTable,
-    WithPath, ident_is_primitive,
+    AdtPatType, EnumInner, FnInner, GetType as _, ImplInner, LocalSpecial, NonLocalMetaSymTab, SymbolTable, Variant,
+    WithMetaTable, WithPath, ident_is_primitive,
 };
 use crate::utils::{Ident, Path, Record};
 use crate::{RPLMetaError, collect_elems_separated_by_comma};
@@ -245,6 +245,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
         let (_, _, _, _, _, params, _, ret) = fn_sig.get_matched();
         if let Some(params) = params {
             let params = collect_elems_separated_by_comma!(params).collect::<Vec<_>>();
+            debug!(params = ?params.len(), "checking params");
             for param in params {
                 self.check_fn_param(mctx, param);
             }
@@ -282,6 +283,9 @@ impl<'i> CheckFnCtxt<'i, '_> {
         let ident = ident.into();
         self.fn_def.add_param(mctx, ident, ty, self.errors);
         self.check_type(mctx, ty);
+        self.fn_def
+            .add_local(mctx, None, ident, ty, LocalSpecial::Arg, self.errors);
+        debug!(ident = ?ident.name, "checking normal param");
     }
 
     fn check_fn_body(&mut self, mctx: &MetaContext<'i>, fn_body: &'i pairs::FnBody<'i>) {
@@ -524,6 +528,23 @@ impl<'i> CheckFnCtxt<'i, '_> {
         }
     }
 
+    pub fn check_mir_place_field(&mut self, mctx: &MetaContext<'i>, field: &pairs::MirPlaceField<'i>) {
+        let (_, field) = field.get_matched();
+        match field {
+            Choice3::_0(_) | Choice3::_1(_) => (),
+            Choice3::_2(index) => {
+                let index_str = index.span.as_str().trim();
+                if let Err(err) = index_str.parse::<u32>() {
+                    self.errors.push(RPLMetaError::InvalidFieldIndex {
+                        index: index_str,
+                        source: err.to_string(),
+                        span: SpanWrapper::new(index.span, mctx.get_active_path()),
+                    });
+                }
+            },
+        }
+    }
+
     fn check_mir_place(&mut self, mctx: &MetaContext<'i>, place: &'i pairs::MirPlace<'i>) {
         let (base, suffix) = place.get_matched();
         match base.deref() {
@@ -532,7 +553,7 @@ impl<'i> CheckFnCtxt<'i, '_> {
             Choice3::_2(deref) => self.check_mir_place(mctx, deref.MirPlace()),
         }
         suffix.iter_matched().for_each(|suffix| match suffix.deref() {
-            Choice5::_0(_field) => {},
+            Choice5::_0(field) => self.check_mir_place_field(mctx, field),
             Choice5::_1(index) => self.check_mir_place_local(mctx, index.MirPlaceLocal()),
             Choice5::_2(const_index) => {
                 let (_, _, index, _, min_length, _) = const_index.get_matched();

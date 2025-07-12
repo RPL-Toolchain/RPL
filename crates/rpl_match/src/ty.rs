@@ -4,6 +4,7 @@ use std::iter::zip;
 use rpl_constraints::predicates::{PredicateArg, PredicateKind};
 use rpl_context::{PatCtxt, pat};
 use rpl_resolve::{PatItemKind, def_path_res};
+use rustc_abi::FieldIdx;
 use rustc_data_structures::fx::{FxHashMap, FxIndexSet};
 use rustc_hir::def::Res;
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
@@ -15,7 +16,7 @@ use rustc_span::Symbol;
 use rustc_span::symbol::kw;
 
 use crate::resolve::{lang_item_res, ty_res};
-use crate::{AdtMatch, MatchAdtCtxt};
+use crate::{AdtMatch, Candidates, MatchAdtCtxt};
 
 pub struct MatchTyCtxt<'pcx, 'tcx> {
     pub tcx: TyCtxt<'tcx>,
@@ -46,9 +47,84 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
             adt_matches: Default::default(),
         }
     }
+}
+
+impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchTyCtxt<'pcx, 'tcx> {
+    fn pat(&self) -> &'pcx pat::RustItems<'pcx> {
+        self.pat
+    }
+    fn pcx(&self) -> PatCtxt<'pcx> {
+        self.pcx
+    }
+    fn tcx(&self) -> TyCtxt<'tcx> {
+        self.tcx
+    }
+    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
+        self.typing_env
+    }
+
+    fn match_ty_var(&self, ty_var: pat::TyVar, ty: ty::Ty<'tcx>) -> bool {
+        self.ty_vars[ty_var.idx].borrow_mut().insert(ty);
+        true
+    }
+    #[instrument(level = "trace", skip(self), ret)]
+    fn match_ty_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: ty::Const<'tcx>) -> bool {
+        //FIXME: handle more cases of `ty::ConstKind`
+        if let ty::ConstKind::Value(value) = konst.kind()
+            && self.match_ty(const_var.ty, value.ty)
+        {
+            let const_value = self.tcx.valtree_to_const_val(konst.to_value());
+            self.const_vars[const_var.idx]
+                .borrow_mut()
+                .insert(mir::Const::from_value(const_value, value.ty));
+            return true;
+        }
+        false
+    }
+    #[instrument(level = "trace", skip(self), ret)]
+    fn match_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool {
+        if self.match_ty(const_var.ty, konst.ty()) {
+            self.const_vars[const_var.idx].borrow_mut().insert(konst);
+            return true;
+        }
+        false
+    }
+    fn match_adt_matches(&self, pat: Symbol, adt_match: AdtMatch<'tcx>) -> bool {
+        self.adt_matches
+            .borrow_mut()
+            .entry(pat)
+            .or_default()
+            .entry(adt_match.adt.did())
+            .or_insert(adt_match);
+        true
+    }
+
+    fn adt_matched(&self, adt_pat: Symbol, adt: ty::AdtDef<'tcx>, f: impl FnOnce(&AdtMatch<'tcx>)) {
+        let adt_matches = self.adt_matches.borrow();
+        adt_matches
+            .get(&adt_pat)
+            .and_then(|adt_match| adt_match.get(&adt.did()))
+            .map(f);
+    }
+}
+
+pub(crate) trait MatchTy<'pcx, 'tcx> {
+    fn pat(&self) -> &'pcx pat::RustItems<'pcx>;
+    fn pcx(&self) -> PatCtxt<'pcx>;
+    fn tcx(&self) -> TyCtxt<'tcx>;
+    fn typing_env(&self) -> ty::TypingEnv<'tcx>;
+
+    #[must_use]
+    fn match_ty_var(&self, ty_var: pat::TyVar, ty: ty::Ty<'tcx>) -> bool;
+    #[must_use]
+    fn match_ty_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: ty::Const<'tcx>) -> bool;
+    #[must_use]
+    fn match_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool;
+    #[must_use]
+    fn match_adt_matches(&self, pat: Symbol, adt_match: AdtMatch<'tcx>) -> bool;
 
     #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_ty(&self, ty_pat: pat::Ty<'pcx>, ty: ty::Ty<'tcx>) -> bool {
+    fn match_ty(&self, ty_pat: pat::Ty<'pcx>, ty: ty::Ty<'tcx>) -> bool {
         let ty_pat_kind = ty_pat.kind().clone();
         let ty_kind = *ty.kind();
         let matched = match (ty_pat_kind, ty_kind) {
@@ -61,7 +137,7 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
                     clause.terms.iter().any(|term| {
                         if let PredicateKind::Ty(ty_pred) = term.kind
                             && term.args.iter().all(|arg| { matches!(arg, PredicateArg::SelfValue) }) {
-                                let res = ty_pred(self.tcx, self.typing_env, ty);
+                                let res = ty_pred(self.tcx(), self.typing_env(), ty);
                                 if term.is_neg {
                                     !res
                                 } else {
@@ -81,8 +157,7 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
                     })
                 ) =>
             {
-                self.ty_vars[ty_var.idx].borrow_mut().insert(ty);
-                true
+                self.match_ty_var(ty_var, ty)
             },
             (pat::TyKind::Array(ty_pat, konst_pat), ty::Array(ty, konst)) => {
                 self.match_ty(ty_pat, ty) && self.match_const(konst_pat, konst)
@@ -109,31 +184,25 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
             (pat::TyKind::Def(def_id_pat, args_pat), ty::Adt(adt, args)) => {
                 let def_id = adt.did();
                 // trace!(?def_id_pat, ?def_id, ?args_pat, ?args, "match_ty def");
-                self.match_generic_args(&args_pat, args, self.tcx.generics_of(def_id)) && def_id_pat == def_id
+                self.match_generic_args(&args_pat, args, self.tcx().generics_of(def_id)) && def_id_pat == def_id
             },
             (pat::TyKind::Def(def_id_pat, args_pat), ty::FnDef(def_id, args)) => {
-                self.match_generic_args(&args_pat, args, self.tcx.generics_of(def_id)) && def_id_pat == def_id
+                self.match_generic_args(&args_pat, args, self.tcx().generics_of(def_id)) && def_id_pat == def_id
             },
             (pat::TyKind::Path(path_with_args), _) => {
                 //FIXME: generics args are ignored.
                 match path_with_args.path {
-                    pat::Path::Item(path) => ty_res(self.pcx, self.tcx, path.0, path_with_args.args),
-                    pat::Path::LangItem(item) => lang_item_res(self.pcx, self.tcx, item),
+                    pat::Path::Item(path) => ty_res(self.pcx(), self.tcx(), path.0, path_with_args.args),
+                    pat::Path::LangItem(item) => lang_item_res(self.pcx(), self.tcx(), item),
                     pat::Path::TypeRelative(_, _) => todo!(),
                 }
                 .map(|ty_pat| self.match_ty(ty_pat, ty))
                 .unwrap_or(false)
             },
             (pat::TyKind::AdtPat(pat), ty::Adt(adt, _)) => {
-                if let Some(adt_pat) = self.pat.get_adt(pat)
+                if let Some(adt_pat) = self.pat().get_adt(pat)
                     && let Some(adt_match) = self.match_adt(adt_pat, adt) {
-                    self.adt_matches
-                        .borrow_mut()
-                        .entry(pat)
-                        .or_default()
-                        .entry(adt_match.adt.did())
-                        .or_insert(adt_match);
-                    true
+                        self.match_adt_matches(pat, adt_match)
                 } else {
                     false
                 }
@@ -197,11 +266,11 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
 
     #[instrument(level = "trace", skip(self), ret)]
     fn match_adt(&self, adt_pat: &pat::Adt<'pcx>, adt: ty::AdtDef<'tcx>) -> Option<AdtMatch<'tcx>> {
-        MatchAdtCtxt::new(self.tcx, self.pcx, self.pat, adt_pat).match_adt(adt)
+        MatchAdtCtxt::new(self.tcx(), self.pcx(), self.pat(), adt_pat).match_adt(adt)
     }
 
     #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_const(&self, konst_pat: pat::Const<'pcx>, konst: ty::Const<'tcx>) -> bool {
+    fn match_const(&self, konst_pat: pat::Const<'pcx>, konst: ty::Const<'tcx>) -> bool {
         match (konst_pat, konst.kind()) {
             (pat::Const::ConstVar(const_var), _) => self.match_ty_const_var(const_var, konst),
             //(pat::Const::Value(_value_pat), ty::Value(_ty, ty::ValTree::Leaf(_value))) => todo!(),
@@ -230,31 +299,7 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
     }
 
     #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_ty_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: ty::Const<'tcx>) -> bool {
-        //FIXME: handle more cases of `ty::ConstKind`
-        if let ty::ConstKind::Value(value) = konst.kind()
-            && self.match_ty(const_var.ty, value.ty)
-        {
-            let const_value = self.tcx.valtree_to_const_val(konst.to_value());
-            self.const_vars[const_var.idx]
-                .borrow_mut()
-                .insert(mir::Const::from_value(const_value, value.ty));
-            return true;
-        }
-        false
-    }
-
-    #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool {
-        if self.match_ty(const_var.ty, konst.ty()) {
-            self.const_vars[const_var.idx].borrow_mut().insert(konst);
-            return true;
-        }
-        false
-    }
-
-    #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_region(&self, pat: pat::RegionKind, region: ty::Region<'tcx>) -> bool {
+    fn match_region(&self, pat: pat::RegionKind, region: ty::Region<'tcx>) -> bool {
         matches!(
             (pat, region.kind()),
             (pat::RegionKind::ReStatic, ty::RegionKind::ReStatic) | (pat::RegionKind::ReAny, _)
@@ -263,29 +308,29 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
 
     /// Match type path
     #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_path_with_args(
+    fn match_path_with_args(
         &self,
         path_with_args: pat::PathWithArgs<'pcx>,
         def_id: DefId,
         args: ty::GenericArgsRef<'tcx>,
     ) -> bool {
-        let generics = self.tcx.generics_of(def_id);
+        let generics = self.tcx().generics_of(def_id);
         self.match_path(path_with_args.path, def_id) && self.match_generic_args(&path_with_args.args, args, generics)
     }
 
     #[instrument(level = "debug", skip(self), ret)]
-    pub fn match_path(&self, path: pat::Path<'pcx>, def_id: DefId) -> bool {
+    fn match_path(&self, path: pat::Path<'pcx>, def_id: DefId) -> bool {
         let matched = match path {
             // pat::Path::Item(path) => matches!(self.match_item_path(path, def_id), Some([])),
             pat::Path::Item(path) => self.match_item_path_by_def_path(path, def_id),
             pat::Path::TypeRelative(ty, name) => {
-                self.tcx.item_name(def_id) == name
+                self.tcx().item_name(def_id) == name
                     && self
-                        .tcx
+                        .tcx()
                         .opt_parent(def_id)
-                        .is_some_and(|did| self.match_ty(ty, self.tcx.type_of(did).instantiate_identity()))
+                        .is_some_and(|did| self.match_ty(ty, self.tcx().type_of(did).instantiate_identity()))
             },
-            pat::Path::LangItem(lang_item) => self.tcx.is_lang_item(def_id, lang_item),
+            pat::Path::LangItem(lang_item) => self.tcx().is_lang_item(def_id, lang_item),
         };
         // debug!(?path, ?def_id, matched, "match_path");
         matched
@@ -295,13 +340,13 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
     // FIXME: when searching in the same crate, if with the same kind, an item path should always be resolved to the
     // same item, so this can be cached for performance.
     #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_item_path_by_def_path(&self, path: pat::ItemPath<'pcx>, def_id: DefId) -> bool {
-        let kind = if let Some(kind) = PatItemKind::infer_from_def_kind(self.tcx.def_kind(def_id)) {
+    fn match_item_path_by_def_path(&self, path: pat::ItemPath<'pcx>, def_id: DefId) -> bool {
+        let kind = if let Some(kind) = PatItemKind::infer_from_def_kind(self.tcx().def_kind(def_id)) {
             kind
         } else {
             return false;
         };
-        let res = def_path_res(self.tcx, path.0, kind);
+        let res = def_path_res(self.tcx(), path.0, kind);
         trace!(?res);
         let mut res = res.into_iter().filter_map(|res| match res {
             Res::Def(_, id) => Some(id),
@@ -316,15 +361,15 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
         pat_id == def_id
     }
 
-    pub fn match_item_path(&self, path: pat::ItemPath<'pcx>, def_id: DefId) -> Option<&[Symbol]> {
+    fn match_item_path(&self, path: pat::ItemPath<'pcx>, def_id: DefId) -> Option<&'pcx [Symbol]> {
         let &[krate, ref in_crate @ ..] = path.0 else {
             // an empty `ItemPath`
             return None;
         };
-        let def_path = self.tcx.def_path(def_id);
+        let def_path = self.tcx().def_path(def_id);
         let matched = match def_path.krate {
             LOCAL_CRATE => krate == kw::Crate,
-            _ => self.tcx.crate_name(def_path.krate) == krate,
+            _ => self.tcx().crate_name(def_path.krate) == krate,
         };
         let mut pat_iter = in_crate.iter();
         use DefPathData::{Impl, TypeNs, ValueNs};
@@ -342,7 +387,7 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
     }
 
     #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_generic_args(
+    fn match_generic_args(
         &self,
         mut args_pat: &[pat::GenericArgKind<'pcx>],
         args: &'tcx [ty::GenericArg<'tcx>],
@@ -353,7 +398,7 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
         {
             args_pat = pat;
             let args = &args[..generics.parent_count];
-            let generics = self.tcx.generics_of(parent);
+            let generics = self.tcx().generics_of(parent);
 
             if !self.match_generic_args(parent_args_pat, args, generics) {
                 return false;
@@ -363,7 +408,7 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
         // Is it necessary to call this function?
         let args_all = generics.own_args(args);
         trace!(?args_all);
-        let args_no_default = generics.own_args_no_defaults(self.tcx, args);
+        let args_no_default = generics.own_args_no_defaults(self.tcx(), args);
         trace!(?args_no_default);
         if args_pat.len() < args_no_default.len() || args_pat.len() > args_all.len() {
             false
@@ -396,5 +441,38 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
                 ty::GenericArgKind::Lifetime(_) | ty::GenericArgKind::Type(_) | ty::GenericArgKind::Const(_),
             ) => false,
         }
+    }
+
+    fn adt_matched(&self, adt_pat: Symbol, adt: ty::AdtDef<'tcx>, f: impl FnOnce(&AdtMatch<'tcx>));
+
+    fn for_variant_and_match(
+        &self,
+        adt_pat: Symbol,
+        adt: ty::AdtDef<'tcx>,
+        // variant_idx_pat: Option<Symbol>,
+        // variant_idx: Option<VariantIdx>,
+        f: impl FnOnce(&pat::Variant<'pcx>, &Candidates<FieldIdx>, &'tcx ty::VariantDef),
+    ) {
+        self.adt_matched(adt_pat, adt, |adt_match| {
+            let adt_pat = self
+                .pat()
+                .get_adt(adt_pat)
+                .unwrap_or_else(|| panic!("AdtPat `${adt_pat}` not found"));
+            if adt_pat.is_enum() {
+                todo!()
+                // let (variant_pat, variant_index) =
+                //     adt_pat.variant_and_index(variant_idx_pat.expect("variant_idx_pat is None"));
+                // let variant = adt.variant(variant_idx.expect("variant_idx is None"));
+                // let variant_match = adt_match.expect_enum().candidates[variant_index]
+                //     .matched()
+                //     .expect("variant not matched");
+                // (variant_pat, variant_match, variant)
+            } else {
+                let variant_pat = adt_pat.non_enum_variant();
+                let variant_match = &adt_match.expect_struct().candidates;
+                let variant = adt.non_enum_variant();
+                f(variant_pat, variant_match, variant);
+            }
+        })
     }
 }

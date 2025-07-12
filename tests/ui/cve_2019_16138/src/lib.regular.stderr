@@ -132,8 +132,8 @@ LL |               #[inline]
    |               --------- `#[inline]` here
 LL | /             fn rl_marker(pix: RGBE8Pixel) -> Option<usize> {
 LL | |
-LL | |
 LL | |                 if pix.c == [1, 1, 1] {
+LL | |                     Some(pix.e as usize)
 ...  |
 LL | |             }
    | |_____________^ `#[inline]` applied here
@@ -141,22 +141,5 @@ LL | |             }
    = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html
    = note: the compiler generally makes good inline decisions about private functions
 
-error: it usually isn't necessary to apply #[inline] to private functions
-  --> tests/ui/cve_2019_16138/src/lib.rs:425:13
-   |
-LL |               #[inline]
-   |               --------- `#[inline]` here
-LL | /             fn rl_marker(pix: RGBE8Pixel) -> Option<usize> {
-LL | |
-LL | |
-LL | |                 if pix.c == [1, 1, 1] {
-...  |
-LL | |             }
-   | |_____________^ `#[inline]` applied here
-   |
-   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html
-   = note: the compiler generally makes good inline decisions about private functions
-   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
-
-error: aborting due to 10 previous errors
+error: aborting due to 9 previous errors
 

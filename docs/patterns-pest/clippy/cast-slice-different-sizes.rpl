@@ -1,0 +1,61 @@
+pattern cast-slice-different-sizes
+
+patt {
+    #[diag = "cast_slice_different_sizes"]
+    p_const_const[
+        $T: type, // element type before the cast
+        $U: type, // element type after the cast
+    ] = unsafe? fn _ (..) -> _ {
+        'src:
+        let $p: *const [$T] = _;
+        'cast:
+        let $q: *const [$U] = move $p as *const [$U] (PtrToPtr);
+    } where {
+        !compatible_layout($T, $U)
+    }
+    #[diag = "cast_slice_different_sizes"]
+    p_const_mut[
+        $T: type, // element type before the cast
+        $U: type, // element type after the cast
+    ] = unsafe? fn _ (..) -> _ {
+        'src:
+        let $p: *const [$T] = _;
+        'cast:
+        let $q: *mut [$U] = move $p as *mut [$U] (PtrToPtr);
+    } where {
+        !compatible_layout($T, $U)
+    }
+    #[diag = "cast_slice_different_sizes"]
+    p_mut_const[
+        $T: type, // element type before the cast
+        $U: type, // element type after the cast
+    ] = unsafe? fn _ (..) -> _ {
+        'src:
+        let $p: *mut [$T] = _;
+        'cast:
+        let $q: *const [$U] = move $p as *const [$U] (PtrToPtr);
+    } where {
+        !compatible_layout($T, $U)
+    }
+    #[diag = "cast_slice_different_sizes"]
+    p_mut_mut[
+        $T: type, // element type before the cast
+        $U: type, // element type after the cast
+    ] = unsafe? fn _ (..) -> _ {
+        'src:
+        let $p: *mut [$T] = _;
+        'cast:
+        let $q: *mut [$U] = move $p as *mut [$U] (PtrToPtr);
+    } where {
+        !compatible_layout($T, $U)
+    }
+}
+
+diag {
+    cast_slice_different_sizes = {
+        primary(cast) = "casts between raw pointers to slices with different element sizes",
+        label(src)    = "cast from this",
+        note          = "casting a pointer to a slice of type `{$T}` to a pointer to a slice of another type `{$U}` with different element type ABI, size or alignment can lead to undefined behavior.",
+        name          = "cast_slice_different_sizes",
+    }
+}

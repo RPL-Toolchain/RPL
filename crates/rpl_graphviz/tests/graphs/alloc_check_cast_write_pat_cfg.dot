@@ -1,0 +1,5 @@
+digraph ControlFlowGraph {
+    bb0 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1">?bb0</td></tr><tr><td align="left">_?0 = alloc::alloc::__rust_alloc(_, _) -&gt; ?bb1</td></tr></table>>];
+    bb1 [shape="none", label=<<table border="0" cellborder="1" cellspacing="0"><tr><td  align="center" colspan="1">?bb1</td></tr><tr><td align="left" balign="left">_?1 = copy _?0 as *const u8 (PtrToPtr)<br/>_?2 = copy _?1 as usize (Transmute)<br/>_?3 = copy _?0 as *mut ?T0 (PtrToPtr)<br/>(*_?3) = _<br/></td></tr><tr><td align="left">end</td></tr></table>>];
+    bb0 -> bb1 [label="return"];
+}

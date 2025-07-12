@@ -8,13 +8,18 @@ keywords.workspace = true
 edition.workspace = true
 
 [dependencies]
-gsgdt.workspace = true
 rpl_context.workspace = true
 rpl_match.workspace = true
+rpl_meta.workspace = true
 rpl_mir_graph.workspace = true
+rpl_parser.workspace = true
+
+gsgdt.workspace = true
 
 [dev-dependencies]
 pretty_assertions.workspace = true
+pest_typed.workspace = true
+quote.workspace = true
 
 [features]
 

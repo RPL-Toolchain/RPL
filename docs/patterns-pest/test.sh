@@ -39,6 +39,6 @@ uitest "docs/patterns-pest/private-or-generic-function-marked-inline.rpl"       
 uitest "docs/patterns-pest/allow-unchecked.rpl"                                                                   "tests/ui/std/alloc"
 uitest "docs/patterns-pest/manually-drop.rpl"                                                                     "tests/ui/std/mem/ManuallyDrop"
 uitest "docs/patterns-pest/transmute-int-to-ptr.rpl:docs/patterns-pest/transmute-to-bool.rpl"                     "tests/ui/std/mem/transmute"
-uitest "docs/patterns-pest/unsound-collection-transmute.rpl"                                                      "tests/ui/unsound_collection_transmute"
+uitest "docs/patterns-pest/clippy/unsound-collection-transmute.rpl"                                               "tests/ui/unsound_collection_transmute"
 
 RPL_PATS="docs/patterns-pest" cargo uibless

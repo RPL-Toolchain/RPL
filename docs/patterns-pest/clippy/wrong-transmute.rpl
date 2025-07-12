@@ -1,0 +1,29 @@
+pattern wrong-transmute
+
+patt {
+    wrong_transmute[
+        $T: type where (is_float(self) || is_char(self)),
+        $U: type where (is_ref(self) || is_ptr(self)),
+    ] = fn _(..) {
+        let $from: $T;
+        'cast:
+        let $to: $U = copy $from as $U (Transmute);
+    }
+
+    #[diag = "wrong_transmute"]
+    wrong_transmute_const[
+        $T: type where (is_float(self) || is_char(self)),
+        $from: const($T),
+        $U: type where (is_ref(self) || is_ptr(self)),
+    ] = fn _(..) {
+        'cast:
+        let $to: $U = const $from as $U (Transmute);
+    }
+}
+
+diag {
+    wrong_transmute = {
+        primary(cast) = "transmute from a `{$T}` to `{$U}`",
+        name          = "wrong_transmute",
+    }
+}

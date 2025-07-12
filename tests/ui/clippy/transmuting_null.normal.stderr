@@ -1,0 +1,27 @@
+error: transmuting a known null pointer into a reference
+  --> tests/ui/clippy/transmuting_null.rs:15:23
+   |
+LL |         let _: &u64 = std::mem::transmute(0 as *const u64);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `0 as *const u64` is known to be a null pointer, so transmuting it into a reference is undefined behavior
+   = note: `#[deny(rpl::transmuting_null)]` on by default
+
+error: transmuting a known null pointer into a reference
+  --> tests/ui/clippy/transmuting_null.rs:18:23
+   |
+LL |         let _: &u64 = std::mem::transmute(std::ptr::null::<u64>());
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `std::ptr::null::<u64>()` is known to be a null pointer, so transmuting it into a reference is undefined behavior
+
+error: transmuting a known null pointer into a reference
+  --> tests/ui/clippy/transmuting_null.rs:30:23
+   |
+LL |         let _: &u64 = std::mem::transmute(ZPTR);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `ZPTR` is known to be a null pointer, so transmuting it into a reference is undefined behavior
+
+error: aborting due to 3 previous errors
+

@@ -39,6 +39,7 @@ pub mod mir; // FIXME: visibility
 mod place;
 pub mod predicate_evaluator;
 pub mod resolve;
+mod statement;
 mod ty;
 
 pub use adt::{AdtMatch, Candidates, MatchAdtCtxt};

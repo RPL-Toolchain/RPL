@@ -1,0 +1,120 @@
+pattern unsound-collection-transmute
+
+patt {
+    use std::collections::BTreeMap;
+    use std::collections::BTreeSet;
+    use std::collections::BinaryHeap;
+    use std::collections::HashMap;
+    use std::collections::HashSet;
+    use std::vec::Vec;
+    use std::collections::VecDeque;
+
+    p_btree_map[$T1: type, $T2: type, $U1: type, $U2: type] = fn _ (..)  {
+        type Src = BTreeMap<$T1, $T2>;
+        type Dst = BTreeMap<$U1, $U2>;
+        'src:
+        let $p: Src = _;
+        'cast:
+        let $q: Dst = move $p as Dst (Transmute);
+    } where {
+        (!compatible_layout($T1, $U1) || !compatible_layout($T2, $U2))
+    }
+    p_btree_set[$T: type, $U: type] = fn _ (..) {
+        type Src = BTreeSet<$T>;
+        type Dst = BTreeSet<$U>;
+        'src:
+        let $p: Src = _;
+        'cast:
+        let $q: Dst = move $p as Dst (Transmute);
+    } where {
+        !compatible_layout($T, $U)
+    }
+    p_binary_heap[$T: type, $U: type] = fn _ (..) {
+        type Src = BinaryHeap<$T>;
+        type Dst = BinaryHeap<$U>;
+        'src:
+        let $p: Src = _;
+        'cast:
+        let $q: Dst = move $p as Dst (Transmute);
+    } where {
+        !compatible_layout($T, $U)
+    }
+    p_hash_map[$T1: type, $T2: type, $U1: type, $U2: type] = fn _ (..)  {
+        type Src = HashMap<$T1, $T2>;
+        type Dst = HashMap<$U1, $U2>;
+        'src:
+        let $p: Src = _;
+        'cast:
+        let $q: Dst = move $p as Dst (Transmute);
+    } where {
+        (!compatible_layout($T1, $U1) || !compatible_layout($T2, $U2))
+    }
+    p_hash_set[$T: type, $U: type] = fn _ (..) {
+        type Src = HashSet<$T>;
+        type Dst = HashSet<$U>;
+        'src:
+        let $p: Src = _;
+        'cast:
+        let $q: Dst = move $p as Dst (Transmute);
+    } where {
+        !compatible_layout($T, $U)
+    }
+    p_vec[$T: type, $U: type] = fn _ (..) {
+        type Src = Vec<$T>;
+        type Dst = Vec<$U>;
+        'src:
+        let $p: Src = _;
+        'cast:
+        let $q: Dst = move $p as Dst (Transmute);
+    } where {
+        !compatible_layout($T, $U)
+    }
+    p_vec_deque[$T: type, $U: type] = fn _ (..) {
+        type Src = VecDeque<$T>;
+        type Dst = VecDeque<$U>;
+        'src:
+        let $p: Src = _;
+        'cast:
+        let $q: Dst = move $p as Dst (Transmute);
+    } where {
+        !compatible_layout($T, $U)
+    }
+}
+
+diag {
+    p_btree_map = {
+        primary(cast) = "transmute from `std::collections::BTreeMap<{$T1}, {$T2}>` to `std::collections::BTreeMap<{$U1}, {$U2}>` with mismatched layout is unsound",
+        label(src)    = "casted from this",
+        name          = "unsound_collection_transmute",
+    }
+    p_btree_set = {
+        primary(cast) = "transmute from `std::collections::BTreeSet<{$T}>` to `std::collections::BTreeSet<{$U}>` with mismatched layout is unsound",
+        label(src)    = "casted from this",
+        name          = "unsound_collection_transmute",
+    }
+    p_binary_heap = {
+        primary(cast) = "transmute from `std::collections::BinaryHeap<{$T}>` to `std::collections::BinaryHeap<{$U}>` with mismatched layout is unsound",
+        label(src)    = "casted from this",
+        name          = "unsound_collection_transmute",
+    }
+    p_hash_map = {
+        primary(cast) = "transmute from `std::collections::HashMap<{$T1}, {$T2}>` to `std::collections::HashMap<{$U1}, {$U2}>` with mismatched layout is unsound",
+        label(src)    = "casted from this",
+        name          = "unsound_collection_transmute",
+    }
+    p_hash_set = {
+        primary(cast) = "transmute from `std::collections::HashSet<{$T}>` to `std::collections::HashSet<{$U}>` with mismatched layout is unsound",
+        label(src)    = "casted from this",
+        name          = "unsound_collection_transmute",
+    }
+    p_vec = {
+        primary(cast) = "transmute from `std::vec::Vec<{$T}>` to `std::vec::Vec<{$U}>` with mismatched layout is unsound",
+        label(src)    = "casted from this",
+        name          = "unsound_collection_transmute",
+    }
+    p_vec_deque = {
+        primary(cast) = "transmute from `std::collections::VecDeque<{$T}>` to `std::collections::VecDeque<{$U}>` with mismatched layout is unsound",
+        label(src)    = "casted from this",
+        name          = "unsound_collection_transmute",
+    }
+}

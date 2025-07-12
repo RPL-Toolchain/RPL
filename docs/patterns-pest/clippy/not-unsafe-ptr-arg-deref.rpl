@@ -1,0 +1,37 @@
+pattern not-unsafe-ptr-arg-deref
+
+patt {
+    use core::option::Option;
+
+    #[diag = "not_unsafe_ptr_arg_deref"]
+    not_unsafe_ptr_arg_deref_deref[$T: type] = 
+        pub fn _($arg: *const $T) {
+            'deref:
+            let $target: $T = copy (*$arg);
+        }
+    #[diag = "not_unsafe_ptr_arg_deref"]
+    not_unsafe_ptr_arg_deref_as_ref_inline[$T: type] = 
+        pub fn _($arg: *const $T) {
+            'deref:
+            let $target: &$T = &(*$arg);
+        }
+    #[diag = "not_unsafe_ptr_arg_deref"]
+    not_unsafe_ptr_arg_deref_as_ref[$T: type] = 
+        pub fn _($arg: *const $T) {
+            'deref:
+            let $target: Option<&$T> = const_ptr::as_ref::<_, '_>(copy $arg); // FIXME: why the generic argument does not match?
+        }
+    #[diag = "not_unsafe_ptr_arg_deref"]
+    not_unsafe_ptr_arg_deref_read[$T: type] = 
+        pub fn _($arg: *const $T) {
+            'deref:
+            let $target: $T = core::ptr::read::<_>(copy $arg);
+        }
+}
+
+diag {
+    not_unsafe_ptr_arg_deref = {
+        primary(deref) = "this public function might dereference a raw pointer but is not marked `unsafe`",
+        name           = "not_unsafe_ptr_arg_deref",
+    }
+}

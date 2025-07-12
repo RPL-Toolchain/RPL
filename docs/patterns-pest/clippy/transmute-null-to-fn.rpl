@@ -1,0 +1,69 @@
+pattern transmute-null-to-fn
+
+patt {
+    #[diag = "transmute_null"]
+    transmute_ptr_null_inline[$T: type, $U: type where is_fn_ptr(self)] = fn _() {
+        'null:
+        let $null: *const $T = const 0_usize as *const $T (PointerWithExposedProvenance);
+        'cast:
+        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
+        let $value: $U = move $null as $U (Transmute);
+    }
+    #[diag = "transmute_null"]
+    transmute_ptr_null_inline_intermediate[$T: type, $I: type, $U: type where is_fn_ptr(self)] = fn _() {
+        'null:
+        let $null: *const $T = const 0_usize as *const $T (PointerWithExposedProvenance);
+        let $null_: $I = move $null as $I (PtrToPtr);
+        'cast:
+        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
+        let $value: $U = move $null_ as $U (Transmute);
+    }
+
+    #[diag = "transmute_null"]
+    transmute_ptr_null[$T: type, $U: type where is_fn_ptr(self)] = fn _() {
+        'null:
+        let $null: *const $T = std::ptr::null::<$T>();
+        'cast:
+        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
+        let $value: $U = move $null as $U (Transmute);
+    }
+    #[diag = "transmute_null"]
+    transmute_ptr_null_intermediate[$T: type, $I: type, $U: type where is_fn_ptr(self)] = fn _() {
+        'null:
+        let $null: *const $T = std::ptr::null::<$T>();
+        let $null_: $I = move $null as $I (PtrToPtr);
+        'cast:
+        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
+        let $value: $U = move $null_ as $U (Transmute);
+    }
+
+    #[diag = "transmute_null"]
+    #[deduplicate]
+    transmute_const_zero_ptr[$T: type, $null: const(*const $T) /* where is_null_ptr(self) */, $U: type where is_fn_ptr(self)] = fn _() {
+        'cast:
+        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
+        let $value: $U = const $null as $U (Transmute);
+    } where {
+        is_null_ptr($null)
+    }
+    #[diag = "transmute_null"]
+    #[deduplicate]
+    transmute_const_zero_ptr_intermediate[$T: type, $I: type, $null: const(*const $T) /* where is_null_ptr(self) */, $U: type where is_fn_ptr(self)] = fn _() {
+        let $intermediate: $I = const $null as $I (PtrToPtr);
+        'cast:
+        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
+        let $value: $U = move $intermediate as $U (Transmute);
+    } where {
+        is_null_ptr($null)
+    }
+}
+
+diag {
+    transmute_null = {
+        primary(cast) = "transmuting a known null pointer into a function pointer",
+        note          = "`{$null}` is known to be a null pointer, so transmuting it into a function pointer is undefined behavior",
+        help          = "try wrapping your function pointer type in `Option<T>` instead, and using `None` as a null pointer value",
+        name          = "transmute_null_to_fn",
+        level         = "warn",
+    }
+}

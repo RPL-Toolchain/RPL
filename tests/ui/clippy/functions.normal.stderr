@@ -1,0 +1,76 @@
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:112:33
+   |
+LL |         println!("{}", unsafe { *p });
+   |                                 ^^
+   |
+   = note: `#[deny(rpl::not_unsafe_ptr_arg_deref)]` on by default
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:115:35
+   |
+LL |         println!("{:?}", unsafe { p.as_ref() });
+   |                                   ^^^^^^^^^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:118:18
+   |
+LL |         unsafe { std::ptr::read(p) };
+   |                  ^^^^^^^^^^^^^^^^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:130:29
+   |
+LL |     println!("{}", unsafe { *p });
+   |                             ^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:133:31
+   |
+LL |     println!("{:?}", unsafe { p.as_ref() });
+   |                               ^^^^^^^^^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:136:14
+   |
+LL |     unsafe { std::ptr::read(p) };
+   |              ^^^^^^^^^^^^^^^^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:143:29
+   |
+LL |     println!("{}", unsafe { *p });
+   |                             ^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:146:31
+   |
+LL |     println!("{:?}", unsafe { p.as_ref() });
+   |                               ^^^^^^^^^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:149:14
+   |
+LL |     unsafe { std::ptr::read(p) };
+   |              ^^^^^^^^^^^^^^^^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:159:33
+   |
+LL |         println!("{}", unsafe { *p });
+   |                                 ^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:162:35
+   |
+LL |         println!("{:?}", unsafe { p.as_ref() });
+   |                                   ^^^^^^^^^^
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/clippy/functions.rs:165:18
+   |
+LL |         unsafe { std::ptr::read(p) };
+   |                  ^^^^^^^^^^^^^^^^^
+
+error: aborting due to 12 previous errors
+

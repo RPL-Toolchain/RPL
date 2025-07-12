@@ -10,6 +10,7 @@ use rustc_span::Symbol;
 // Try to keep all predicate signatures consistent in it.
 mod multiple_consts;
 mod multiple_tys;
+mod single_const;
 mod single_fn;
 mod single_ty;
 mod translate;
@@ -18,6 +19,7 @@ mod ty_const;
 
 pub use multiple_consts::*;
 pub use multiple_tys::*;
+pub use single_const::*;
 pub use single_fn::*;
 pub use single_ty::*;
 use thiserror::Error;
@@ -39,12 +41,18 @@ pub enum PredicateError<'i> {
 // Add it to the list below.
 pub const ALL_PREDICATES: &[&str] = &[
     // single_ty_preds
+    "can_be_uninit",
     "is_all_safe_trait",
+    "is_integral",
+    "is_char",
+    "is_copy",
+    "is_float",
+    "is_fn_ptr",
     "is_not_unpin",
     "is_sync",
-    "is_integral",
-    "is_ptr",
     "is_primitive",
+    "is_ptr",
+    "is_ref",
     "needs_drop",
     // translate_preds
     "translate_from_function",
@@ -52,12 +60,15 @@ pub const ALL_PREDICATES: &[&str] = &[
     "false",
     "true",
     // multiple_tys_preds
-    "same_size",
+    "compatible_layout",
     "same_abi_and_pref_align",
+    "same_size",
     // single_fn_preds
     "requires_monomorphization",
     // ty_const_preds
     "maybe_misaligned",
+    // single_const_preds
+    "is_null_ptr",
     // multiple_consts_preds
     "usize_lt",
 ];
@@ -70,6 +81,7 @@ pub enum PredicateKind {
     MultipleTys(MultipleTysPredsFnPtr),
     Fn(SingleFnPredsFnPtr),
     TyConst(TyConstPredsFnPtr),
+    SingleConst(SingleConstPredsFnPtr),
     MultipleConsts(MultipleConstsPredsFnPtr),
 }
 
@@ -77,18 +89,26 @@ impl<'i> TryFrom<SpanWrapper<'i>> for PredicateKind {
     type Error = PredicateError<'i>;
     fn try_from(span: SpanWrapper<'i>) -> Result<Self, Self::Error> {
         Ok(match span.inner().as_str() {
+            "can_be_uninit" => Self::Ty(can_be_uninit),
+            "compatible_layout" => Self::MultipleTys(compatible_layout),
             "is_all_safe_trait" => Self::Ty(is_all_safe_trait),
-            "is_not_unpin" => Self::Ty(is_not_unpin),
-            "is_sync" => Self::Ty(is_sync),
             "is_integral" => Self::Ty(is_integral),
-            "is_ptr" => Self::Ty(is_ptr),
+            "is_char" => Self::Ty(is_char),
+            "is_copy" => Self::Ty(is_copy),
+            "is_float" => Self::Ty(is_float),
+            "is_fn_ptr" => Self::Ty(is_fn_ptr),
+            "is_not_unpin" => Self::Ty(is_not_unpin),
+            "is_null_ptr" => Self::SingleConst(is_null_ptr),
+            "is_ref" => Self::Ty(is_ref),
+            "is_sync" => Self::Ty(is_sync),
             "is_primitive" => Self::Ty(is_primitive),
+            "is_ptr" => Self::Ty(is_ptr),
             "needs_drop" => Self::Ty(needs_drop),
             "translate_from_function" => Self::Translate(translate_from_function),
             "false" => Self::Trivial(r#false),
             "true" => Self::Trivial(r#true),
-            "same_size" => Self::MultipleTys(same_size),
             "same_abi_and_pref_align" => Self::MultipleTys(same_abi_and_pref_align),
+            "same_size" => Self::MultipleTys(same_size),
             "requires_monomorphization" => Self::Fn(requires_monomorphization),
             "maybe_misaligned" => Self::TyConst(maybe_misaligned),
             "usize_lt" => Self::MultipleConsts(usize_lt),

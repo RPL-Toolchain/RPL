@@ -484,6 +484,7 @@ fn mir_cast_kind() {
 fn mir_operand() {
     full_test!(MirOperand, "move $p");
     full_test!(MirOperand, "copy $p");
+    full_test!(MirOperand, "copy (*$p)");
     full_test!(MirOperand, "move $p as DstVec");
 }
 

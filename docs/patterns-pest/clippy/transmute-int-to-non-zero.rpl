@@ -1,0 +1,22 @@
+pattern transmute-int-to-non-zero
+
+patt {
+    use core::num::NonZero;
+    transmute_int_to_non_zero[$T: type where is_integral(self), $U: type where is_integral(self)] = fn _() {
+        type NonZeroU = NonZero<$U>;
+        'src:
+        let $p: $T = _; // This is an integer type.
+        'cast:
+        let $q: NonZeroU = move $p as NonZeroU (Transmute);
+    }
+}
+
+diag {
+    transmute_int_to_non_zero = {
+        primary(cast)                                                      = "transmute from a `{$T}` to a `NonZero<{$U}>`",
+        suggestion(code = "NonZero::new_unchecked({$src})", span = "cast") = "consider using",
+        help                                                               = "consider using `NonZero::new_unchecked` instead, or use `NonZero::new` if you want to handle the zero case safely",
+        name                                                               = "transmute_int_to_non_zero",
+        level                                                              = "warn",
+    }
+}

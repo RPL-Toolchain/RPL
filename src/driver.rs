@@ -89,7 +89,7 @@ fn consume_arg_values(args: &mut Vec<String>, find_arg: &str) -> Vec<String> {
 
 #[test]
 fn test_consume_arg_values() {
-    let args = vec!["--foo=bar", "--bar", "x", "--foo", "baz", "--foo=qux"];
+    let args = ["--foo=bar", "--bar", "x", "--foo", "baz", "--foo=qux"];
     let mut args = args.iter().map(ToString::to_string).collect();
     assert_eq!(consume_arg_values(&mut args, "--foo"), vec!["bar", "baz", "qux"]);
     assert_eq!(args, vec!["--bar", "x"]);

@@ -1,0 +1,33 @@
+pattern swap-ptr-to-ref
+
+patt {
+    #[deduplicate]
+    swap_ptr_to_ref[$T: type] = left[$T = $T] + right[$T = $T]
+}
+
+util {
+    use core::mem::swap;
+
+    left[$T: type] = fn _() {
+        let $ptr: *mut $T = _;
+        let $ref_1: &mut $T = &mut *$ptr;
+        let $ref_2: &mut $T = _;
+        'swap:
+        _ = swap::<$T>(copy $ref_1, copy $ref_2);
+    }
+    right[$T: type] = fn _() {
+        let $ptr: *mut $T = _;
+        let $ref_1: &mut $T = _;
+        let $ref_2: &mut $T = &mut *$ptr;
+        'swap:
+        _ = swap::<$T>(copy $ref_1, copy $ref_2);
+    }
+}
+
+diag {
+    swap_ptr_to_ref = {
+        primary(swap) = "call to `core::mem::swap` with a parameter derived from a raw pointer",
+        name          = "swap_ptr_to_ref",
+        level         = "warn",
+    }
+}

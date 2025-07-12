@@ -202,9 +202,10 @@ impl<'pcx> PatCtxt<'pcx> {
         // FIXME: process utils
         let (utils, patts, diags) = collect_blocks(main);
 
+        let symbol_tables = &mctx.symbol_tables.get(id).unwrap();
         {
             let patt_items = utils.iter().flat_map(|patt| patt.get_matched().3.iter_matched());
-            let patt_symbol_tables = &mctx.symbol_tables.get(id).unwrap().util_symbol_tables;
+            let patt_symbol_tables = &symbol_tables.util_symbol_tables;
             patt_items.for_each(|item| {
                 pattern.add_pattern_item(
                     with_path(mctx.get_active_path(), item),
@@ -215,7 +216,7 @@ impl<'pcx> PatCtxt<'pcx> {
         }
         {
             let patt_items = patts.iter().flat_map(|patt| patt.get_matched().3.iter_matched());
-            let patt_symbol_tables = &mctx.symbol_tables.get(id).unwrap().patt_symbol_tables;
+            let patt_symbol_tables = &symbol_tables.patt_symbol_tables;
             patt_items.for_each(|item| {
                 pattern.add_pattern_item(
                     with_path(mctx.get_active_path(), item),
@@ -225,7 +226,11 @@ impl<'pcx> PatCtxt<'pcx> {
             });
 
             for diag in diags {
-                pattern.add_diag(with_path(mctx.get_active_path(), diag), patt_symbol_tables)
+                pattern.add_diag(
+                    with_path(mctx.get_active_path(), diag),
+                    &symbol_tables.diag_symbol_tables,
+                    patt_symbol_tables,
+                )
             }
         }
 
