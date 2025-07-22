@@ -4,11 +4,15 @@
 
 # RPL
 
-This is the main source code repository of RPL (Rust Pattern Language). It contains the toolchain and documentation of RPL.
+This is the main source code repository of RPL. It contains the toolchain and documentation of RPL.
 
 ## What is RPL?
 
-RPL is a domain-specific language for modeling Rust code patterns.
+RPL is a Rust linter which decouples the definition of rules from the detection logic.
+In particular, RPL consists of two primary components:
+
+-   a Domain-Specific Language (DSL) that allows developers to model/define code patterns,
+-   a detection engine to detect instances of these patterns.
 
 The toolchain of RPL, which is a custom configuration of Rust compiler, enables accurate identification of code instances that demonstrate semantic equivalence to existing patterns.
 
@@ -16,26 +20,18 @@ The toolchain of RPL, which is a custom configuration of Rust compiler, enables 
   <img src="./icons/RPL.gif" width="90%"/>
 </p>
 
-## Features
-
--   Model Rust code patterns based on MIR, just like writing real Rust code.✨
--   Enable programmatic semantic equivalence checks based on CFG and DDG with graph matching algorithms. 🔍
--   Support pattern customization to simplify modeling and predicate integration to ensure precise matching. 🛠️
--   Provide clear, user-friendly error messages and actionable suggestions. 💡
-
 ## Quick Start
 
--   Clone the repository and enter the directory: `git clone https://github.com/RPL-Toolchain/RPL.git && cd RPL`
+1. Clone the repository and enter the directory: `git clone https://github.com/RPL-Toolchain/RPL.git && cd RPL`
 
--   Install RPL as a cargo subcommand: `cargo install --path .`
+2. Install RPL as a cargo subcommand: `cargo install --path .`
 
--   Run RPL analysis on your Rust project:
-    -   `cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on inline MIR)
-    -   `RUSTFLAGS="-Zinline-mir=false" cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on MIR)
+3. Run RPL analysis on your Rust project:
 
-> Just like using `cargo clippy` to check your Rust code.
+    - `RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on inline MIR)
+    - `RUSTFLAGS="-Zinline-mir=false" RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on MIR)
 
-## RPL Language Reference
+## RPL Book
 
 See [this website](https://rpl-toolchain.github.io/rpl-book/) for the RPL book (Work in progress).
 

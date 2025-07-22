@@ -32,4 +32,5 @@
         "uninit",
         "UnsafeCell"
     ],
+    "svg.preview.background": "transparent",
 }
