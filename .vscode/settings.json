@@ -2,7 +2,7 @@
     "rust-analyzer.rustc.source": "discover",
     "rust-analyzer.linkedProjects": [
         "./Cargo.toml",
-        "./tests/ui/comparison/Cargo.toml"
+        "./tests/ui/cross-stmt-and-func-comparison-with-clippy/Cargo.toml"
     ],
     "rust-analyzer.diagnostics.disabled": [
         "macro-error"
