@@ -1,3 +1,17 @@
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2019_16138/src/lib.rs:221:77
+   |
+LL | ...                   for (dst, &pix) in chunk.iter_mut().zip(buf.iter()) {
+   |                                                                   ^^^^^^
+   |                                                                   |
+   |                                                                   offset here
+   |                                                                   pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+
 error: it usually isn't necessary to apply #[inline] to private functions
   --> tests/ui/cve_2019_16138/src/lib.rs:265:13
    |
@@ -68,6 +82,18 @@ LL | |         }
    = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html and https://rustc-dev-guide.rust-lang.org/backend/monomorph.html
    = note: generic functions are always `#[inline]` (monomorphization)
 
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2019_16138/src/lib.rs:382:69
+   |
+LL |                         for (offset, &value) in buf[0..rl as usize].iter().enumerate() {
+   |                                                                     ^^^^^^
+   |                                                                     |
+   |                                                                     offset here
+   |                                                                     pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
 error: it usually isn't necessary to apply #[inline] to private functions
   --> tests/ui/cve_2019_16138/src/lib.rs:360:9
    |
@@ -118,5 +144,22 @@ LL | |             }
    = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html
    = note: the compiler generally makes good inline decisions about private functions
 
-error: aborting due to 7 previous errors
+error: it usually isn't necessary to apply #[inline] to private functions
+  --> tests/ui/cve_2019_16138/src/lib.rs:425:13
+   |
+LL |               #[inline]
+   |               --------- `#[inline]` here
+LL | /             fn rl_marker(pix: RGBE8Pixel) -> Option<usize> {
+LL | |
+LL | |
+LL | |                 if pix.c == [1, 1, 1] {
+...  |
+LL | |             }
+   | |_____________^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html
+   = note: the compiler generally makes good inline decisions about private functions
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: aborting due to 10 previous errors
 

@@ -10,6 +10,20 @@ LL |         vec.set_len(len);
    = help: incorrect implementation of `std::iter::ExactSizeIterator::len` must not cause safety issues, and consider using `std::iter::TrustedLen` instead if it's stabilized
    = note: `#[deny(rpl::trust_exact_size_iterator)]` on by default
 
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2021_29941_2/cve_2021_29941_2.rs:30:17
+   |
+LL |     let ptr = vec.as_mut_ptr();
+   |                   ------------ pointer used here
+...
+LL |             ptr.add(a as usize).write(i as u32);
+   |                 ^^^^^^^^^^^^^^^ offset here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+
 error: it is unsound to trust return value of `std::iter::ExactSizeIterator::len` and pass it to an unsafe function like `std::vec::Vec::set_len`, which may leak uninitialized memory
   --> tests/ui/cve_2021_29941_2/cve_2021_29941_2.rs:58:13
    |
@@ -43,5 +57,5 @@ LL |         vec.set_len(len);
    |
    = help: incorrect implementation of `std::iter::ExactSizeIterator::len` must not cause safety issues, and consider using `std::iter::TrustedLen` instead if it's stabilized
 
-error: aborting due to 4 previous errors
+error: aborting due to 5 previous errors
 

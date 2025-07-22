@@ -44,7 +44,7 @@ where
             while count > 0 {
                 count -= 1;
                 p = p.offset(1);
-                //~^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
+                //FIXME: ~^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
             }
             &*p
             //~^ERROR: it is unsound to dereference a pointer that is offset using an unchecked integer

@@ -6,7 +6,7 @@ LL | fn f1() {
    |
    = help: You can use `#[rpl::dynamic]` to create a customizable lint.
    = note: This is a dynamic RPL pattern, which can be customized during runtime.
-   = note: `#[forbid(rpl::dynamic)]` on by default
+   = note: `#[deny(rpl::dynamic)]` on by default
 
 error: Unknown attribute key
   --> tests/ui/utils/dynamic.rs:15:5

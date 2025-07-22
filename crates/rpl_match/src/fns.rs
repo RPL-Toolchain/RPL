@@ -24,7 +24,7 @@ impl<'a, 'pcx, 'tcx> MatchFnCtxt<'a, 'pcx, 'tcx> {
         Self { ty, fn_pat }
     }
 
-    #[instrument(level = "info", skip_all, fields(fn_pat = %self.fn_pat, fn_did = ?fn_did.into()), ret)]
+    #[instrument(level = "debug", skip_all, fields(fn_pat = %self.fn_pat, fn_did = ?fn_did.into()), ret)]
     pub fn match_fn(&self, fn_did: impl Into<DefId> + Copy) -> bool {
         let fn_did = fn_did.into();
         let poly_fn_sig = match self.ty.tcx.type_of(fn_did).instantiate_identity().kind() {
@@ -33,7 +33,7 @@ impl<'a, 'pcx, 'tcx> MatchFnCtxt<'a, 'pcx, 'tcx> {
             _ => unimplemented!(),
         };
         let fn_sig = self.ty.tcx.liberate_late_bound_regions(fn_did, poly_fn_sig);
-        info!(?fn_sig);
+        debug!(?fn_sig);
         (self.fn_pat.params.len() <= fn_sig.inputs().len() || self.fn_pat.params.non_exhaustive)
             && zip(self.fn_pat.params.iter(), fn_sig.inputs())
                 .all(|(param_pat, &param_ty)| self.match_param(param_pat, param_ty))

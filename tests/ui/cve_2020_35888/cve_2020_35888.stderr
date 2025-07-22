@@ -1,3 +1,17 @@
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve_2020_35888/cve_2020_35888.rs:18:24
+   |
+LL |                 (*(ptr.wrapping_offset(i as isize))) = template.clone();
+   |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |                        |
+   |                        offset here
+   |                        pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+
 error: dropped an possibly-uninitialized value
   --> tests/ui/cve_2020_35888/cve_2020_35888.rs:18:17
    |
@@ -14,5 +28,5 @@ LL |                 (*(ptr.wrapping_offset(i as isize))) = template.clone();
    = help: assigning to a dereferenced pointer will cause previous value to be dropped, and try using `ptr::write` instead
    = note: `#[deny(rpl::drop_uninit_value)]` on by default
 
-error: aborting due to 1 previous error
+error: aborting due to 2 previous errors
 
