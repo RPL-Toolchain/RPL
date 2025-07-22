@@ -1,0 +1,35 @@
+error: transmuting a known null pointer into a reference
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmuting_null.rs:8:23
+   |
+LL |         let x: &u64 = std::mem::transmute(0 as *const u64);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `0 as *const u64` is known to be a null pointer, so transmuting it into a reference is undefined behavior
+   = note: `#[deny(rpl::transmuting_null)]` on by default
+
+error: transmuting a known null pointer into a reference
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmuting_null.rs:12:23
+   |
+LL |         let x: &u64 = std::mem::transmute(std::ptr::null::<u64>());
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `std::ptr::null::<u64>()` is known to be a null pointer, so transmuting it into a reference is undefined behavior
+
+error: transmuting a known null pointer into a reference
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmuting_null.rs:41:23
+   |
+LL |         let x: &u64 = std::mem::transmute(null_ptr);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `null_ptr` is known to be a null pointer, so transmuting it into a reference is undefined behavior
+
+error: transmuting a known null pointer into a reference
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmuting_null.rs:48:23
+   |
+LL |         let x: &u64 = std::mem::transmute(null_ptr);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `std::ptr::null::<u64>()` is known to be a null pointer, so transmuting it into a reference is undefined behavior
+
+error: aborting due to 4 previous errors
+

@@ -1,0 +1,16 @@
+error: it is unsound to transmute a type `u8` to a boolean
+  --> tests/ui/ub/std/mem/transmute/invalid_bool_value.rs:6:46
+   |
+LL |     let res = unsafe { transmute::<u8, bool>(x) };
+   |                        ----------------------^-
+   |                        |                     |
+   |                        |                     transmuted from here
+   |                        transmuted to here
+   |
+   = help: See https://doc.rust-lang.org/std/mem/fn.transmute.html
+   = note: transmuting types to booleans probably produces a boolean value with an invalid state
+   = note: `-D rpl::transmuting-type-to-bool` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::transmuting_type_to_bool)]`
+
+error: aborting due to 1 previous error
+

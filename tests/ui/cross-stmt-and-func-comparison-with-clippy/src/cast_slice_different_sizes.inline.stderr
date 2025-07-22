@@ -1,0 +1,23 @@
+error: casts between raw pointers to slices with different element sizes
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/cast_slice_different_sizes.rs:10:13
+   |
+LL |     let a = r_x as *const [i32];
+   |             ------------------- cast from this
+LL |     let b = a as *const [u64];
+   |             ^^^^^^^^^^^^^^^^^
+   |
+   = note: casting a pointer to a slice of type `i32` to a pointer to a slice of another type `u64` with different element type ABI, size or alignment can lead to undefined behavior.
+   = note: `#[deny(rpl::cast_slice_different_sizes)]` on by default
+
+error: casts between raw pointers to slices with different element sizes
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/cast_slice_different_sizes.rs:29:27
+   |
+LL |     let b: *const [u64] = cast_slice(r_x);
+   |                           ^^^^^^^^^^^---^
+   |                                      |
+   |                                      cast from this
+   |
+   = note: casting a pointer to a slice of type `i32` to a pointer to a slice of another type `u64` with different element type ABI, size or alignment can lead to undefined behavior.
+
+error: aborting due to 2 previous errors
+

@@ -1,0 +1,29 @@
+error: wrong assumption of layout compatibility from `std::net::SocketAddrV4` to `libc::sockaddr`
+  --> tests/ui/cve/cve_2021_27376/src/minimal.rs:3:14
+   |
+LL |     let t1 = s as *const libc::sockaddr;
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^ casted to `libc::sockaddr` here
+   |
+   = help: it's not guaranteed by Rust standard library. See https://github.com/rust-lang/rust/pull/78802
+note: casted from this
+  --> tests/ui/cve/cve_2021_27376/src/minimal.rs:3:14
+   |
+LL |     let t1 = s as *const libc::sockaddr;
+   |              ^
+   = note: `#[deny(rpl::wrong_assumption_of_layout_compatibility)]` on by default
+
+error: wrong assumption of layout compatibility from `std::net::SocketAddrV6` to `libc::sockaddr`
+  --> tests/ui/cve/cve_2021_27376/src/minimal.rs:6:14
+   |
+LL |     let t2 = s as *const libc::sockaddr;
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^ casted to `libc::sockaddr` here
+   |
+   = help: it's not guaranteed by Rust standard library. See https://github.com/rust-lang/rust/pull/78802
+note: casted from this
+  --> tests/ui/cve/cve_2021_27376/src/minimal.rs:6:14
+   |
+LL |     let t2 = s as *const libc::sockaddr;
+   |              ^
+
+error: aborting due to 2 previous errors
+

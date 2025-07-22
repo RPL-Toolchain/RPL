@@ -1,0 +1,11 @@
+error: casting the result of `from_raw_parts` to *const [&str]
+  --> tests/ui/cve/cve_2021_29935/simplified.rs:238:50
+   |
+LL |                 for (i, prefix) in self.prefixes.iter().enumerate() {
+   |                                                  ^^^^^^ help: replace with: `core::ptr::slice_from_raw_parts(self.prefixes.iter(), self.prefixes.iter())`
+   |
+   = note: `-D rpl::cast-slice-from-raw-parts` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::cast_slice_from_raw_parts)]`
+
+error: aborting due to 1 previous error
+

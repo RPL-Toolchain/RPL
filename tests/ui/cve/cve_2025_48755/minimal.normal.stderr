@@ -1,0 +1,25 @@
+error: public function `alloc_maybe_zero` allocates a pointer that may be zero-sized, which is an undefined behavior
+  --> tests/ui/cve/cve_2025_48755/minimal.rs:11:24
+   |
+LL | pub fn alloc_maybe_zero(sz_u64: usize) {
+   |                         ------ size passed in here
+...
+LL |     let ptr = unsafe { alloc(layout) };
+   |                        ^^^^^^^^^^^^^ pointer created here
+   |
+   = note: See https://doc.rust-lang.org/std/alloc/fn.alloc.html and https://doc.rust-lang.org/std/alloc/trait.GlobalAlloc.html#method.alloc
+   = note: `#[deny(rpl::alloc_maybe_zero)]` on by default
+
+error: public function `alloc_zeroed_maybe_zero` allocates a pointer that may be zero-sized, which is an undefined behavior
+  --> tests/ui/cve/cve_2025_48755/minimal.rs:21:24
+   |
+LL | pub fn alloc_zeroed_maybe_zero(sz_u64: usize) {
+   |                                ------ size passed in here
+...
+LL |     let ptr = unsafe { alloc_zeroed(layout) };
+   |                        ^^^^^^^^^^^^^^^^^^^^ pointer created here
+   |
+   = note: See https://doc.rust-lang.org/std/alloc/fn.alloc_zeroed.html and https://doc.rust-lang.org/std/alloc/trait.GlobalAlloc.html#method.alloc_zeroed
+
+error: aborting due to 2 previous errors
+

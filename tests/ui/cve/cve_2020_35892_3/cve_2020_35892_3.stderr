@@ -1,0 +1,37 @@
+error: pointer out of bound
+  --> tests/ui/cve/cve_2020_35892_3/cve_2020_35892_3.rs:53:25
+   |
+LL |             last_elem_ptr = self.mem.offset(self.len as isize);
+   |                                      -------------------------
+   |                                      |      |
+   |                                      |      help: did you mean this: `(self.len - 1)`
+   |                                      pointer created here
+...
+LL |             last_elem = ptr::read(last_elem_ptr);
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^ pointer read here
+   |
+help: this is because `self.len` exceeds the container's length by one
+  --> tests/ui/cve/cve_2020_35892_3/cve_2020_35892_3.rs:48:45
+   |
+LL |             last_elem_ptr = self.mem.offset(self.len as isize);
+   |                                             ^^^^^^^^
+   = note: `#[deny(rpl::offset_by_one)]` on by default
+
+error: it usually isn't necessary to apply #[inline] to generic functions
+  --> tests/ui/cve/cve_2020_35892_3/cve_2020_35892_3.rs:35:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     pub fn remove(&mut self, offset: usize) -> T {
+...  |
+LL | |         return elem;
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html and https://rustc-dev-guide.rust-lang.org/backend/monomorph.html
+   = note: generic functions are always `#[inline]` (monomorphization)
+   = note: `-D rpl::generic-function-marked-inline` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::generic_function_marked_inline)]`
+
+error: aborting due to 2 previous errors
+

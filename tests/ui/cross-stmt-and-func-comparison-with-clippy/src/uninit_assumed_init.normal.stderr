@@ -1,0 +1,17 @@
+error: this call for this type may be undefined behavior
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/uninit_assumed_init.rs:8:29
+   |
+LL |     let x: usize = unsafe { MaybeUninit::uninit().assume_init() };
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `-D rpl::uninit-assumed-init` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::uninit_assumed_init)]`
+
+error: this call for this type may be undefined behavior
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/uninit_assumed_init.rs:36:29
+   |
+LL |     let x: usize = unsafe { maybe_uninit.assume_init() };
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 2 previous errors
+

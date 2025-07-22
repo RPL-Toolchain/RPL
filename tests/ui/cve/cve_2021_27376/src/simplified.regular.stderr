@@ -1,0 +1,29 @@
+error: wrong assumption of layout compatibility from `std::net::SocketAddrV4` to `libc::sockaddr`
+  --> tests/ui/cve/cve_2021_27376/src/simplified.rs:22:17
+   |
+LL |                 addr as *const SocketAddrV4 as *const sockaddr,
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ casted to `libc::sockaddr` here
+   |
+   = help: it's not guaranteed by Rust standard library. See https://github.com/rust-lang/rust/pull/78802
+note: casted from this
+  --> tests/ui/cve/cve_2021_27376/src/simplified.rs:22:17
+   |
+LL |                 addr as *const SocketAddrV4 as *const sockaddr,
+   |                 ^^^^
+   = note: `#[deny(rpl::wrong_assumption_of_layout_compatibility)]` on by default
+
+error: wrong assumption of layout compatibility from `std::net::SocketAddrV6` to `libc::sockaddr`
+  --> tests/ui/cve/cve_2021_27376/src/simplified.rs:27:17
+   |
+LL |                 addr as *const SocketAddrV6 as *const sockaddr,
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ casted to `libc::sockaddr` here
+   |
+   = help: it's not guaranteed by Rust standard library. See https://github.com/rust-lang/rust/pull/78802
+note: casted from this
+  --> tests/ui/cve/cve_2021_27376/src/simplified.rs:27:17
+   |
+LL |                 addr as *const SocketAddrV6 as *const sockaddr,
+   |                 ^^^^
+
+error: aborting due to 2 previous errors
+

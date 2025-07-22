@@ -1,0 +1,15 @@
+error: use a pointer from `std::ffi::CString` after dropped
+  --> tests/ui/cve/cve_2020_35873/cve_2020_35873.rs:32:25
+   |
+LL |         unsafe { check!(ffi::sqlite3session_attach(self.sess, table)) };
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ used here
+   |
+note: the `std::ffi::CString` value is dropped here
+  --> tests/ui/cve/cve_2020_35873/cve_2020_35873.rs:27:43
+   |
+LL |             str_to_cstring(table)?.as_ptr()
+   |                                           ^
+   = note: `#[deny(rpl::use_after_drop)]` on by default
+
+error: aborting due to 1 previous error
+

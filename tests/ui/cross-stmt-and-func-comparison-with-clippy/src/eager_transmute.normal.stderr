@@ -1,0 +1,22 @@
+error: this transmute is always evaluated eagerly, even if the condition is false
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/eager_transmute.rs:17:33
+   |
+LL |     (op < 4).then_some(unsafe { std::mem::transmute::<_, Opcode>(op) })
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[deny(rpl::eager_transmute)]` on by default
+
+error: this transmute is always evaluated eagerly, even if the condition is false
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/eager_transmute.rs:25:37
+   |
+LL |     check_op(op).then_some(unsafe { std::mem::transmute::<_, Opcode>(op) })
+   |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: this transmute is always evaluated eagerly, even if the condition is false
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/eager_transmute.rs:39:29
+   |
+LL |     cond.then_some(unsafe { std::mem::transmute::<_, Opcode>(op) })
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 3 previous errors
+

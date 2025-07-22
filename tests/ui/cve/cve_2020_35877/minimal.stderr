@@ -1,0 +1,79 @@
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:4:15
+   |
+LL |         p = p.add(index);
+   |             - ^^^^^^^^^^ offset here
+   |             |
+   |             pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:14:15
+   |
+LL |         p = p.add(index);
+   |             - ^^^^^^^^^^ offset here
+   |             |
+   |             pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:135:20
+   |
+LL |     let ptr = slice.as_ptr();
+   |                     -------- pointer used here
+LL |     unsafe { &*ptr.add(2) }
+   |                    ^^^^^^ offset here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:142:20
+   |
+LL |     let ptr = slice.as_ptr();
+   |                     -------- pointer used here
+LL |     unsafe { &*ptr.add(4) }
+   |                    ^^^^^^ offset here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:153:20
+   |
+LL |     let ptr = slice.as_ptr();
+   |                     -------- pointer used here
+LL |     unsafe { &*ptr.add(N) }
+   |                    ^^^^^^ offset here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: this operation will panic at runtime
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:164:24
+   |
+LL |     unsafe { &*ptr.add(index % 0) }
+   |                        ^^^^^^^^^ attempt to calculate the remainder of `_` with a divisor of zero
+   |
+   = note: `#[deny(unconditional_panic)]` on by default
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:197:16
+   |
+LL | fn unsafe_unchecked_in_safe<T>(p: *const T) -> *const T {
+   |                                - pointer used here
+LL |     // Sorry, it's in a safe function :(
+LL |     unsafe { p.add(1) }
+   |                ^^^^^^ offset here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: aborting due to 7 previous errors
+

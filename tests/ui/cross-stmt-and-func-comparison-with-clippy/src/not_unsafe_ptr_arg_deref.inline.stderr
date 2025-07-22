@@ -1,0 +1,16 @@
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/not_unsafe_ptr_arg_deref.rs:4:19
+   |
+LL |     dbg!(unsafe { *p });
+   |                   ^^
+   |
+   = note: `#[deny(rpl::not_unsafe_ptr_arg_deref)]` on by default
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/not_unsafe_ptr_arg_deref.rs:15:19
+   |
+LL |     dbg!(unsafe { deref(p) });
+   |                   ^^^^^^^^
+
+error: aborting due to 2 previous errors
+

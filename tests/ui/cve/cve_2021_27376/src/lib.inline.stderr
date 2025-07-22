@@ -1,0 +1,29 @@
+error: wrong assumption of layout compatibility from `std::net::SocketAddrV4` to `libc::sockaddr`
+  --> tests/ui/cve/cve_2021_27376/src/lib.rs:70:38
+   |
+LL | ...   SocketAddr::V4(addr) => (addr as *const _ as *const _, mem::size_of_val(addr) as _),
+   |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ casted to `libc::sockaddr` here
+   |
+   = help: it's not guaranteed by Rust standard library. See https://github.com/rust-lang/rust/pull/78802
+note: casted from this
+  --> tests/ui/cve/cve_2021_27376/src/lib.rs:70:38
+   |
+LL | ...   SocketAddr::V4(addr) => (addr as *const _ as *const _, mem::size_of_val(addr) as _),
+   |                                ^^^^
+   = note: `#[deny(rpl::wrong_assumption_of_layout_compatibility)]` on by default
+
+error: wrong assumption of layout compatibility from `std::net::SocketAddrV6` to `libc::sockaddr`
+  --> tests/ui/cve/cve_2021_27376/src/lib.rs:71:38
+   |
+LL | ...   SocketAddr::V6(addr) => (addr as *const _ as *const _, mem::size_of_val(addr) as _),
+   |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ casted to `libc::sockaddr` here
+   |
+   = help: it's not guaranteed by Rust standard library. See https://github.com/rust-lang/rust/pull/78802
+note: casted from this
+  --> tests/ui/cve/cve_2021_27376/src/lib.rs:71:38
+   |
+LL | ...   SocketAddr::V6(addr) => (addr as *const _ as *const _, mem::size_of_val(addr) as _),
+   |                                ^^^^
+
+error: aborting due to 2 previous errors
+

@@ -1,0 +1,17 @@
+error: it is unsound to trust pointers from passed-in iterators in a public safe function
+  --> tests/ui/cve/cve_2021_25904/cve_2021_25904.rs:443:50
+   |
+LL |     pub fn copy_from_raw_parts<I, IU>(&mut self, mut src: I, mut src_linesize: IU)
+   |                                                  ^^^^^^^ source iterator found here
+...
+LL |                 let rr = src.next().unwrap();
+   |                                     -------- pointer created here
+...
+LL |                 let ss = unsafe { slice::from_raw_parts(rr, hb * s_linesize) };
+   |                                   ------------------------------------------ used here to create a slice from the pointer
+   |
+   = help: consider marking the function as unsafe
+   = note: `#[deny(rpl::unvalidated_slice_from_raw_parts)]` on by default
+
+error: aborting due to 1 previous error
+
