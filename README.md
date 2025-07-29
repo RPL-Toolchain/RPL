@@ -11,8 +11,8 @@ This is the main source code repository of RPL. It contains the toolchain and do
 RPL is a Rust linter which decouples the definition of rules from the detection logic.
 In particular, RPL consists of two primary components:
 
--   a Domain-Specific Language (DSL) that allows developers to model/define code patterns,
--   a detection engine to detect instances of these patterns.
+- a Domain-Specific Language (DSL) that allows developers to model/define code patterns,
+- a detection engine to detect instances of these patterns.
 
 The toolchain of RPL, which is a custom configuration of Rust compiler, enables accurate identification of code instances that demonstrate semantic equivalence to existing patterns.
 
@@ -28,8 +28,8 @@ The toolchain of RPL, which is a custom configuration of Rust compiler, enables 
 
 3. Run RPL analysis on your Rust project:
 
-    - `RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on inline MIR)
-    - `RUSTFLAGS="-Zinline-mir=false" RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on MIR)
+   - `RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on inline MIR)
+   - `RUSTFLAGS="-Zinline-mir=false" RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on MIR) or `RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl -- -Zinline-mir=false`
 
 ## RPL Book
 
