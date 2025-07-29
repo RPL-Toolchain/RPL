@@ -2,17 +2,17 @@ use std::cell::Cell;
 use std::fmt;
 use std::ops::Index;
 
+use rpl_constraints::Const;
 use rpl_constraints::attributes::ExtraSpan;
 use rpl_context::pat::{LabelMap, Spanned};
-use rpl_match::{Const, CountedMatch};
 use rpl_mir_graph::TerminatorEdges;
 use rustc_data_structures::fx::FxIndexSet;
 use rustc_data_structures::stack::ensure_sufficient_stack;
 use rustc_hir::FnDecl;
 use rustc_index::bit_set::MixedBitSet;
 use rustc_index::{Idx, IndexVec};
-use rustc_middle::mir::visit::{MutatingUseContext, PlaceContext};
-use rustc_middle::mir::{self, Const, HasLocalDecls, PlaceRef};
+use rustc_middle::mir::visit::PlaceContext;
+use rustc_middle::mir::{self, PlaceRef};
 use rustc_middle::ty::Ty;
 use rustc_span::{Span, Symbol};
 
@@ -61,7 +61,7 @@ impl Matched<'_> {
         }
     }
 
-    fn span_spanned<'tcx>(&self, spanned: Spanned, body: &rustc_middle::mir::Body<'tcx>, decl: &FnDecl<'tcx>) -> Span {
+    fn span_spanned<'tcx>(&self, spanned: Spanned, body: &mir::Body<'tcx>, decl: &FnDecl<'tcx>) -> Span {
         match spanned {
             Spanned::Location(location) => self[location].span_no_inline(body),
             Spanned::Local(local) => body.local_decls[self[local]].source_info.span,
@@ -76,7 +76,7 @@ impl Matched<'_> {
 pub struct MatchedWithLabelMap<'a, 'tcx>(pub &'a LabelMap, pub &'a Matched<'tcx>, pub &'a ExtraSpan<'tcx>);
 
 impl<'tcx> pat::Matched<'tcx> for MatchedWithLabelMap<'_, 'tcx> {
-    fn span(&self, body: &rustc_middle::mir::Body<'tcx>, decl: &FnDecl<'tcx>, name: &str) -> Span {
+    fn span(&self, body: &mir::Body<'tcx>, decl: &FnDecl<'tcx>, name: &str) -> Span {
         let MatchedWithLabelMap(labels, matched, attr) = self;
         let name = Symbol::intern(name);
         labels

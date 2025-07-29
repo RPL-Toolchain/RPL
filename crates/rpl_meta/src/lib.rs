@@ -43,6 +43,14 @@ pub use error::RPLMetaError;
 use itertools::Itertools as _;
 pub use map::FlatMap;
 use meta::SymbolTables;
+use rustc_lint::{Level, Lint};
+
+pub static DYNAMIC: &Lint = &Lint {
+    name: "RPL::DYNAMIC",
+    desc: "dynamic RPL pattern",
+    default_level: Level::Deny,
+    ..Lint::default_fields_for_macro()
+};
 
 pub fn parse_and_collect<'mcx>(
     arena: &'mcx Arena<'mcx>,
@@ -83,6 +91,7 @@ pub fn parse_and_collect<'mcx>(
     }
 
     let mut lints = mctx.collect_lints().collect_vec();
+    lints.push(DYNAMIC);
     let prev_len = lints.len();
     lints.sort_by(|a, b| a.name.cmp(b.name));
     //FIXME: show warnings if two lints share the same name but have different configs.

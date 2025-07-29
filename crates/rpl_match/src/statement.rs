@@ -1,6 +1,5 @@
 use std::iter::zip;
 
-pub use matches::{Matched, StatementMatch, local_is_arg};
 use rpl_context::PatCtxt;
 pub use rpl_context::pat;
 use rpl_mir_graph::TerminatorEdges;
@@ -326,7 +325,7 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
             (pat::Rvalue::Any, _) => true,
             (pat::Rvalue::Use(operand_pat), mir::Rvalue::Use(operand)) => self.match_operand(operand_pat, operand),
             (&pat::Rvalue::Repeat(ref operand_pat, konst_pat), &mir::Rvalue::Repeat(ref operand, konst)) => {
-                self.match_operand(operand_pat, operand) && self.ty().match_const(konst_pat, konst)
+                self.match_operand(operand_pat, operand) && self.ty().match_ty_const(konst_pat, konst)
             },
             (
                 &pat::Rvalue::Ref(region_pat, borrow_kind_pat, place_pat),
@@ -337,9 +336,9 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
                 // FIXME: #[allow(clippy::match_like_matches_macro)]
                 #[allow(clippy::match_like_matches_macro)]
                 let is_borrow_kind_equal: bool = match (borrow_kind_pat, borrow_kind) {
-                    (rustc_middle::mir::BorrowKind::Shared, rustc_middle::mir::BorrowKind::Shared)
-                    | (rustc_middle::mir::BorrowKind::Mut { .. }, rustc_middle::mir::BorrowKind::Mut { .. })
-                    | (rustc_middle::mir::BorrowKind::Fake(_), rustc_middle::mir::BorrowKind::Fake(_)) => true,
+                    (mir::BorrowKind::Shared, mir::BorrowKind::Shared)
+                    | (mir::BorrowKind::Mut { .. }, mir::BorrowKind::Mut { .. })
+                    | (mir::BorrowKind::Fake(_), mir::BorrowKind::Fake(_)) => true,
                     _ => false,
                 };
                 self.ty().match_region(region_pat, region) && is_borrow_kind_equal && self.match_place(place_pat, place)
@@ -459,14 +458,13 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
 
     fn match_operands(&self, operands_pat: &[pat::Operand<'pcx>], operands: &[mir::Operand<'tcx>]) -> bool {
         operands_pat.len() == operands.len()
-            && core::iter::zip(operands_pat, operands)
-                .all(|(operand_pat, operand)| self.match_operand(operand_pat, operand))
+            && zip(operands_pat, operands).all(|(operand_pat, operand)| self.match_operand(operand_pat, operand))
     }
 
     #[instrument(level = "trace", skip(self), ret)]
     fn match_const_operand(&self, pat: &pat::ConstOperand<'pcx>, konst: mir::Const<'tcx>) -> bool {
         let matched = match (pat, konst) {
-            (&pat::ConstOperand::ConstVar(const_var), konst) => self.ty().match_const_var(const_var, konst),
+            (&pat::ConstOperand::ConstVar(const_var), konst) => self.ty().match_mir_const_var(const_var, konst),
             (&pat::ConstOperand::ScalarInt(value_pat), mir::Const::Val(mir::ConstValue::Scalar(value), ty)) => {
                 (match (value_pat.ty, *ty.kind()) {
                     (pat::IntTy::NegInt(ty_pat), ty::Int(ty)) => ty_pat == ty,
@@ -756,7 +754,7 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
                     return false;
                 }
                 pat.projection.len() == place.projection.len()
-                    && std::iter::zip(
+                    && zip(
                         iter_place_pat_proj_and_ty(self.pat(), pat, self.get_place_ty_from_base(pat.base)),
                         iter_place_proj_and_ty(self.body(), self.tcx(), place),
                     )
@@ -789,7 +787,7 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
 
     fn unmatch_place_ref(&self, pat: pat::Place<'pcx>, place: mir::PlaceRef<'tcx>) {
         use mir::ProjectionElem::*;
-        std::iter::zip(
+        zip(
             iter_place_pat_proj_and_ty(self.pat(), pat, self.get_place_ty_from_base(pat.base)),
             iter_place_proj_and_ty(self.body(), self.tcx(), place),
         )

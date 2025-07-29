@@ -7,7 +7,7 @@ fn f1() {
     //~^ERROR: Dynamic RPL pattern
     //~|HELP: You can use `#[rpl::dynamic]` to create a customizable lint.
     //~|NOTE: This is a dynamic RPL pattern, which can be customized during runtime.
-    //~|NOTE: `#[forbid(rpl::dynamic)]` on by default
+    //~|NOTE: `#[deny(rpl::dynamic)]` on by default
 }
 
 #[rpl::dynamic(

@@ -9,6 +9,7 @@
 #![feature(iter_chain)]
 #![feature(iterator_try_collect)]
 #![feature(cell_update)]
+#![warn(unused_qualifications)]
 
 extern crate either;
 extern crate rustc_abi;
@@ -46,4 +47,4 @@ pub use adt::{AdtMatch, Candidates, MatchAdtCtxt};
 pub use counted::CountedMatch;
 pub use fns::MatchFnCtxt;
 pub use place::MatchPlaceCtxt;
-pub use ty::{Const, MatchTyCtxt, TryCmpAs};
+pub use ty::{MatchTyCtxt, TryCmpAs};

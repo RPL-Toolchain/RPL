@@ -5,6 +5,7 @@
 #![feature(box_patterns)]
 
 extern crate rustc_abi;
+extern crate rustc_const_eval;
 extern crate rustc_data_structures;
 extern crate rustc_driver;
 extern crate rustc_errors;
@@ -26,6 +27,7 @@ extern crate either;
 use std::ops::Deref;
 
 use attributes::FnAttr;
+pub use konst::Const;
 use predicates::PredicateConjunction;
 use rpl_parser::generics::Choice2;
 use rpl_parser::pairs;
@@ -33,6 +35,7 @@ use rpl_parser::pairs;
 use crate::predicates::PredicateError;
 
 pub mod attributes;
+mod konst;
 pub mod predicates;
 pub mod tribool;
 

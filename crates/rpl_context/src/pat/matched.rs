@@ -1,13 +1,14 @@
 use core::fmt;
 use std::collections::HashMap;
 
+use rpl_constraints::Const;
 use rpl_meta::collect_elems_separated_by_comma;
 use rpl_parser::generics::{Choice2, Choice3};
 use rpl_parser::pairs;
 use rustc_errors::MultiSpan;
 use rustc_hir::FnDecl;
 use rustc_index::IndexVec;
-use rustc_middle::mir::{Body, Const, PlaceRef};
+use rustc_middle::mir::{Body, PlaceRef};
 use rustc_middle::ty::Ty;
 use rustc_span::{Span, Symbol};
 

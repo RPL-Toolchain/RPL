@@ -1,6 +1,7 @@
 //! Check if the pattern statement matches MIR statement,
 //! A.K.A. if we're using building blocks with the right color.
 
+use rpl_constraints::Const;
 use rustc_middle::{mir, ty};
 
 use crate::matches::MatchCtxt;
@@ -41,11 +42,11 @@ impl<'pcx, 'tcx> MatchStatement<'pcx, 'tcx> for MatchCtxt<'_, 'pcx, 'tcx> {
         self.cx.ty.pcx
     }
 
-    fn tcx(&self) -> rustc_middle::ty::TyCtxt<'tcx> {
+    fn tcx(&self) -> ty::TyCtxt<'tcx> {
         self.cx.ty.tcx
     }
 
-    fn typing_env(&self) -> rustc_middle::ty::TypingEnv<'tcx> {
+    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
         self.cx.ty.typing_env
     }
 
@@ -77,11 +78,11 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchCtxt<'_, 'pcx, 'tcx> {
     fn pcx(&self) -> rpl_context::PatCtxt<'pcx> {
         self.cx.ty.pcx
     }
-    fn tcx(&self) -> rustc_middle::ty::TyCtxt<'tcx> {
+    fn tcx(&self) -> ty::TyCtxt<'tcx> {
         self.cx.ty.tcx
     }
 
-    fn typing_env(&self) -> rustc_middle::ty::TypingEnv<'tcx> {
+    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
         self.cx.ty.typing_env
     }
 
@@ -89,27 +90,33 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchCtxt<'_, 'pcx, 'tcx> {
         self.cx.self_ty
     }
 
-    fn match_ty_var(&self, ty_var: pat::TyVar, ty: rustc_middle::ty::Ty<'tcx>) -> bool {
+    fn match_ty_var(&self, ty_var: pat::TyVar, ty: ty::Ty<'tcx>) -> bool {
         self.matching.ty_vars[ty_var.idx].force_get_matched() == ty
     }
 
     #[instrument(level = "trace", skip(self), ret)]
-    fn match_ty_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: rustc_middle::ty::Const<'tcx>) -> bool {
-        let konst_matched = self.matching.const_vars[const_var.idx].force_get_matched();
-        match (konst_matched, konst.kind()) {
-            (mir::Const::Ty(_, konst_matched), _) => return konst_matched == konst,
-            (mir::Const::Val(value, ty), ty::ConstKind::Value(konst_value)) => {
-                return konst_value.ty == ty && value == self.cx.ty.tcx.valtree_to_const_val(konst_value);
+    fn match_ty_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: ty::Const<'tcx>) -> bool {
+        match konst.kind() {
+            ty::ConstKind::Param(param) => {
+                let ty = param.find_ty_from_env(self.cx.typing_env().param_env);
+                self.match_ty(const_var.ty, ty) && {
+                    // We can't convert a const generic param into a `mir::Const`
+                    self.matching.const_vars[const_var.idx].force_get_matched() == Const::Param(param)
+                }
             },
-            _ => (),
+            ty::ConstKind::Value(value) => {
+                self.match_ty(const_var.ty, value.ty) && {
+                    let const_value = self.cx.tcx().valtree_to_const_val(value);
+                    self.matching.const_vars[const_var.idx].force_get_matched()
+                        == Const::MIR(mir::Const::from_value(const_value, value.ty))
+                }
+            },
+            _ => false,
         }
-        // FIXME: handle constants better
-        info!("expected a type constant, got {:?}", konst_matched);
-        false
     }
 
-    fn match_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool {
-        self.matching.const_vars[const_var.idx].force_get_matched() == konst
+    fn match_mir_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool {
+        self.matching.const_vars[const_var.idx].force_get_matched() == Const::MIR(konst)
     }
 
     fn match_adt_matches(&self, pat: rustc_span::Symbol, adt_match: crate::AdtMatch<'tcx>) -> bool {

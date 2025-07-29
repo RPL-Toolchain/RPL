@@ -2,11 +2,11 @@ use rpl_constraints::attributes::ExtraSpan;
 use rpl_context::pat::{MatchedMap, Spanned};
 use rustc_hir::FnDecl;
 use rustc_index::IndexVec;
-use rustc_middle::mir::{Body, Const, Local, PlaceRef};
+use rustc_middle::mir::{Body, Local, PlaceRef};
 use rustc_middle::ty::Ty;
 use rustc_span::{Span, Symbol};
 
-use super::{Matched, StatementMatch, pat};
+use super::{Const, Matched, StatementMatch, pat};
 
 /// A normalized version of [`Spanned`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -159,7 +159,7 @@ impl<'tcx> NormalizedMatched<'tcx> {
 }
 
 impl<'tcx> pat::Matched<'tcx> for NormalizedMatched<'tcx> {
-    fn span(&self, body: &rustc_middle::mir::Body<'_>, decl: &FnDecl<'tcx>, name: &str) -> Span {
+    fn span(&self, body: &Body<'_>, decl: &FnDecl<'tcx>, name: &str) -> Span {
         let labels = &self.extra;
         let i = labels
             .binary_search_by_key(&Symbol::intern(name), |(label, _)| *label)

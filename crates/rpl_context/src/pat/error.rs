@@ -9,8 +9,8 @@
 // )]
 
 use derive_more::{Debug, Display};
-use rpl_meta::collect_elems_separated_by_comma;
 use rpl_meta::symbol_table::{DiagSymbolTable, MetaVariableType, NonLocalMetaSymTab, WithPath};
+use rpl_meta::{DYNAMIC, collect_elems_separated_by_comma};
 use rpl_parser::generics::Choice2;
 use rpl_parser::pairs::diagMessageInner;
 use rpl_parser::{SpanWrapper, pairs};
@@ -77,12 +77,6 @@ impl LintDiagnostic<'_, ()> for Box<DynamicError> {
     }
 }
 
-const LINT: Lint = Lint {
-    name: "RPL::DYNAMIC",
-    desc: "dynamic RPL pattern",
-    ..Lint::default_fields_for_macro()
-};
-
 impl DynamicError {
     // const fn attr_error(span: Span) -> DynamicError {
     //     DynamicError {
@@ -102,7 +96,7 @@ impl DynamicError {
             )],
             helps: Vec::new(),
             suggestions: Vec::new(),
-            lint: &LINT,
+            lint: &DYNAMIC,
         }
     }
     fn missing_primary_message_error(attr: &rustc_hir::Attribute) -> Self {
@@ -112,7 +106,7 @@ impl DynamicError {
             notes: Vec::new(),
             helps: Vec::new(),
             suggestions: Vec::new(),
-            lint: &LINT,
+            lint: &DYNAMIC,
         }
     }
     fn item_to_value_str(item: &rustc_ast::MetaItemInner) -> Result<Symbol, Box<Self>> {
@@ -125,7 +119,7 @@ impl DynamicError {
                 notes: Vec::new(),
                 helps: Vec::new(),
                 suggestions: Vec::new(),
-                lint: &LINT,
+                lint: &DYNAMIC,
             }
             .into()
         })
@@ -137,7 +131,7 @@ impl DynamicError {
             notes: Vec::new(),
             helps: Vec::new(),
             suggestions: Vec::new(),
-            lint: &LINT,
+            lint: &DYNAMIC,
         }
         .into()
     }
@@ -195,7 +189,7 @@ impl DynamicError {
             notes,
             helps,
             suggestions: Vec::new(),
-            lint: &LINT,
+            lint: &DYNAMIC,
         }
         .into())
     }

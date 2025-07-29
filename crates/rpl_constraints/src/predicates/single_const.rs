@@ -1,5 +1,6 @@
-use rustc_middle::mir::Const;
 use rustc_middle::ty::{self, TyCtxt};
+
+use crate::Const;
 
 pub type SingleConstPredsFnPtr = for<'tcx> fn(TyCtxt<'tcx>, ty::TypingEnv<'tcx>, Const<'tcx>) -> bool;
 

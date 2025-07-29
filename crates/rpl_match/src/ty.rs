@@ -2,8 +2,7 @@ use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::iter::zip;
 
-use derive_more::derive::{Debug, Display};
-use either::Either;
+use rpl_constraints::Const;
 use rpl_constraints::predicates::{PredicateArg, PredicateKind};
 use rpl_context::{PatCtxt, pat};
 use rpl_resolve::{PatItemKind, def_path_res};
@@ -20,25 +19,6 @@ use rustc_span::symbol::kw;
 
 use crate::resolve::{lang_item_res, ty_res};
 use crate::{AdtMatch, Candidates, MatchAdtCtxt};
-
-#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Const<'tcx> {
-    #[debug("{_0:?}")]
-    #[display("{_0}")]
-    MIR(mir::Const<'tcx>),
-    #[debug("{_0:?}")]
-    #[display("{_0}")]
-    Param(ty::ParamConst),
-}
-
-impl<'tcx> Const<'tcx> {
-    pub fn try_eval_target_usize(self, tcx: TyCtxt<'tcx>, typing_env: TypingEnv<'tcx>) -> Option<u64> {
-        match self {
-            Self::MIR(konst) => Some(konst.eval_target_usize(tcx, typing_env)),
-            Self::Param(_) => None,
-        }
-    }
-}
 
 /// FIXME: this generic parameter is not as convenient as intended, as `self.try_cmp_as(other, tcx,
 /// typing_env)` does not provide a way to specify `T`
@@ -72,9 +52,9 @@ pub struct MatchTyCtxt<'pcx, 'tcx> {
     pub tcx: TyCtxt<'tcx>,
     pub pcx: PatCtxt<'pcx>,
     pub pat: &'pcx pat::RustItems<'pcx>,
-    pub typing_env: ty::TypingEnv<'tcx>,
+    pub typing_env: TypingEnv<'tcx>,
     pub self_ty: Option<ty::Ty<'tcx>>,
-    pub const_vars: IndexVec<pat::ConstVarIdx, RefCell<FxIndexSet<mir::Const<'tcx>>>>,
+    pub const_vars: IndexVec<pat::ConstVarIdx, RefCell<FxIndexSet<Const<'tcx>>>>,
     pub ty_vars: IndexVec<pat::TyVarIdx, RefCell<FxIndexSet<ty::Ty<'tcx>>>>,
     pub adt_matches: RefCell<FxHashMap<Symbol, FxHashMap<DefId, AdtMatch<'tcx>>>>,
 }
@@ -84,7 +64,7 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
     pub fn new(
         tcx: TyCtxt<'tcx>,
         pcx: PatCtxt<'pcx>,
-        typing_env: ty::TypingEnv<'tcx>,
+        typing_env: TypingEnv<'tcx>,
         self_ty: Option<ty::Ty<'tcx>>,
         pat: &'pcx pat::RustItems<'pcx>,
         meta: &pat::NonLocalMetaVars<'pcx>,
@@ -112,7 +92,7 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchTyCtxt<'pcx, 'tcx> {
     fn tcx(&self) -> TyCtxt<'tcx> {
         self.tcx
     }
-    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
+    fn typing_env(&self) -> TypingEnv<'tcx> {
         self.typing_env
     }
 
@@ -126,22 +106,31 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchTyCtxt<'pcx, 'tcx> {
     }
     #[instrument(level = "trace", skip(self), ret)]
     fn match_ty_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: ty::Const<'tcx>) -> bool {
-        //FIXME: handle more cases of `ty::ConstKind`
-        if let ty::ConstKind::Value(value) = konst.kind()
-            && self.match_ty(const_var.ty, value.ty)
-        {
-            let const_value = self.tcx.valtree_to_const_val(konst.to_value());
-            self.const_vars[const_var.idx]
-                .borrow_mut()
-                .insert(mir::Const::from_value(const_value, value.ty));
-            return true;
+        match konst.kind() {
+            ty::ConstKind::Param(param) => {
+                let ty = param.find_ty_from_env(self.typing_env.param_env);
+                self.match_ty(const_var.ty, ty) && {
+                    // We can't convert a const generic param into a `mir::Const`
+                    self.const_vars[const_var.idx].borrow_mut().insert(Const::Param(param));
+                    true
+                }
+            },
+            ty::ConstKind::Value(value) => {
+                self.match_ty(const_var.ty, value.ty) && {
+                    let const_value = self.tcx.valtree_to_const_val(value);
+                    self.const_vars[const_var.idx]
+                        .borrow_mut()
+                        .insert(Const::MIR(mir::Const::from_value(const_value, value.ty)));
+                    true
+                }
+            },
+            _ => false,
         }
-        false
     }
     #[instrument(level = "trace", skip(self), ret)]
-    fn match_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool {
+    fn match_mir_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool {
         if self.match_ty(const_var.ty, konst.ty()) {
-            self.const_vars[const_var.idx].borrow_mut().insert(konst);
+            self.const_vars[const_var.idx].borrow_mut().insert(Const::MIR(konst));
             return true;
         }
         false
@@ -170,14 +159,14 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
     fn pat(&self) -> &'pcx pat::RustItems<'pcx>;
     fn pcx(&self) -> PatCtxt<'pcx>;
     fn tcx(&self) -> TyCtxt<'tcx>;
-    fn typing_env(&self) -> ty::TypingEnv<'tcx>;
+    fn typing_env(&self) -> TypingEnv<'tcx>;
 
     #[must_use]
     fn match_ty_var(&self, ty_var: pat::TyVar, ty: ty::Ty<'tcx>) -> bool;
     #[must_use]
     fn match_ty_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: ty::Const<'tcx>) -> bool;
     #[must_use]
-    fn match_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool;
+    fn match_mir_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool;
     #[must_use]
     fn match_adt_matches(&self, pat: Symbol, adt_match: AdtMatch<'tcx>) -> bool;
 
@@ -218,7 +207,7 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
                 self.match_ty_var(ty_var, ty)
             },
             (pat::TyKind::Array(ty_pat, konst_pat), ty::Array(ty, konst)) => {
-                self.match_ty(ty_pat, ty) && self.match_const(konst_pat, konst)
+                self.match_ty(ty_pat, ty) && self.match_ty_const(konst_pat, konst)
             },
             (pat::TyKind::Slice(ty_pat), ty::Slice(ty)) => self.match_ty(ty_pat, ty),
             (pat::TyKind::Tuple(tys_pat), ty::Tuple(tys)) => {
@@ -331,7 +320,7 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
     }
 
     #[instrument(level = "trace", skip(self), ret)]
-    fn match_const(&self, konst_pat: pat::Const<'pcx>, konst: ty::Const<'tcx>) -> bool {
+    fn match_ty_const(&self, konst_pat: pat::Const<'pcx>, konst: ty::Const<'tcx>) -> bool {
         match (konst_pat, konst.kind()) {
             (pat::Const::ConstVar(const_var), _) => self.match_ty_const_var(const_var, konst),
             //(pat::Const::Value(_value_pat), ty::Value(_ty, ty::ValTree::Leaf(_value))) => todo!(),
@@ -357,40 +346,6 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
                 | ty::ConstKind::Expr(_),
             ) => false,
         }
-    }
-
-    #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_ty_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: ty::Const<'tcx>) -> bool {
-        //FIXME: handle more cases of `ty::ConstKind`
-        match konst.kind() {
-            ty::ConstKind::Param(param) => {
-                let ty = param.find_ty_from_env(self.typing_env.param_env);
-                self.match_ty(const_var.ty, ty) && {
-                    // We can't convert a const generic param into a `mir::Const`
-                    self.const_vars[const_var.idx].borrow_mut().insert(Const::Param(param));
-                    true
-                }
-            },
-            ty::ConstKind::Value(value) => {
-                self.match_ty(const_var.ty, value.ty) && {
-                    let const_value = self.tcx.valtree_to_const_val(value);
-                    self.const_vars[const_var.idx]
-                        .borrow_mut()
-                        .insert(Const::MIR(mir::Const::from_value(const_value, value.ty)));
-                    true
-                }
-            },
-            _ => false,
-        }
-    }
-
-    #[instrument(level = "trace", skip(self), ret)]
-    pub fn match_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool {
-        if self.match_ty(const_var.ty, konst.ty()) {
-            self.const_vars[const_var.idx].borrow_mut().insert(Const::MIR(konst));
-            return true;
-        }
-        false
     }
 
     #[instrument(level = "debug", skip(self), ret)]
@@ -489,7 +444,7 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
             .iter()
             .filter(|data| matches!(data.data, Impl | TypeNs(_) | ValueNs(_)));
         let matched = matched
-            && std::iter::zip(pat_iter.by_ref(), iter.by_ref())
+            && zip(pat_iter.by_ref(), iter.by_ref())
                 .all(|(&path, data)| data.data.get_opt_name().is_some_and(|name| name == path));
         // Check that `iter` (from `def_path`) is not longer than `pat_iter` (from `path`)
         let matched = matched && iter.next().is_none();
@@ -545,7 +500,7 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
             },
             (pat::GenericArgKind::Type(ty_pat), ty::GenericArgKind::Type(ty)) => self.match_ty(ty_pat, ty),
             (pat::GenericArgKind::Const(konst_pat), ty::GenericArgKind::Const(konst)) => {
-                self.match_const(konst_pat, konst)
+                self.match_ty_const(konst_pat, konst)
             },
             (
                 pat::GenericArgKind::Lifetime(_) | pat::GenericArgKind::Type(_) | pat::GenericArgKind::Const(_),

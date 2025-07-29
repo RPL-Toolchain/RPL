@@ -1,10 +1,10 @@
-use rpl_constraints::Constraints;
 use rpl_constraints::predicates::{
     BodyInfoCache, PredicateArg, PredicateClause, PredicateConjunction, PredicateKind, PredicateTerm,
 };
+use rpl_constraints::{Const, Constraints};
 use rpl_context::pat::{self, ConstVarIdx, LabelMap, PlaceVarIdx, Spanned, TyVarIdx};
 use rpl_meta::symbol_table::MetaVariable;
-use rustc_middle::mir::{self, Const, PlaceRef};
+use rustc_middle::mir::{self, PlaceRef};
 use rustc_middle::ty::{self, Ty, TyCtxt};
 use rustc_span::Symbol;
 
