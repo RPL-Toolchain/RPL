@@ -7,8 +7,18 @@ use std::sync::Arc;
 
 use crate::RPLMetaError;
 
+/// Collect default patterns (paths and contents) from the repository.
+///
+/// The patterns are embedded in the binary, and their paths are *absolute paths*,
+/// **as if** the root of the repository is `/rpl/`. Their contents are
+/// collected at compile time, and won't change unless re-compiled.
+///
+/// This is used to provide a set of default patterns that can be used
+/// by the user without setting up anything.
 pub fn collect_default_patterns() -> Vec<(PathBuf, String)> {
-    /// Please pass a path related to docs/patterns-pest
+    /// This macro will return a tuple of the path and the content of the file.
+    ///
+    /// Please pass a path related to `docs/patterns-pest`.
     macro_rules! default_pattern {
         ($path:literal) => {
             (
