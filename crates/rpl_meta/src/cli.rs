@@ -12,7 +12,7 @@ pub fn collect_default_patterns() -> Vec<(PathBuf, String)> {
     macro_rules! default_pattern {
         ($path:literal) => {
             (
-                PathBuf::from(concat!("/rpl/docs/patterns-pest", $path)),
+                PathBuf::from(concat!("/rpl/docs/patterns-pest/", $path)),
                 include_str!(concat!("../../../docs/patterns-pest/", $path)).to_owned(),
             )
         };
