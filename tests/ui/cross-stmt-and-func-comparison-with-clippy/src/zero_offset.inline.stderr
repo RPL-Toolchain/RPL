@@ -16,7 +16,7 @@ LL |         let n = m.wrapping_add(0);
    = note: `()` is a zero-sized type, offsetting a pointer to it will always yield the same address
 
 error: offset calculation on zero-sized value
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:34:17
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:35:17
    |
 LL |         let n = offset(m, 0);
    |                 ^^^^^^^^^^^^
@@ -24,12 +24,26 @@ LL |         let n = offset(m, 0);
    = note: `()` is a zero-sized type, offsetting a pointer to it will always yield the same address
 
 error: offset calculation on zero-sized value
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:38:17
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:39:17
    |
 LL |         let n = wrapping_add(m, 0);
    |                 ^^^^^^^^^^^^^^^^^^
    |
    = note: `()` is a zero-sized type, offsetting a pointer to it will always yield the same address
 
-error: aborting due to 4 previous errors
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:28:11
+   |
+LL |         m.wrapping_add(n)
+   |           ^^^^^^^^^^^^^^^
+   |           |
+   |           offset here
+   |           pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+
+error: aborting due to 5 previous errors
 

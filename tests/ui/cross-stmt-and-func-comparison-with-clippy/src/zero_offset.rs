@@ -26,6 +26,7 @@ fn cross_function() {
     }
     fn wrapping_add<T>(m: *mut T, n: usize) -> *mut T {
         m.wrapping_add(n)
+        //~[inline]^ unchecked_pointer_offset
     }
     unsafe {
         let mut m = ();
