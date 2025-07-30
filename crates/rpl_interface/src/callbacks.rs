@@ -113,7 +113,7 @@ impl rustc_driver::Callbacks for RplCallbacks {
             self.pattern_paths
                 .as_ref()
                 .map_or_else(collect_default_patterns, |pattern_paths| {
-                    collect_file_from_string_args(&pattern_paths, || {
+                    collect_file_from_string_args(pattern_paths, || {
                         EarlyDiagCtxt::new(config.opts.error_format).early_fatal(ErrorFound)
                     })
                 })
@@ -192,7 +192,7 @@ impl rustc_driver::Callbacks for RplCallbacks {
             self.pattern_paths
                 .as_ref()
                 .map_or_else(collect_default_patterns, |pattern_paths| {
-                    collect_file_from_string_args(&pattern_paths, || tcx.dcx().emit_fatal(ErrorFound))
+                    collect_file_from_string_args(pattern_paths, || tcx.dcx().emit_fatal(ErrorFound))
                 })
         });
 

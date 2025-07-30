@@ -96,7 +96,7 @@ impl DynamicError {
             )],
             helps: Vec::new(),
             suggestions: Vec::new(),
-            lint: &DYNAMIC,
+            lint: DYNAMIC,
         }
     }
     fn missing_primary_message_error(attr: &rustc_hir::Attribute) -> Self {
@@ -106,7 +106,7 @@ impl DynamicError {
             notes: Vec::new(),
             helps: Vec::new(),
             suggestions: Vec::new(),
-            lint: &DYNAMIC,
+            lint: DYNAMIC,
         }
     }
     fn item_to_value_str(item: &rustc_ast::MetaItemInner) -> Result<Symbol, Box<Self>> {
@@ -119,7 +119,7 @@ impl DynamicError {
                 notes: Vec::new(),
                 helps: Vec::new(),
                 suggestions: Vec::new(),
-                lint: &DYNAMIC,
+                lint: DYNAMIC,
             }
             .into()
         })
@@ -131,7 +131,7 @@ impl DynamicError {
             notes: Vec::new(),
             helps: Vec::new(),
             suggestions: Vec::new(),
-            lint: &DYNAMIC,
+            lint: DYNAMIC,
         }
         .into()
     }
@@ -189,7 +189,7 @@ impl DynamicError {
             notes,
             helps,
             suggestions: Vec::new(),
-            lint: &DYNAMIC,
+            lint: DYNAMIC,
         }
         .into())
     }
