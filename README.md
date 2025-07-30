@@ -28,8 +28,25 @@ The toolchain of RPL, which is a custom configuration of Rust compiler, enables 
 
 3. Run RPL analysis on your Rust project:
 
-   - `RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on inline MIR)
-   - `RUSTFLAGS="-Zinline-mir=false" RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl` (using built-in RPL pattern definitions based on MIR) or `RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl -- -Zinline-mir=false`
+   - check using built-in RPL pattern definitions based on inline MIR:
+
+     ```sh
+     RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl
+     ```
+
+   - check using built-in RPL pattern definitions based on MIR:
+
+     ```sh
+     RUSTFLAGS="-Zinline-mir=false" RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl
+     ```
+
+     or
+
+     ```sh
+     RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl -- -Zinline-mir=false
+     ```
+
+   you can also store the environment variable `RPL_PATS` for convenience.
 
 ## RPL Book
 

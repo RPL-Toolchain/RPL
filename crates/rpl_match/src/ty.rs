@@ -23,7 +23,7 @@ use crate::{AdtMatch, Candidates, MatchAdtCtxt};
 /// FIXME: this generic parameter is not as convenient as intended, as `self.try_cmp_as(other, tcx,
 /// typing_env)` does not provide a way to specify `T`
 pub trait TryCmpAs<'tcx, T>: Copy {
-    /// Compare two `Const` values, returning `Some(Ordering)` if they can be compared.
+    /// Compare two `Const` values of `T`, returning `Some(Ordering)` if they can be compared.
     fn try_cmp_as(self, other: Self, tcx: TyCtxt<'tcx>, typing_env: TypingEnv<'tcx>) -> Option<Ordering>;
 }
 
