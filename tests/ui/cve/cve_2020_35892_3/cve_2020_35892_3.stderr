@@ -11,17 +11,6 @@ LL |         unsafe { &(*(self.mem.offset(index as isize))) }
    = note: `-D rpl::unchecked-pointer-offset` implied by `-D warnings`
    = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
 
-error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35892_3/cve_2020_35892_3.rs:49:33
-   |
-LL |             elem_ptr = self.mem.offset(offset as isize);
-   |                        -------- ^^^^^^^^^^^^^^^^^^^^^^^ offset here
-   |                        |
-   |                        pointer used here
-   |
-   = help: check whether it's in bound before offsetting
-   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
-
 error: pointer out of bound
   --> tests/ui/cve/cve_2020_35892_3/cve_2020_35892_3.rs:57:25
    |
@@ -40,6 +29,17 @@ help: this is because `self.len` exceeds the container's length by one
 LL |             last_elem_ptr = self.mem.offset(self.len as isize);
    |                                             ^^^^^^^^
    = note: `#[deny(rpl::offset_by_one)]` on by default
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35892_3/cve_2020_35892_3.rs:49:33
+   |
+LL |             elem_ptr = self.mem.offset(offset as isize);
+   |                        -------- ^^^^^^^^^^^^^^^^^^^^^^^ offset here
+   |                        |
+   |                        pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
 error: it usually isn't necessary to apply #[inline] to generic functions
   --> tests/ui/cve/cve_2020_35892_3/cve_2020_35892_3.rs:37:5

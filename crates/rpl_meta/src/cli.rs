@@ -7,6 +7,76 @@ use std::sync::Arc;
 
 use crate::RPLMetaError;
 
+pub fn collect_default_patterns() -> Vec<(PathBuf, String)> {
+    /// Please pass a path related to docs/patterns-pest
+    macro_rules! default_pattern {
+        ($path:literal) => {
+            (
+                PathBuf::from(concat!("/rpl/docs/patterns-pest", $path)),
+                include_str!(concat!("../../../docs/patterns-pest/", $path)).to_owned(),
+            )
+        };
+    }
+
+    macro_rules! default_patterns {
+        ($($name:literal),* $(,)?) => {
+            vec![$(
+                default_pattern!($name),
+            )*]
+        };
+    }
+
+    default_patterns!(
+        // Clippy lints
+        "clippy/cast-slice-different-sizes.rpl",
+        "clippy/mut-from-ref.rpl",
+        "clippy/transmute-int-to-non-zero.rpl",
+        "clippy/unsound-collection-transmute.rpl",
+        "clippy/cast-slice-from-raw-parts.rpl",
+        "clippy/not-unsafe-ptr-arg-deref.rpl",
+        "clippy/transmute-null-to-fn.rpl",
+        "clippy/wrong-transmute.rpl",
+        "clippy/eager-transmute.rpl",
+        "clippy/size-of-in-element-count.rpl",
+        "clippy/transmuting-null.rpl",
+        "clippy/zst-offset.rpl",
+        "clippy/from-raw-with-void-ptr.rpl",
+        "clippy/swap-ptr-to-ref.rpl",
+        "clippy/uninit-assumed-init.rpl",
+        "clippy/mem-replace-with-uninit.rpl",
+        "clippy/uninit-vec.rpl",
+        // CVE patterns
+        "cve/CVE-2018-20992.rpl",
+        "cve/CVE-2020-25016.rpl",
+        "cve/CVE-2020-35877.rpl",
+        "cve/CVE-2020-35892-3.rpl",
+        "cve/CVE-2021-25904.rpl",
+        "cve/CVE-2022-23639.rpl",
+        "cve/CVE-2018-21000.rpl",
+        "cve/CVE-2020-35860.rpl",
+        "cve/CVE-2020-35881.rpl",
+        "cve/CVE-2020-35898-9.rpl",
+        "cve/CVE-2021-25905.rpl",
+        "cve/CVE-2024-27284.rpl",
+        "cve/CVE-2019-15548.rpl",
+        "cve/CVE-2020-35862.rpl",
+        "cve/CVE-2020-35887.rpl",
+        "cve/CVE-2020-35901-2.rpl",
+        "cve/CVE-2021-27376.rpl",
+        "cve/CVE-2019-16138.rpl",
+        "cve/CVE-2020-35873.rpl",
+        "cve/CVE-2020-35888.rpl",
+        "cve/CVE-2020-35907.rpl",
+        "cve/CVE-2021-29941-2.rpl",
+        // Common patterns based on Rust's UB
+        "ub/allow-unchecked.rpl",
+        "ub/private-or-generic-function-marked-inline.rpl",
+        "ub/transmute-to-bool.rpl",
+        "ub/manually-drop.rpl",
+        "ub/transmute-int-to-ptr.rpl",
+    )
+}
+
 pub fn collect_file_from_string_args(args: &[String], handler: impl Fn() -> !) -> Vec<(PathBuf, String)> {
     let mut res = vec![];
     for arg in args {

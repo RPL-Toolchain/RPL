@@ -46,7 +46,11 @@ The toolchain of RPL, which is a custom configuration of Rust compiler, enables 
      RPL_PATS=/path/to/RPL/docs/patterns-pest cargo +nightly-2025-02-14 rpl -- -Zinline-mir=false
      ```
 
-   you can also store the environment variable `RPL_PATS` for convenience.
+   You can also store the environment variable `RPL_PATS` for convenience.
+   
+   Without setting `RPL_PATS`, built-in RPL pattern definitions are used.
+
+   TIP: You can view all available lints with `cargo rpl -- -W help`.
 
 ## RPL Book
 

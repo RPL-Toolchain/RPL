@@ -2,6 +2,7 @@
 #![allow(rustc::untranslatable_diagnostic)]
 #![feature(rustc_private)]
 #![feature(let_chains)]
+#![feature(os_str_display)]
 // warn on lints, that are included in `rust-lang/rust`s bootstrap
 #![warn(rust_2018_idioms, unused_lifetimes)]
 // warn on rustc internal lints
@@ -220,11 +221,13 @@ pub fn main() {
         let mut args: Vec<String> = orig_args.clone();
         pass_sysroot_env_if_given(&mut args, sys_root_env);
 
-        let pattern_paths = env::var("RPL_PATS").unwrap_or_else(|_| {
-            early_dcx.early_fatal(
-                "RPL_PATS is not set properly. Pass pattern path to RPL by setting the `RPL_PATS` environment variable.",
-            )
-        });
+        let pattern_paths = match env::var("RPL_PATS") {
+            Ok(val) => Some(val.split(':').map(ToString::to_string).collect()),
+            Err(env::VarError::NotPresent) => None,
+            Err(env::VarError::NotUnicode(var)) => {
+                early_dcx.early_fatal(format!("RPL_PATS is not valid unicode: {}", var.display()))
+            },
+        };
 
         let mut no_deps = false;
         let rpl_args_var = env::var(rpl_interface::RPL_ARGS_ENV).ok();
@@ -258,13 +261,7 @@ pub fn main() {
             /* rustc_driver::RunCompiler::new(&args, &mut RplCallbacks::new(rpl_args_var))
             .set_using_internal_features(using_internal_features)
             .run() */
-            rustc_driver::run_compiler(
-                &args,
-                &mut RplCallbacks::new(
-                    rpl_args_var,
-                    pattern_paths.split(':').map(ToString::to_string).collect(),
-                ),
-            )
+            rustc_driver::run_compiler(&args, &mut RplCallbacks::new(rpl_args_var, pattern_paths))
         } else {
             rustc_driver::run_compiler(&args, &mut RustcCallbacks::new(rpl_args_var))
         }

@@ -18,8 +18,5 @@ binary-dep-depinfo = true
 [profile.dev]
 split-debuginfo = "unpacked"
 
-[env]
-RPL_PATS = "docs/patterns-pest/"
-
 # [profile.dev.package.lintcheck]
 # rustflags = ["--remap-path-prefix", "=lintcheck"]

@@ -120,6 +120,16 @@ error: this transmute is always evaluated eagerly, even if the condition is fals
 LL |         (op < 4).then_some(std::mem::transmute::<_, Opcode>(op));
    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+error: transmute from a `u8` to a `NonZero<u8>`
+  --> tests/ui/clippy/eager_transmute.rs:131:62
+   |
+LL |     let _: Option<NonZero<u8>> = (v1 > 0).then_some(unsafe { std::mem::transmute(v1) });
+   |                                                              ^^^^^^^^^^^^^^^^^^^^^^^ help: consider using: `NonZero::new_unchecked(v1)`
+   |
+   = help: consider using `NonZero::new_unchecked` instead, or use `NonZero::new` if you want to handle the zero case safely
+   = note: `-D rpl::transmute-int-to-non-zero` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::transmute_int_to_non_zero)]`
+
 error: this transmute is always evaluated eagerly, even if the condition is false
   --> tests/ui/clippy/eager_transmute.rs:131:62
    |
@@ -173,16 +183,6 @@ LL |         (v2 < NonZero::new(255u8).unwrap()).then_some(unsafe { std::mem::tr
    |                                                                ^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
-
-error: transmute from a `u8` to a `NonZero<u8>`
-  --> tests/ui/clippy/eager_transmute.rs:131:62
-   |
-LL |     let _: Option<NonZero<u8>> = (v1 > 0).then_some(unsafe { std::mem::transmute(v1) });
-   |                                                              ^^^^^^^^^^^^^^^^^^^^^^^ help: consider using: `NonZero::new_unchecked(v1)`
-   |
-   = help: consider using `NonZero::new_unchecked` instead, or use `NonZero::new` if you want to handle the zero case safely
-   = note: `-D rpl::transmute-int-to-non-zero` implied by `-D warnings`
-   = help: to override `-D warnings` add `#[allow(rpl::transmute_int_to_non_zero)]`
 
 error: aborting due to 29 previous errors
 

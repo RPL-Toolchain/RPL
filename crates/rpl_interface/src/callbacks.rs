@@ -5,7 +5,7 @@ use rpl_context::PatternCtxt;
 use rpl_driver::{ERROR_FOUND, ErrorFound};
 #[cfg(feature = "timing")]
 use rpl_driver::{TIMING, Timing};
-use rpl_meta::cli::collect_file_from_string_args;
+use rpl_meta::cli::{collect_default_patterns, collect_file_from_string_args};
 // use rpl_middle::ty::RplConfig;
 use rustc_interface::interface;
 use rustc_middle::ty::TyCtxt;
@@ -66,11 +66,11 @@ impl rustc_driver::Callbacks for DefaultCallbacks {}
 
 pub struct RplCallbacks {
     rpl_args_var: Option<String>,
-    pattern_paths: Vec<String>,
+    pattern_paths: Option<Vec<String>>,
 }
 
 impl RplCallbacks {
-    pub fn new(rpl_args_var: Option<String>, pattern_paths: Vec<String>) -> Self {
+    pub fn new(rpl_args_var: Option<String>, pattern_paths: Option<Vec<String>>) -> Self {
         Self {
             rpl_args_var,
             pattern_paths,
@@ -110,9 +110,13 @@ impl rustc_driver::Callbacks for RplCallbacks {
 
         let mctx_arena = MCTX_ARENA.get_or_init(rpl_meta::arena::Arena::default);
         let patterns_and_paths = PATTERNS.get_or_init(|| {
-            collect_file_from_string_args(&self.pattern_paths, || {
-                EarlyDiagCtxt::new(config.opts.error_format).early_fatal(ErrorFound)
-            })
+            self.pattern_paths
+                .as_ref()
+                .map_or_else(collect_default_patterns, |pattern_paths| {
+                    collect_file_from_string_args(&pattern_paths, || {
+                        EarlyDiagCtxt::new(config.opts.error_format).early_fatal(ErrorFound)
+                    })
+                })
         });
         // let dcx = compiler.sess.dcx();
         let mut error_counter = 0;
@@ -184,8 +188,13 @@ impl rustc_driver::Callbacks for RplCallbacks {
         let start = std::time::Instant::now();
 
         let mctx_arena = MCTX_ARENA.get_or_init(rpl_meta::arena::Arena::default);
-        let patterns_and_paths = PATTERNS
-            .get_or_init(|| collect_file_from_string_args(&self.pattern_paths, || tcx.dcx().emit_fatal(ErrorFound)));
+        let patterns_and_paths = PATTERNS.get_or_init(|| {
+            self.pattern_paths
+                .as_ref()
+                .map_or_else(collect_default_patterns, |pattern_paths| {
+                    collect_file_from_string_args(&pattern_paths, || tcx.dcx().emit_fatal(ErrorFound))
+                })
+        });
 
         // let dcx = compiler.sess.dcx();
         let mut error_counter = 0;
