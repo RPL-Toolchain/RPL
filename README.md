@@ -22,7 +22,7 @@ The toolchain of RPL, which is a custom configuration of Rust compiler, enables 
 
 ## Quick Start
 
-1. Clone the repository and enter the directory: `git clone https://github.com/RPL-Toolchain/RPL.git && cd RPL`
+1. Clone the repository and enter the directory: `git clone https://github.com/RPL-Toolchain/RPL.git && cd RPL` (When Used on Windows, you should first set your RUSTUP_HOME environment variable, normally `%USERPROFILE%\.rustup`)
 
 2. Install RPL as a cargo subcommand: `cargo install --path .`
 
