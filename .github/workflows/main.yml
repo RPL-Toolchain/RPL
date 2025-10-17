@@ -15,6 +15,7 @@ on:
       - 'README.md'
       - 'CONTRIBUTING.md'
       - '.vscode/**'
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
