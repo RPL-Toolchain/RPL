@@ -60,7 +60,8 @@ fn find_rustfmt_path() -> Result<String, Box<dyn std::error::Error>> {
         {
             continue; // Use only the nightly toolchain from 2025-02-14
         }
-        let rustfmt_candidate = toolchain.join("bin/rustfmt");
+        let rustfmt_executable = if cfg!(windows) { "rustfmt.exe" } else { "rustfmt" };
+        let rustfmt_candidate = toolchain.join("bin").join(rustfmt_executable);
         if rustfmt_candidate.exists() {
             return Ok(rustfmt_candidate.to_str().unwrap().to_string());
         }

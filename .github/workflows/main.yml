@@ -15,6 +15,11 @@ on:
       - 'README.md'
       - 'CONTRIBUTING.md'
       - '.vscode/**'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build:
@@ -22,19 +27,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
           # Unsetting this would make so that any malicious package could get our Github Token
           persist-credentials: false
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - run: cargo fmt --check
       - run: cargo test --all
       - run: cargo test --all
         env:
           RPL_PATS: docs/patterns-pest
       - run: cargo clippy -- -D warnings
-      - run: cargo install --path .
-      - run: cargo rpl --workspace --all-targets
+      - name: Install and test rpl
+        run: |
+          cargo install --path . --verbose
+          cargo rpl --workspace --all-targets --verbose
       # - uses: actions-rust-lang/audit@v1.2.4
