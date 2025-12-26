@@ -1,5 +1,5 @@
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve_2020_35886/cve_2020_35886.rs:36:27
+  --> tests/ui/cve/cve_2020_35886/cve_2020_35886.rs:36:27
    |
 LL |         unsafe { self.ptr.wrapping_offset(idx as isize).as_ref() }.unwrap()
    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -13,7 +13,7 @@ LL |         unsafe { self.ptr.wrapping_offset(idx as isize).as_ref() }.unwrap()
    = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve_2020_35886/cve_2020_35886.rs:43:27
+  --> tests/ui/cve/cve_2020_35886/cve_2020_35886.rs:43:27
    |
 LL |         unsafe { self.ptr.wrapping_offset(idx as isize).as_mut() }.unwrap()
    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
