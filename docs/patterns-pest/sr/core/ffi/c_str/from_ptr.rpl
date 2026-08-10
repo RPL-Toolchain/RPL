@@ -1,0 +1,44 @@
+pattern core-ffi-CStr-from_ptr
+
+patt {
+    use std::ffi::CStr;
+
+    #[diag = "unsafe_null_precondition"]
+    #[const(operation = "CStr::from_ptr")]
+    null_ptr_cstr_from_ptr[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        'use:
+        _ = CStr::from_ptr::<'_>(copy $ptr);
+    } where {
+        is_null('use, $ptr)
+    }
+
+    #[diag = "unsafe_cstr_terminator_precondition"]
+    cstr_from_ptr_without_nul[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        'use:
+        _ = CStr::from_ptr::<'_>(copy $ptr);
+    } where {
+        ne_const('use, $ptr, 0u8)
+    }
+}
+
+diag {
+    unsafe_null_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires a non-null pointer, but the pointer is proven null",
+        note(ptr)    = "`{$ptr}` is known to be null at this program point",
+        help         = "check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation",
+        name         = "unsafe_null_precondition",
+        level        = "warn",
+    }
+
+    unsafe_cstr_terminator_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `CStr::from_ptr` requires a NUL terminator within `isize::MAX` bytes",
+        note(ptr)    = "the complete statically known byte sequence contains no NUL byte",
+        help         = "provide a NUL-terminated byte sequence before constructing a `CStr`",
+        name         = "unsafe_cstr_terminator_precondition",
+        level        = "warn",
+    }
+}

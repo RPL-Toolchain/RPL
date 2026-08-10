@@ -1,0 +1,28 @@
+error: this unsafe operation violates a safety property: `slice::from_raw_parts_mut` requires a non-null pointer, but the pointer is proven null
+  --> tests/ui/sr/core/slice/raw/from_raw_parts_mut.rs:12:17
+   |
+LL |         let _ = std::slice::from_raw_parts_mut(slice_mut_ptr, 1);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation
+note: `slice_mut_ptr` is known to be null at this program point
+  --> tests/ui/sr/core/slice/raw/from_raw_parts_mut.rs:12:48
+   |
+LL |         let _ = std::slice::from_raw_parts_mut(slice_mut_ptr, 1);
+   |                                                ^^^^^^^^^^^^^
+   = note: `-D rpl::unsafe-null-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_null_precondition)]`
+
+error: this unsafe operation violates a safety property: `slice::from_raw_parts_mut` requires len * size_of::<T>() <= isize::MAX
+  --> tests/ui/sr/core/slice/raw/from_raw_parts_mut.rs:22:17
+   |
+LL |         let _ = std::slice::from_raw_parts_mut(ptr, overflow);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a length whose total byte size fits in isize
+   = note: the total byte size is proven greater than isize::MAX
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 2 previous errors
+

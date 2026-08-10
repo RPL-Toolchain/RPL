@@ -1,0 +1,13 @@
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked_mut` requires end < len
+  --> tests/ui/sr/core/slice/index/range_to_inclusive_get_unchecked_mut.rs:18:17
+   |
+LL |         let _ = <RangeToInclusive<usize> as SliceIndex<[u8]>>::get_unchecked_mut(out_of_bounds, ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 1 previous error
+

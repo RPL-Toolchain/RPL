@@ -1,0 +1,40 @@
+error: this unsafe operation violates a safety property: `GlobalAlloc::alloc_zeroed` requires layout.size() != 0
+  --> tests/ui/sr/core/alloc/global/alloc_zeroed.rs:19:17
+   |
+LL |         let _ = GlobalAlloc::alloc_zeroed(&TestAllocator, unchecked);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a layout with a non-zero size before calling this unsafe function
+   = note: the allocation layout is proven to have size zero
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `GlobalAlloc::alloc_zeroed` requires layout.size() != 0
+  --> tests/ui/sr/core/alloc/global/alloc_zeroed.rs:23:17
+   |
+LL |         let _ = GlobalAlloc::alloc_zeroed(&TestAllocator, checked);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a layout with a non-zero size before calling this unsafe function
+   = note: the allocation layout is proven to have size zero
+
+error: this unsafe operation violates a safety property: `GlobalAlloc::alloc_zeroed` requires layout.size() != 0
+  --> tests/ui/sr/core/alloc/global/alloc_zeroed.rs:27:17
+   |
+LL |         let _ = GlobalAlloc::alloc_zeroed(&TestAllocator, new);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a layout with a non-zero size before calling this unsafe function
+   = note: the allocation layout is proven to have size zero
+
+error: this unsafe operation violates a safety property: `GlobalAlloc::alloc_zeroed` requires layout.size() != 0
+  --> tests/ui/sr/core/alloc/global/alloc_zeroed.rs:31:17
+   |
+LL |         let _ = GlobalAlloc::alloc_zeroed(&TestAllocator, array);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a layout with a non-zero size before calling this unsafe function
+   = note: the allocation layout is proven to have size zero
+
+error: aborting due to 4 previous errors
+

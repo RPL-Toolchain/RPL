@@ -1,0 +1,45 @@
+error: this unsafe operation violates a safety property: `CStr::from_ptr` requires a non-null pointer, but the pointer is proven null
+  --> tests/ui/sr/core/ffi/c_str/from_ptr.rs:12:17
+   |
+LL |         let _ = CStr::from_ptr(cstr_ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation
+note: `cstr_ptr` is known to be null at this program point
+  --> tests/ui/sr/core/ffi/c_str/from_ptr.rs:12:32
+   |
+LL |         let _ = CStr::from_ptr(cstr_ptr);
+   |                                ^^^^^^^^
+   = note: `-D rpl::unsafe-null-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_null_precondition)]`
+
+error: this unsafe operation violates a safety property: `CStr::from_ptr` requires a NUL terminator within `isize::MAX` bytes
+  --> tests/ui/sr/core/ffi/c_str/from_ptr.rs:20:17
+   |
+LL |         let _ = CStr::from_ptr(missing_nul_ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: provide a NUL-terminated byte sequence before constructing a `CStr`
+note: the complete statically known byte sequence contains no NUL byte
+  --> tests/ui/sr/core/ffi/c_str/from_ptr.rs:20:32
+   |
+LL |         let _ = CStr::from_ptr(missing_nul_ptr);
+   |                                ^^^^^^^^^^^^^^^
+   = note: `-D rpl::unsafe-cstr-terminator-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_cstr_terminator_precondition)]`
+
+error: this unsafe operation violates a safety property: `CStr::from_ptr` requires a NUL terminator within `isize::MAX` bytes
+  --> tests/ui/sr/core/ffi/c_str/from_ptr.rs:29:17
+   |
+LL |         let _ = CStr::from_ptr(empty_ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: provide a NUL-terminated byte sequence before constructing a `CStr`
+note: the complete statically known byte sequence contains no NUL byte
+  --> tests/ui/sr/core/ffi/c_str/from_ptr.rs:29:32
+   |
+LL |         let _ = CStr::from_ptr(empty_ptr);
+   |                                ^^^^^^^^^
+
+error: aborting due to 3 previous errors
+

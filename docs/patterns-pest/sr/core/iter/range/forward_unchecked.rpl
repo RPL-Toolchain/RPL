@@ -1,0 +1,147 @@
+pattern core-iter-range-Step-forward_unchecked
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_u8 = unsafe? fn _(..) -> _ {
+        let $start: u8 = _;
+        let $count: usize = _;
+        'use:
+        let $result: u8 = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 255u8)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_u16 = unsafe? fn _(..) -> _ {
+        let $start: u16 = _;
+        let $count: usize = _;
+        'use:
+        let $result: u16 = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 65535u16)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_u32 = unsafe? fn _(..) -> _ {
+        let $start: u32 = _;
+        let $count: usize = _;
+        'use:
+        let $result: u32 = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 4294967295u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_u64 = unsafe? fn _(..) -> _ {
+        let $start: u64 = _;
+        let $count: usize = _;
+        'use:
+        let $result: u64 = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 18446744073709551615u64)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_usize = unsafe? fn _(..) -> _ {
+        let $start: usize = _;
+        let $count: usize = _;
+        'use:
+        let $result: usize = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 18446744073709551615usize)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_i8 = unsafe? fn _(..) -> _ {
+        let $start: i8 = _;
+        let $count: usize = _;
+        'use:
+        let $result: i8 = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 127i8)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_i16 = unsafe? fn _(..) -> _ {
+        let $start: i16 = _;
+        let $count: usize = _;
+        'use:
+        let $result: i16 = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 32767i16)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_i32 = unsafe? fn _(..) -> _ {
+        let $start: i32 = _;
+        let $count: usize = _;
+        'use:
+        let $result: i32 = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 2147483647i32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_i64 = unsafe? fn _(..) -> _ {
+        let $start: i64 = _;
+        let $count: usize = _;
+        'use:
+        let $result: i64 = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 9223372036854775807i64)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not overflow")]
+    step_forward_unchecked_overflow_isize = unsafe? fn _(..) -> _ {
+        let $start: isize = _;
+        let $count: usize = _;
+        'use:
+        let $result: isize = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 9223372036854775807isize)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "start + count does not exceed char::MAX")]
+    step_forward_unchecked_overflow_char_max[$T: type where is_char(self)] = unsafe? fn _(..) -> _ {
+        let $start: $T = _;
+        let $count: usize = _;
+        'use:
+        let $result: $T = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        add_gt_const('use, $start, $count, 0x10FFFF)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::forward_unchecked", requirement = "skipping the surrogate range does not exceed char::MAX")]
+    step_forward_unchecked_overflow_char_surrogate_skip[$T: type where is_char(self)] = unsafe? fn _(..) -> _ {
+        let $start: $T = _;
+        let $count: usize = _;
+        'use:
+        let $result: $T = core::iter::range::Step::forward_unchecked(move $start, move $count);
+    } where {
+        !add_gt_const('use, $start, $count, 0x10FFFF) &&
+        lt_const('use, $start, 0xD800) &&
+        add_gt_const('use, $start, $count, 0x10F7FF)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires that {$requirement}",
+        note         = "the step is proven to overflow",
+        help         = "use `Step::forward_checked` or validate the number of remaining steps before calling this function",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

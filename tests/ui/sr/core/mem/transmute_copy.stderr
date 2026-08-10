@@ -1,0 +1,17 @@
+error: this unsafe operation violates a safety property: `mem::transmute_copy` requires the copied bits to form a valid `bool` value
+  --> tests/ui/sr/core/mem/transmute_copy.rs:14:23
+   |
+LL |         let _: bool = mem::transmute_copy(&invalid_bool);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the source value before copying it into the destination type
+note: the referenced source value has a bit pattern outside the statically known valid range of `bool`
+  --> tests/ui/sr/core/mem/transmute_copy.rs:14:43
+   |
+LL |         let _: bool = mem::transmute_copy(&invalid_bool);
+   |                                           ^^^^^^^^^^^^^
+   = note: `-D rpl::unsafe-transmute-copy-value-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_transmute_copy_value_precondition)]`
+
+error: aborting due to 1 previous error
+

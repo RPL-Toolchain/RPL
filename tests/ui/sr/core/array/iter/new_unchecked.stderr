@@ -1,0 +1,22 @@
+error: this unsafe operation violates a safety property: `IntoIter::new_unchecked` requires initialized.start <= initialized.end
+  --> tests/ui/sr/core/array/iter/new_unchecked.rs:22:17
+   |
+LL |         let _ = IntoIter::new_unchecked(values, start_after_end);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the initialized range before constructing the iterator
+   = note: the initialized range violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `IntoIter::new_unchecked` requires initialized.end <= N
+  --> tests/ui/sr/core/array/iter/new_unchecked.rs:27:17
+   |
+LL |         let _ = IntoIter::new_unchecked(values, end_out_of_bounds);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the initialized range before constructing the iterator
+   = note: the initialized range violates the numeric precondition
+
+error: aborting due to 2 previous errors
+

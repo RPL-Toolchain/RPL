@@ -1,0 +1,56 @@
+error: this unsafe operation violates a safety property: `CStr::from_bytes_with_nul_unchecked` requires the byte slice is non-empty and ends with a NUL byte
+  --> tests/ui/sr/core/ffi/c_str/from_bytes_with_nul_unchecked.rs:16:17
+   |
+LL |         let _ = CStr::from_bytes_with_nul_unchecked(&empty);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `CStr::from_bytes_with_nul` to validate the byte slice before constructing a `CStr`
+note: this byte slice violates the required C string representation
+  --> tests/ui/sr/core/ffi/c_str/from_bytes_with_nul_unchecked.rs:16:53
+   |
+LL |         let _ = CStr::from_bytes_with_nul_unchecked(&empty);
+   |                                                     ^^^^^^
+   = note: `-D rpl::unsafe-cstr-bytes-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_cstr_bytes_precondition)]`
+
+error: this unsafe operation violates a safety property: `CStr::from_bytes_with_nul_unchecked` requires the byte slice is non-empty and ends with a NUL byte
+  --> tests/ui/sr/core/ffi/c_str/from_bytes_with_nul_unchecked.rs:8:17
+   |
+LL |         let _ = CStr::from_bytes_with_nul_unchecked(&missing);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `CStr::from_bytes_with_nul` to validate the byte slice before constructing a `CStr`
+note: this byte slice violates the required C string representation
+  --> tests/ui/sr/core/ffi/c_str/from_bytes_with_nul_unchecked.rs:8:53
+   |
+LL |         let _ = CStr::from_bytes_with_nul_unchecked(&missing);
+   |                                                     ^^^^^^^^
+
+error: this unsafe operation violates a safety property: `CStr::from_bytes_with_nul_unchecked` requires the byte slice contains no interior NUL bytes
+  --> tests/ui/sr/core/ffi/c_str/from_bytes_with_nul_unchecked.rs:12:17
+   |
+LL |         let _ = CStr::from_bytes_with_nul_unchecked(&interior);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `CStr::from_bytes_with_nul` to validate the byte slice before constructing a `CStr`
+note: this byte slice violates the required C string representation
+  --> tests/ui/sr/core/ffi/c_str/from_bytes_with_nul_unchecked.rs:12:53
+   |
+LL |         let _ = CStr::from_bytes_with_nul_unchecked(&interior);
+   |                                                     ^^^^^^^^^
+
+error: this unsafe operation violates a safety property: `CStr::from_bytes_with_nul_unchecked` requires the byte slice contains no interior NUL bytes
+  --> tests/ui/sr/core/ffi/c_str/from_bytes_with_nul_unchecked.rs:21:17
+   |
+LL |         let _ = CStr::from_bytes_with_nul_unchecked(&runtime);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `CStr::from_bytes_with_nul` to validate the byte slice before constructing a `CStr`
+note: this byte slice violates the required C string representation
+  --> tests/ui/sr/core/ffi/c_str/from_bytes_with_nul_unchecked.rs:21:53
+   |
+LL |         let _ = CStr::from_bytes_with_nul_unchecked(&runtime);
+   |                                                     ^^^^^^^^
+
+error: aborting due to 4 previous errors
+

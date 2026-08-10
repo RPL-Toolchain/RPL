@@ -1,0 +1,94 @@
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:9:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:14:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:19:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:24:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:29:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:34:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:39:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:44:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:49:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: this unsafe operation violates a safety property: `unchecked_shl` requires that rhs < integer bit width
+  --> tests/ui/sr/core/num/unchecked_shl.rs:54:17
+   |
+LL |         let _ = lhs.unchecked_shl(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the shift amount before calling this unsafe function or use the safe checked API
+   = note: the shift amount is proven to be out of bounds
+
+error: aborting due to 10 previous errors
+

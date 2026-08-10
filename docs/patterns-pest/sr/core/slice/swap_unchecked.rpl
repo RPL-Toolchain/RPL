@@ -1,0 +1,41 @@
+pattern core-slice-swap_unchecked
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "slice::swap_unchecked", requirement = "a < len")]
+    slice_swap_unchecked_first_index_out_of_bounds[$T: type] = {
+        unsafe? fn _(..) -> _ {
+            let $slice: &mut [$T] = _;
+            let $a: usize = _;
+            let $b: usize = _;
+            'use:
+            let $result: () = slice::swap_unchecked(move $slice, move $a, move $b);
+        } where {
+            index_ge_len('use, $slice, $a)
+        }
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "slice::swap_unchecked", requirement = "b < len")]
+    slice_swap_unchecked_second_index_out_of_bounds[$T: type] = {
+        unsafe? fn _(..) -> _ {
+            let $slice: &mut [$T] = _;
+            let $a: usize = _;
+            let $b: usize = _;
+            'use:
+            let $result: () = slice::swap_unchecked(move $slice, move $a, move $b);
+        } where {
+            index_ge_len('use, $slice, $b)
+        }
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this index is outside the slice",
+        help         = "use indices smaller than the slice length",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

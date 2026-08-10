@@ -1,0 +1,31 @@
+error: this unsafe operation violates a safety property: `Layout::from_size_align_unchecked` requires align != 0
+  --> tests/ui/sr/core/alloc/layout/from_size_align_unchecked.rs:9:17
+   |
+LL |         let _ = Layout::from_size_align_unchecked(size, zero_align);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `Layout::from_size_align_unchecked` requires align is a power of two
+  --> tests/ui/sr/core/alloc/layout/from_size_align_unchecked.rs:13:17
+   |
+LL |         let _ = Layout::from_size_align_unchecked(size, non_power_of_two_align);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `Layout::from_size_align_unchecked` requires the rounded-up allocation size <= isize::MAX
+  --> tests/ui/sr/core/alloc/layout/from_size_align_unchecked.rs:18:17
+   |
+LL |         let _ = Layout::from_size_align_unchecked(oversized, align);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: aborting due to 3 previous errors
+

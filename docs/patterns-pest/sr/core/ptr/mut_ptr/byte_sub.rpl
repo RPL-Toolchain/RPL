@@ -1,0 +1,26 @@
+pattern core-ptr-mut_ptr-byte_sub
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "*mut T::byte_sub", requirement = "count fits in isize")]
+    mut_ptr_byte_sub_count_out_of_range[$T: type] = {
+        unsafe? fn _(..) -> _ {
+            let $ptr: *mut $T = _;
+            let $count: usize = _;
+            'use:
+            let $result: *mut $T = mut_ptr::byte_sub(move $ptr, move $count);
+        } where {
+            gt_const('use, $count, 9223372036854775807isize)
+        }
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the byte offset is proven greater than isize::MAX",
+        help         = "use a byte count that fits in isize",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

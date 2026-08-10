@@ -1,0 +1,83 @@
+pattern core-slice-index-Range-SliceIndex-get_unchecked
+
+patt {
+    use core::ops::Range;
+    use core::ptr::slice_from_raw_parts;
+    use core::slice::SliceIndex;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked", requirement = "start <= end")]
+    slice_index_get_unchecked_range_start_after_end[$T: type] = unsafe? fn _(..) -> _ {
+        'slice:
+        let $slice: *const [$T] = _;
+        'range:
+        let $range: Range<usize> = _;
+        'use:
+        let $value: *const [$T] = SliceIndex::get_unchecked(move $range, move $slice);
+    } where {
+        range_start_gt_end('use, $range)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked", requirement = "end <= len")]
+    slice_index_get_unchecked_range_end_out_of_bounds[$T: type] = unsafe? fn _(..) -> _ {
+        'slice:
+        let $slice: *const [$T] = _;
+        'range:
+        let $range: Range<usize> = _;
+        'use:
+        let $value: *const [$T] = SliceIndex::get_unchecked(move $range, move $slice);
+    } where {
+        range_end_gt_len('use, $slice, $range)
+    }
+
+    #[diag = "unsafe_dangling_pointer_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked")]
+    slice_index_get_unchecked_range_dangling_slice[$T: type] = unsafe? fn _(..) -> _ {
+        'slice:
+        let $slice: *const [$T] = _;
+        'range:
+        let $range: Range<usize> = _;
+        'use:
+        let $value: *const [$T] = SliceIndex::get_unchecked(move $range, move $slice);
+    } where {
+        is_dangling_ptr('use, $slice)
+    }
+
+    #[diag = "unsafe_dangling_pointer_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked")]
+    slice_index_get_unchecked_range_dangling_slice_from_raw_parts[$T: type] = unsafe? fn _(..) -> _ {
+        'data:
+        let $data: *const $T = _;
+        'data_arg:
+        let $data_arg: *const $T = copy $data;
+        'slice:
+        let $slice: *const [$T] = slice_from_raw_parts::<$T>(move $data_arg, _);
+        'slice_arg:
+        let $slice_arg: *const [$T] = copy $slice;
+        'range:
+        let $range: Range<usize> = _;
+        'use:
+        let $value: *const [$T] = SliceIndex::get_unchecked(move $range, move $slice_arg);
+    } where {
+        is_dangling_ptr('use, $data)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the index before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+
+    unsafe_dangling_pointer_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires a non-dangling slice pointer",
+        note(slice)  = "`{$slice}` may be dangling at this program point",
+        help         = "ensure the backing allocation outlives this unsafe operation",
+        name         = "unsafe_dangling_pointer_precondition",
+        level        = "warn",
+    }
+}

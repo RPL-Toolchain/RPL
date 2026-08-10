@@ -4,6 +4,7 @@ use std::mem::transmute;
 pub fn invalid_value() -> bool {
     let x: u8 = 10;
     let res = unsafe { transmute::<u8, bool>(x) }; //~ERROR: it is unsound to transmute a type `u8` to a boolean
+    //~^ ERROR: this unsafe operation violates a safety property
     res
 }
 

@@ -1,0 +1,22 @@
+error: this unsafe operation violates a safety property: `Alignment::new_unchecked` requires align != 0
+  --> tests/ui/sr/core/ptr/alignment/new_unchecked.rs:10:17
+   |
+LL |         let _ = Alignment::new_unchecked(zero_align);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `Alignment::new_unchecked` requires align is a power of two
+  --> tests/ui/sr/core/ptr/alignment/new_unchecked.rs:14:17
+   |
+LL |         let _ = Alignment::new_unchecked(non_power_of_two_align);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: aborting due to 2 previous errors
+

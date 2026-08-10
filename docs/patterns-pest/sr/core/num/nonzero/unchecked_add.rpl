@@ -1,0 +1,70 @@
+pattern core-num-NonZero-unchecked_add
+
+patt {
+    use core::num::NonZero;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_add", requirement = "self + rhs does not overflow")]
+    nonzero_unchecked_add_overflow_u8 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<u8> = _;
+        let $rhs: u8 = _;
+        'use:
+        let $result: NonZero<u8> = NonZero::<u8>::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 255u8)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_add", requirement = "self + rhs does not overflow")]
+    nonzero_unchecked_add_overflow_u16 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<u16> = _;
+        let $rhs: u16 = _;
+        'use:
+        let $result: NonZero<u16> = NonZero::<u16>::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 65535u16)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_add", requirement = "self + rhs does not overflow")]
+    nonzero_unchecked_add_overflow_u32 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<u32> = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: NonZero<u32> = NonZero::<u32>::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 4294967295u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_add", requirement = "self + rhs does not overflow")]
+    nonzero_unchecked_add_overflow_u64 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<u64> = _;
+        let $rhs: u64 = _;
+        'use:
+        let $result: NonZero<u64> = NonZero::<u64>::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 18446744073709551615u64)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_add", requirement = "self + rhs does not overflow")]
+    nonzero_unchecked_add_overflow_usize = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<usize> = _;
+        let $rhs: usize = _;
+        'use:
+        let $result: NonZero<usize> = NonZero::<usize>::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 18446744073709551615usize)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires that {$requirement}",
+        note         = "the arithmetic operation is proven to overflow",
+        help         = "validate the operands before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

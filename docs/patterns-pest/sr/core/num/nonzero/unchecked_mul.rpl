@@ -1,0 +1,125 @@
+pattern core-num-NonZero-unchecked_mul
+
+patt {
+    use core::num::NonZero;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_u8 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<u8> = _;
+        let $rhs: NonZero<u8> = _;
+        'use:
+        let $result: NonZero<u8> = NonZero::<u8>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        mul_gt_const('use, $lhs, $rhs, 255u8)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_u16 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<u16> = _;
+        let $rhs: NonZero<u16> = _;
+        'use:
+        let $result: NonZero<u16> = NonZero::<u16>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        mul_gt_const('use, $lhs, $rhs, 65535u16)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_u32 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<u32> = _;
+        let $rhs: NonZero<u32> = _;
+        'use:
+        let $result: NonZero<u32> = NonZero::<u32>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        mul_gt_const('use, $lhs, $rhs, 4294967295u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_u64 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<u64> = _;
+        let $rhs: NonZero<u64> = _;
+        'use:
+        let $result: NonZero<u64> = NonZero::<u64>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        mul_gt_const('use, $lhs, $rhs, 18446744073709551615u64)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_usize = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<usize> = _;
+        let $rhs: NonZero<usize> = _;
+        'use:
+        let $result: NonZero<usize> = NonZero::<usize>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        mul_gt_const('use, $lhs, $rhs, 18446744073709551615usize)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_i8 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<i8> = _;
+        let $rhs: NonZero<i8> = _;
+        'use:
+        let $result: NonZero<i8> = NonZero::<i8>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        (mul_lt_const('use, $lhs, $rhs, 128i8) || mul_gt_const('use, $lhs, $rhs, 127i8))
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_i16 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<i16> = _;
+        let $rhs: NonZero<i16> = _;
+        'use:
+        let $result: NonZero<i16> = NonZero::<i16>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        (mul_lt_const('use, $lhs, $rhs, 32768i16) || mul_gt_const('use, $lhs, $rhs, 32767i16))
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_i32 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<i32> = _;
+        let $rhs: NonZero<i32> = _;
+        'use:
+        let $result: NonZero<i32> = NonZero::<i32>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        (mul_lt_const('use, $lhs, $rhs, 2147483648i32) || mul_gt_const('use, $lhs, $rhs, 2147483647i32))
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_i64 = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<i64> = _;
+        let $rhs: NonZero<i64> = _;
+        'use:
+        let $result: NonZero<i64> = NonZero::<i64>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        (mul_lt_const('use, $lhs, $rhs, 9223372036854775808i64) || mul_gt_const('use, $lhs, $rhs, 9223372036854775807i64))
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::unchecked_mul", requirement = "self * rhs does not overflow")]
+    nonzero_unchecked_mul_overflow_isize = unsafe? fn _(..) -> _ {
+        let $lhs: NonZero<isize> = _;
+        let $rhs: NonZero<isize> = _;
+        'use:
+        let $result: NonZero<isize> = NonZero::<isize>::unchecked_mul(move $lhs, move $rhs);
+    } where {
+        (mul_lt_const('use, $lhs, $rhs, 9223372036854775808isize) || mul_gt_const('use, $lhs, $rhs, 9223372036854775807isize))
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires that {$requirement}",
+        note         = "the arithmetic operation is proven to overflow",
+        help         = "validate the operands before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

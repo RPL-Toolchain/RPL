@@ -1,0 +1,25 @@
+pattern core-num-NonZero-new_unchecked
+
+patt {
+    use core::num::NonZero;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "NonZero::new_unchecked", requirement = "a non-zero value")]
+    nonzero_new_unchecked_zero[$T: type where is_integral(self)] = unsafe? fn _(..) -> _ {
+        let $arg: $T = _;
+        'use:
+        let $nonzero: NonZero<$T> = NonZero::<$T>::new_unchecked(move $arg);
+    } where {
+        eq_const('use, $arg, 0)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the value before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

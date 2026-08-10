@@ -1,0 +1,38 @@
+pattern core-ptr-Alignment-new_unchecked
+
+patt {
+    use core::ptr::Alignment;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Alignment::new_unchecked", requirement = "align != 0")]
+    alignment_new_unchecked_zero_align = unsafe? fn _(..) -> _ {
+        'align:
+        let $align: usize = _;
+        'use:
+        let $alignment: Alignment = Alignment::new_unchecked(copy $align);
+    } where {
+        eq_const('use, $align, 0)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Alignment::new_unchecked", requirement = "align is a power of two")]
+    alignment_new_unchecked_non_power_of_two_align = unsafe? fn _(..) -> _ {
+        'align:
+        let $align: usize = _;
+        'use:
+        let $alignment: Alignment = Alignment::new_unchecked(copy $align);
+    } where {
+        !eq_const('use, $align, 0) &&
+        not_power_of_two('use, $align)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the value before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

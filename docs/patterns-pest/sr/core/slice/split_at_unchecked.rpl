@@ -1,0 +1,30 @@
+pattern core-slice-split_at_unchecked
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "slice::split_at_unchecked", requirement = "mid <= len")]
+    slice_split_at_unchecked_out_of_bounds[$T: type] = {
+        unsafe fn $split_at_unchecked(_: &[$T], _: usize) -> (&[$T], &[$T]);
+
+        unsafe? fn _(..) -> _ {
+            'slice:
+            let $slice: &[$T] = _;
+            'mid:
+            let $mid: usize = _;
+            'use:
+            let $parts: (&[$T], &[$T]) = $split_at_unchecked(move $slice, move $mid);
+        } where {
+            index_gt_len('use, $slice, $mid)
+        }
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the value before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

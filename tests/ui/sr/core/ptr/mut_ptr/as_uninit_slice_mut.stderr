@@ -1,0 +1,13 @@
+error: this unsafe operation violates a safety property: `*mut [T]::as_uninit_slice_mut` requires ptr.len() * size_of::<T>() <= isize::MAX
+  --> tests/ui/sr/core/ptr/mut_ptr/as_uninit_slice_mut.rs:15:17
+   |
+LL |         let _ = too_large.as_uninit_slice_mut();
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a slice length whose total byte size fits in isize
+   = note: the raw slice's total byte size is proven greater than isize::MAX
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 1 previous error
+

@@ -1,0 +1,55 @@
+pattern core-alloc-Layout-from_size_align_unchecked
+
+patt {
+    use core::alloc::Layout;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Layout::from_size_align_unchecked", requirement = "align != 0")]
+    layout_from_size_align_unchecked_zero_align = unsafe? fn _(..) -> _ {
+        'size:
+        let $size: usize = _;
+        'align:
+        let $align: usize = _;
+        'use:
+        let $layout: Layout = Layout::from_size_align_unchecked(copy $size, copy $align);
+    } where {
+        eq_const('use, $align, 0)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Layout::from_size_align_unchecked", requirement = "align is a power of two")]
+    layout_from_size_align_unchecked_non_power_of_two_align = unsafe? fn _(..) -> _ {
+        'size:
+        let $size: usize = _;
+        'align:
+        let $align: usize = _;
+        'use:
+        let $layout: Layout = Layout::from_size_align_unchecked(copy $size, copy $align);
+    } where {
+        !eq_const('use, $align, 0) &&
+        not_power_of_two('use, $align)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Layout::from_size_align_unchecked", requirement = "the rounded-up allocation size <= isize::MAX")]
+    layout_from_size_align_unchecked_rounded_up_gt_const = unsafe? fn _(..) -> _ {
+        'size:
+        let $size: usize = _;
+        'align:
+        let $align: usize = _;
+        'use:
+        let $layout: Layout = Layout::from_size_align_unchecked(copy $size, copy $align);
+    } where {
+        rounded_up_gt_const('use, $size, $align, 9223372036854775807isize)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the value before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

@@ -1,0 +1,22 @@
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked` requires start <= end
+  --> tests/ui/sr/core/slice/index/range_inclusive_get_unchecked.rs:18:17
+   |
+LL |         let _ = <RangeInclusive<usize> as SliceIndex<[u8]>>::get_unchecked(start_after_end, ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked` requires end < len
+  --> tests/ui/sr/core/slice/index/range_inclusive_get_unchecked.rs:22:17
+   |
+LL |         let _ = <RangeInclusive<usize> as SliceIndex<[u8]>>::get_unchecked(end_out_of_bounds, ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: aborting due to 2 previous errors
+

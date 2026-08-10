@@ -1,0 +1,147 @@
+pattern core-iter-range-Step-backward_unchecked
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_u8 = unsafe? fn _(..) -> _ {
+        let $start: u8 = _;
+        let $count: usize = _;
+        'use:
+        let $result: u8 = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 0u8)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_u16 = unsafe? fn _(..) -> _ {
+        let $start: u16 = _;
+        let $count: usize = _;
+        'use:
+        let $result: u16 = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 0u16)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_u32 = unsafe? fn _(..) -> _ {
+        let $start: u32 = _;
+        let $count: usize = _;
+        'use:
+        let $result: u32 = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 0u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_u64 = unsafe? fn _(..) -> _ {
+        let $start: u64 = _;
+        let $count: usize = _;
+        'use:
+        let $result: u64 = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 0u64)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_usize = unsafe? fn _(..) -> _ {
+        let $start: usize = _;
+        let $count: usize = _;
+        'use:
+        let $result: usize = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 0usize)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_i8 = unsafe? fn _(..) -> _ {
+        let $start: i8 = _;
+        let $count: usize = _;
+        'use:
+        let $result: i8 = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 128i8)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_i16 = unsafe? fn _(..) -> _ {
+        let $start: i16 = _;
+        let $count: usize = _;
+        'use:
+        let $result: i16 = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 32768i16)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_i32 = unsafe? fn _(..) -> _ {
+        let $start: i32 = _;
+        let $count: usize = _;
+        'use:
+        let $result: i32 = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 2147483648i32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_i64 = unsafe? fn _(..) -> _ {
+        let $start: i64 = _;
+        let $count: usize = _;
+        'use:
+        let $result: i64 = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 9223372036854775808i64)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not overflow")]
+    step_backward_unchecked_overflow_isize = unsafe? fn _(..) -> _ {
+        let $start: isize = _;
+        let $count: usize = _;
+        'use:
+        let $result: isize = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 9223372036854775808isize)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "start - count does not go below 0")]
+    step_backward_unchecked_overflow_char_min[$T: type where is_char(self)] = unsafe? fn _(..) -> _ {
+        let $start: $T = _;
+        let $count: usize = _;
+        'use:
+        let $result: $T = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        sub_lt_const('use, $start, $count, 0)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Step::backward_unchecked", requirement = "skipping the surrogate range does not go below 0")]
+    step_backward_unchecked_overflow_char_surrogate_skip[$T: type where is_char(self)] = unsafe? fn _(..) -> _ {
+        let $start: $T = _;
+        let $count: usize = _;
+        'use:
+        let $result: $T = core::iter::range::Step::backward_unchecked(move $start, move $count);
+    } where {
+        !sub_lt_const('use, $start, $count, 0) &&
+        gt_const('use, $start, 0xDFFF) &&
+        sub_lt_const('use, $start, $count, 0x800)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires that {$requirement}",
+        note         = "the step is proven to overflow",
+        help         = "use `Step::backward_checked` or validate the number of remaining steps before calling this function",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

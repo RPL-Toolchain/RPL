@@ -1,0 +1,17 @@
+error: this unsafe operation violates a safety property: `Vec::from_raw_parts` requires a non-null pointer, but the pointer is proven null
+  --> tests/ui/sr/alloc/vec/from_raw_parts.rs:6:17
+   |
+LL |         let _ = Vec::from_raw_parts(vec_ptr, 0, 0);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation
+note: `vec_ptr` is known to be null at this program point
+  --> tests/ui/sr/alloc/vec/from_raw_parts.rs:6:37
+   |
+LL |         let _ = Vec::from_raw_parts(vec_ptr, 0, 0);
+   |                                     ^^^^^^^
+   = note: `-D rpl::unsafe-null-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_null_precondition)]`
+
+error: aborting due to 1 previous error
+

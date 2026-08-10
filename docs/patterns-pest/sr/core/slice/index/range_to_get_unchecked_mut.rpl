@@ -1,0 +1,27 @@
+pattern core-slice-index-RangeTo-SliceIndex-get_unchecked_mut
+
+patt {
+    use core::ops::RangeTo;
+    use core::slice::SliceIndex;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked_mut", requirement = "end <= len")]
+    slice_index_get_unchecked_mut_range_to_end_out_of_bounds[$T: type] = unsafe? fn _(..) -> _ {
+        let $slice: *mut [$T] = _;
+        let $range: RangeTo<usize> = _;
+        'use:
+        let $value: *mut [$T] = SliceIndex::get_unchecked_mut(move $range, move $slice);
+    } where {
+        range_end_gt_len('use, $slice, $range)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the index before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

@@ -1,0 +1,28 @@
+pattern core-alloc-Allocator-grow_zeroed
+
+patt {
+    use core::alloc::Layout;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "Allocator::grow_zeroed", requirement = "new_layout.size() >= old_layout.size()")]
+    allocator_grow_zeroed_new_size_too_small = {
+        unsafe? fn _(..) -> _ {
+            let $old_layout: Layout = _;
+            let $new_layout: Layout = _;
+            'use:
+            _ = core::alloc::Allocator::grow_zeroed(_, _, move $old_layout, move $new_layout);
+        } where {
+            layout_size_gt('use, $old_layout, $new_layout)
+        }
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the new allocation size is proven smaller than the old allocation size",
+        help         = "use a new layout whose size is at least the old layout size",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

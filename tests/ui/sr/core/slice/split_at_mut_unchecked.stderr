@@ -1,0 +1,13 @@
+error: this unsafe operation violates a safety property: `slice::split_at_mut_unchecked` requires mid <= len
+  --> tests/ui/sr/core/slice/split_at_mut_unchecked.rs:7:17
+   |
+LL |         let _ = split_mut_values.split_at_mut_unchecked(bad_mut_mid);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 1 previous error
+

@@ -1,0 +1,35 @@
+pattern core-ptr-read
+
+patt {
+    #[diag = "unsafe_null_precondition"]
+    #[const(operation = "ptr::read")]
+    null_ptr_read_const[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        'use:
+        let $value: $T = core::ptr::read::<_>(copy $ptr);
+    } where {
+        is_null('use, $ptr)
+    }
+
+    #[diag = "unsafe_null_precondition"]
+    #[const(operation = "ptr::read")]
+    null_ptr_read_mut[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        let $value: $T = core::ptr::read::<_>(copy $ptr);
+    } where {
+        is_null('use, $ptr)
+    }
+}
+
+diag {
+    unsafe_null_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires a non-null pointer, but the pointer is proven null",
+        note(ptr)    = "`{$ptr}` is known to be null at this program point",
+        help         = "check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation",
+        name         = "unsafe_null_precondition",
+        level        = "warn",
+    }
+}

@@ -1,0 +1,70 @@
+pattern core-slice-index-SliceIndex-get_unchecked_mut
+
+patt {
+    use core::ptr::slice_from_raw_parts_mut;
+    use core::slice::SliceIndex;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked_mut", requirement = "index < len")]
+    slice_index_get_unchecked_mut_usize_out_of_bounds[$T: type] = unsafe? fn _(..) -> _ {
+        'slice:
+        let $slice: *mut [$T] = _;
+        'index:
+        let $index: usize = _;
+        'use:
+        let $value: *mut $T = SliceIndex::get_unchecked_mut(move $index, move $slice);
+    } where {
+        index_ge_len('use, $slice, $index)
+    }
+
+    #[diag = "unsafe_dangling_pointer_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked_mut")]
+    slice_index_get_unchecked_mut_usize_dangling_slice[$T: type] = unsafe? fn _(..) -> _ {
+        'slice:
+        let $slice: *mut [$T] = _;
+        'index:
+        let $index: usize = _;
+        'use:
+        let $value: *mut $T = SliceIndex::get_unchecked_mut(move $index, move $slice);
+    } where {
+        is_dangling_ptr('use, $slice)
+    }
+
+    #[diag = "unsafe_dangling_pointer_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked_mut")]
+    slice_index_get_unchecked_mut_usize_dangling_slice_from_raw_parts[$T: type] = unsafe? fn _(..) -> _ {
+        'data:
+        let $data: *mut $T = _;
+        'data_arg:
+        let $data_arg: *mut $T = copy $data;
+        'slice:
+        let $slice: *mut [$T] = slice_from_raw_parts_mut::<$T>(move $data_arg, _);
+        'slice_arg:
+        let $slice_arg: *mut [$T] = copy $slice;
+        'index:
+        let $index: usize = _;
+        'use:
+        let $value: *mut $T = SliceIndex::get_unchecked_mut(move $index, move $slice_arg);
+    } where {
+        is_dangling_ptr('use, $data)
+    }
+
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the index before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+
+    unsafe_dangling_pointer_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires a non-dangling slice pointer",
+        note(slice)  = "`{$slice}` may be dangling at this program point",
+        help         = "ensure the backing allocation outlives this unsafe operation",
+        name         = "unsafe_dangling_pointer_precondition",
+        level        = "warn",
+    }
+}

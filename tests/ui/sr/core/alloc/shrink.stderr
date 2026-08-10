@@ -1,0 +1,13 @@
+error: this unsafe operation violates a safety property: `Allocator::shrink` requires new_layout.size() <= old_layout.size()
+  --> tests/ui/sr/core/alloc/shrink.rs:39:17
+   |
+LL |         let _ = Allocator::shrink(&TestAllocator, ptr, old_layout, new_layout);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a new layout whose size does not exceed the old layout size
+   = note: the new allocation size is proven larger than the old allocation size
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 1 previous error
+

@@ -1,0 +1,30 @@
+error: this unsafe operation violates a safety property: `ptr::read` requires a non-null pointer, but the pointer is proven null
+  --> tests/ui/sr/core/ptr/read.rs:6:17
+   |
+LL |         let _ = core::ptr::read(ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation
+note: `ptr` is known to be null at this program point
+  --> tests/ui/sr/core/ptr/read.rs:6:33
+   |
+LL |         let _ = core::ptr::read(ptr);
+   |                                 ^^^
+   = note: `-D rpl::unsafe-null-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_null_precondition)]`
+
+error: this unsafe operation violates a safety property: `ptr::read` requires a non-null pointer, but the pointer is proven null
+  --> tests/ui/sr/core/ptr/read.rs:10:17
+   |
+LL |         let _ = core::ptr::read(mut_ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation
+note: `mut_ptr` is known to be null at this program point
+  --> tests/ui/sr/core/ptr/read.rs:10:33
+   |
+LL |         let _ = core::ptr::read(mut_ptr);
+   |                                 ^^^^^^^
+
+error: aborting due to 2 previous errors
+

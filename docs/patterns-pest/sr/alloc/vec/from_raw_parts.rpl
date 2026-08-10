@@ -1,0 +1,28 @@
+pattern alloc-vec-Vec-from_raw_parts
+
+patt {
+    use alloc::vec::Vec;
+
+    #[diag = "unsafe_null_precondition"]
+    #[const(operation = "Vec::from_raw_parts")]
+    null_ptr_vec_from_raw_parts[$T: type] = unsafe? fn _(..) -> _ {
+        type VecT = alloc::vec::Vec::<$T>;
+
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        let $vec: VecT = Vec::<$T>::from_raw_parts(copy $ptr, _, _);
+    } where {
+        is_null('use, $ptr)
+    }
+}
+
+diag {
+    unsafe_null_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires a non-null pointer, but the pointer is proven null",
+        note(ptr)    = "`{$ptr}` is known to be null at this program point",
+        help         = "check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation",
+        name         = "unsafe_null_precondition",
+        level        = "warn",
+    }
+}

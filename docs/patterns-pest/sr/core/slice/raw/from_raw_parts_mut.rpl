@@ -1,0 +1,43 @@
+pattern core-slice-from_raw_parts_mut
+
+patt {
+    #[diag = "unsafe_null_precondition"]
+    #[const(operation = "slice::from_raw_parts_mut")]
+    null_ptr_slice_from_raw_parts_mut[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        let $slice: &mut [$T] = std::slice::from_raw_parts_mut<'_, $T>(copy $ptr, _);
+    } where {
+        is_null('use, $ptr)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "slice::from_raw_parts_mut", requirement = "len * size_of::<T>() <= isize::MAX")]
+    slice_from_raw_parts_mut_total_size_out_of_range[$T: type] = unsafe? fn _(..) -> _ {
+        let $ptr: *mut $T = _;
+        let $len: usize = _;
+        'use:
+        let $slice: &mut [$T] = std::slice::from_raw_parts_mut<'_, $T>(copy $ptr, copy $len);
+    } where {
+        size_mul_gt_const('use, $len, $T, 9223372036854775807isize)
+    }
+}
+
+diag {
+    unsafe_null_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires a non-null pointer, but the pointer is proven null",
+        note(ptr)    = "`{$ptr}` is known to be null at this program point",
+        help         = "check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation",
+        name         = "unsafe_null_precondition",
+        level        = "warn",
+    }
+
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the total byte size is proven greater than isize::MAX",
+        help         = "use a length whose total byte size fits in isize",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}
