@@ -1,0 +1,32 @@
+error: this function may expose a dangling pointer through its return value
+  --> tests/ui/safedrop/dangling_pointer.rs:4:1
+   |
+LL | / fn return_dangling() -> *const u8 {
+LL | |
+LL | |     let boxed = Box::new(1u8);
+LL | |     let ptr = &*boxed as *const u8;
+LL | |     drop(boxed);
+LL | |     ptr
+LL | | }
+   | |_^
+   |
+   = help: ensure returned values and pointer arguments do not alias storage that dies inside this function
+   = note: `-D rpl::safedrop-dangling-pointer` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_dangling_pointer)]`
+
+error: this function may expose a dangling pointer through its mutable pointer argument
+  --> tests/ui/safedrop/dangling_pointer.rs:12:1
+   |
+LL | / fn expose_dangling(out: *mut *const u8) {
+LL | |
+LL | |     let boxed = Box::new(2u8);
+LL | |     unsafe {
+...  |
+LL | |     drop(boxed);
+LL | | }
+   | |_^
+   |
+   = help: ensure returned values and pointer arguments do not alias storage that dies inside this function
+
+error: aborting due to 2 previous errors
+

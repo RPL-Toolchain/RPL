@@ -1,0 +1,131 @@
+error: this unsafe operation may use a pointer after its owner has been dropped: `deref read`
+  --> tests/ui/safedrop/use_after_free.rs:10:17
+   |
+LL |         let _ = core::ptr::read(read_ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `read_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:10:33
+   |
+LL |         let _ = core::ptr::read(read_ptr);
+   |                                 ^^^^^^^^
+   = note: `-D rpl::safedrop-use-after-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_use_after_free)]`
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `deref write`
+  --> tests/ui/safedrop/use_after_free.rs:18:9
+   |
+LL |         core::ptr::write(write_ptr, 3);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `write_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:18:26
+   |
+LL |         core::ptr::write(write_ptr, 3);
+   |                          ^^^^^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `precondition check`
+  --> tests/ui/safedrop/use_after_free.rs:26:17
+   |
+LL |         let _ = core::ptr::read_volatile(read_volatile_ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `read_volatile_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:26:42
+   |
+LL |         let _ = core::ptr::read_volatile(read_volatile_ptr);
+   |                                          ^^^^^^^^^^^^^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `precondition check`
+  --> tests/ui/safedrop/use_after_free.rs:34:9
+   |
+LL |         core::ptr::write_volatile(write_volatile_ptr, 7);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `write_volatile_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:34:35
+   |
+LL |         core::ptr::write_volatile(write_volatile_ptr, 7);
+   |                                   ^^^^^^^^^^^^^^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `precondition check`
+  --> tests/ui/safedrop/use_after_free.rs:43:9
+   |
+LL |         core::ptr::copy(copy_src_ptr, &mut copy_dst as *mut u8, 1);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `copy_src_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:43:25
+   |
+LL |         core::ptr::copy(copy_src_ptr, &mut copy_dst as *mut u8, 1);
+   |                         ^^^^^^^^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `precondition check`
+  --> tests/ui/safedrop/use_after_free.rs:52:9
+   |
+LL |         core::ptr::copy(&copy_src as *const u8, copy_dst_ptr, 1);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `copy_dst_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:52:49
+   |
+LL |         core::ptr::copy(&copy_src as *const u8, copy_dst_ptr, 1);
+   |                                                 ^^^^^^^^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `precondition check`
+  --> tests/ui/safedrop/use_after_free.rs:61:9
+   |
+LL | /         core::ptr::copy_nonoverlapping(
+LL | |
+LL | |             copy_nonoverlapping_src_ptr,
+LL | |             &mut copy_nonoverlapping_dst as *mut u8,
+LL | |             1,
+LL | |         );
+   | |_________^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `copy_nonoverlapping_src_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:63:13
+   |
+LL |             copy_nonoverlapping_src_ptr,
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `precondition check`
+  --> tests/ui/safedrop/use_after_free.rs:74:9
+   |
+LL | /         core::ptr::copy_nonoverlapping(
+LL | |
+LL | |             &copy_nonoverlapping_src as *const u8,
+LL | |             copy_nonoverlapping_dst_ptr,
+LL | |             1,
+LL | |         );
+   | |_________^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `copy_nonoverlapping_dst_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:77:13
+   |
+LL |             copy_nonoverlapping_dst_ptr,
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `precondition check`
+  --> tests/ui/safedrop/use_after_free.rs:86:9
+   |
+LL |         core::ptr::write_bytes(write_bytes_ptr, 0, 1);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `write_bytes_ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/use_after_free.rs:86:32
+   |
+LL |         core::ptr::write_bytes(write_bytes_ptr, 0, 1);
+   |                                ^^^^^^^^^^^^^^^
+
+error: aborting due to 9 previous errors
+

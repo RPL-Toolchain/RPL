@@ -1,0 +1,30 @@
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_015.rs:90:33
+   |
+LL |         for _ in self.by_ref() {}
+   |                                 ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `self.by_ref()` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_015.rs:90:18
+   |
+LL |         for _ in self.by_ref() {}
+   |                  ^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_015.rs:119:1
+   |
+LL | }
+   | ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `SliceDeque::new()` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_015.rs:113:19
+   |
+LL |     let mut deq = SliceDeque::new();
+   |                   ^^^^^^^^^^^^^^^^^
+
+error: aborting due to 2 previous errors
+

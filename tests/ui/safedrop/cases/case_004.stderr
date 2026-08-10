@@ -1,0 +1,17 @@
+error: this function may expose a dangling pointer through its mutable reference argument
+  --> tests/ui/safedrop/cases/case_004.rs:73:5
+   |
+LL | /     pub fn grow(&mut self, new_cap: usize) {
+LL | |
+LL | |         unsafe {
+LL | |             let (ptr, &mut len, cap) = self.triple_mut();
+...  |
+LL | |     }
+   | |_____^
+   |
+   = help: ensure returned values and pointer arguments do not alias storage that dies inside this function
+   = note: `-D rpl::safedrop-dangling-pointer` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_dangling_pointer)]`
+
+error: aborting due to 1 previous error
+

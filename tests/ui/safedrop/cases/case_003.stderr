@@ -1,0 +1,44 @@
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_003.rs:81:9
+   |
+LL |         } else {
+   |         ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `into_inner()` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_003.rs:60:14
+   |
+LL |             .into_inner();
+   |              ^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_003.rs:60:26
+   |
+LL |             .into_inner();
+   |                          ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `ok()` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_003.rs:57:14
+   |
+LL |             .ok()
+   |              ^^^^
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_003.rs:60:26
+   |
+LL |             .into_inner();
+   |                          ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `ok()` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_003.rs:57:14
+   |
+LL |             .ok()
+   |              ^^^^
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: aborting due to 3 previous errors
+

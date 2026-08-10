@@ -1,0 +1,56 @@
+error: this unsafe operation may use a pointer after its owner has been dropped: `deref write`
+  --> tests/ui/safedrop/interprocedural.rs:79:13
+   |
+LL |         ptr.write(1);
+   |             ^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `ptr` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/interprocedural.rs:79:9
+   |
+LL |         ptr.write(1);
+   |         ^^^
+   = note: `-D rpl::safedrop-use-after-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_use_after_free)]`
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `function call`
+  --> tests/ui/safedrop/interprocedural.rs:44:17
+   |
+LL |         let _ = inspect(dangling);
+   |                 ^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `dangling` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/interprocedural.rs:44:25
+   |
+LL |         let _ = inspect(dangling);
+   |                         ^^^^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `function call`
+  --> tests/ui/safedrop/interprocedural.rs:61:17
+   |
+LL |         let _ = consume(moved);
+   |                 ^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `moved` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/interprocedural.rs:61:25
+   |
+LL |         let _ = consume(moved);
+   |                         ^^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `function call`
+  --> tests/ui/safedrop/interprocedural.rs:71:9
+   |
+LL |         overwrite(writable);
+   |         ^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `writable` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/interprocedural.rs:71:19
+   |
+LL |         overwrite(writable);
+   |                   ^^^^^^^^
+
+error: aborting due to 4 previous errors
+

@@ -1,0 +1,258 @@
+pattern safedrop-core-ptr-use-after-free
+
+patt {
+    use core::intrinsics::copy::copy;
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "deref read")]
+    deref_read_after_free_const[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        'use:
+        let $value: $T = copy *$ptr;
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "deref read")]
+    deref_read_after_free_mut[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        let $value: $T = copy *$ptr;
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "deref write")]
+    deref_write_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        *$ptr = _;
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "shared reference creation")]
+    shared_ref_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        'use:
+        let $reference: &$T = &*$ptr;
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "mutable reference creation")]
+    mutable_ref_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        let $reference: &mut $T = &mut *$ptr;
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    read_volatile_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        'use:
+        _ = core::ptr::read_volatile::<$T>(copy $ptr);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    read_volatile_precondition_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        let $precondition_ptr: *const () = copy $ptr as *const () (PtrToPtr);
+        'use:
+        _ = core::ptr::read_volatile::precondition_check(copy $precondition_ptr, _, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    write_volatile_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        _ = core::ptr::write_volatile::<$T>(copy $ptr, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    write_volatile_precondition_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        let $precondition_ptr: *mut () = copy $ptr as *mut () (PtrToPtr);
+        'use:
+        _ = core::ptr::write_volatile::precondition_check(copy $precondition_ptr, _, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    copy_src_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        'use:
+        _ = copy::<$T>(move $ptr, ..);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    copy_dst_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        _ = copy::<$T>(_, move $ptr, ..);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    copy_nonoverlapping_src_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        'use:
+        _ = core::ptr::copy_nonoverlapping::<$T>(copy $ptr, _, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    copy_nonoverlapping_src_precondition_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *const $T = _;
+        let $precondition_ptr: *const () = copy $ptr as *const () (PtrToPtr);
+        'use:
+        _ = core::intrinsics::copy_nonoverlapping::precondition_check(copy $precondition_ptr, _, _, _, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    copy_nonoverlapping_dst_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        _ = core::ptr::copy_nonoverlapping::<$T>(_, copy $ptr, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    copy_nonoverlapping_dst_precondition_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        let $precondition_ptr: *mut () = copy $ptr as *mut () (PtrToPtr);
+        'use:
+        _ = core::intrinsics::copy_nonoverlapping::precondition_check(_, copy $precondition_ptr, _, _, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    write_bytes_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        _ = core::ptr::write_bytes::<$T>(copy $ptr, _, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    write_bytes_precondition_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        let $precondition_ptr: *const () = copy $ptr as *const () (PtrToPtr);
+        'use:
+        _ = core::intrinsics::write_bytes::precondition_check(copy $precondition_ptr, _, _);
+    } where {
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    box_from_raw_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'use:
+        _ = std::boxed::Box::<$T>::from_raw(copy $ptr);
+    } where {
+        !is_release_helper_body('use, $ptr),
+        is_freed('use, $ptr)
+    }
+
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "precondition check")]
+    box_from_raw_inlined_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        let $precondition_ptr: *mut () = copy $ptr as *mut () (PtrToPtr);
+        let $const_ptr: *const $T;
+        let $nonnull: core::ptr::NonNull<$T>;
+        let $unique: core::ptr::Unique<$T>;
+        let $box: std::boxed::Box<$T>;
+        'use:
+        _ = _(.., copy $precondition_ptr, ..);
+        $const_ptr = copy $ptr as *const $T (PtrToPtr);
+        $nonnull = core::ptr::NonNull<$T> {
+            pointer: copy $const_ptr,
+        };
+        $unique = core::ptr::Unique<$T> {
+            pointer: move $nonnull,
+            _marker: _,
+        };
+        $box = #[Ctor] alloc::boxed::Box<$T>(move $unique, _);
+    } where {
+        !is_release_helper_body('use, $ptr),
+        is_freed('use, $ptr)
+    }
+
+    // A move operand pattern also accepts Copy operands, so one pattern covers both without duplicates.
+    #[diag = "safedrop_use_after_free"]
+    #[const(operation = "function call")]
+    local_call_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: $T = _;
+        'use:
+        _ = _(.., move $ptr, ..);
+    } where {
+        is_uaf_call_arg('use, $ptr)
+    }
+
+}
+
+diag {
+    safedrop_use_after_free = {
+        primary(use) = "this unsafe operation may use a pointer after its owner has been dropped: `{$operation}`",
+        note(ptr)    = "`{$ptr}` aliases storage that is dead at this program point",
+        help         = "ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped",
+        name         = "safedrop_use_after_free",
+        level        = "warn",
+    }
+}

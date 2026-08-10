@@ -1,0 +1,17 @@
+error: this unsafe operation may use a pointer after its owner has been dropped: `deref read`
+  --> tests/ui/safedrop/cases/case_024.rs:27:24
+   |
+LL |         let callback = *data.cast::<Collation<'_>>();
+   |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `cast::<Collation<'_>>()` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/cases/case_024.rs:27:30
+   |
+LL |         let callback = *data.cast::<Collation<'_>>();
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-use-after-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_use_after_free)]`
+
+error: aborting due to 1 previous error
+

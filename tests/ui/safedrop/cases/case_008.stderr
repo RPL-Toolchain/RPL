@@ -1,0 +1,66 @@
+error: this function may expose a dangling pointer through its return value
+  --> tests/ui/safedrop/cases/case_008.rs:18:5
+   |
+LL | /     fn unit(index: usize, value: A) -> Self {
+LL | |         let mut chunk = Self {
+LL | |             map: [false; 2],
+LL | |             data: MaybeUninit::uninit(),
+...  |
+LL | |         chunk
+LL | |     }
+   | |_____^
+   |
+   = help: ensure returned values and pointer arguments do not alias storage that dies inside this function
+   = note: `-D rpl::safedrop-dangling-pointer` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_dangling_pointer)]`
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_008.rs:31:5
+   |
+LL |     }
+   |     ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `value` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_008.rs:18:27
+   |
+LL |     fn unit(index: usize, value: A) -> Self {
+   |                           ^^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_008.rs:27:9
+   |
+LL |         } else {
+   |         ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `ptr::read(chunk.slot(index))` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_008.rs:24:32
+   |
+LL |             let old = unsafe { ptr::read(chunk.slot(index)) };
+   |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_008.rs:31:5
+   |
+LL |     }
+   |     ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `Self {
+                  map: [false; 2],
+                  data: MaybeUninit::uninit(),
+              }` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_008.rs:19:25
+   |
+LL |           let mut chunk = Self {
+   |  _________________________^
+LL | |             map: [false; 2],
+LL | |             data: MaybeUninit::uninit(),
+LL | |         };
+   | |_________^
+
+error: aborting due to 4 previous errors
+

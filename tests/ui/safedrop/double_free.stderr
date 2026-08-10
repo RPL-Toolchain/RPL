@@ -1,0 +1,43 @@
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/double_free.rs:36:9
+   |
+LL |         }
+   |         ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `Box::new(2u8)` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/double_free.rs:33:29
+   |
+LL |             let mut boxed = Box::new(2u8);
+   |                             ^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: this unsafe operation may free storage that is already dead: `dealloc`
+  --> tests/ui/safedrop/double_free.rs:24:9
+   |
+LL |         dealloc(ptr, layout);
+   |         ^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `ptr` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/double_free.rs:24:17
+   |
+LL |         dealloc(ptr, layout);
+   |                 ^^^
+
+error: this unsafe operation may free storage that is already dead: `release`
+  --> tests/ui/safedrop/double_free.rs:29:9
+   |
+LL |         release(release_ptr, layout);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `release_ptr` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/double_free.rs:29:17
+   |
+LL |         release(release_ptr, layout);
+   |                 ^^^^^^^^^^^
+
+error: aborting due to 3 previous errors
+

@@ -1,0 +1,18 @@
+error: this function may expose a dangling pointer through its mutable pointer argument
+  --> tests/ui/safedrop/cases/case_001.rs:85:5
+   |
+LL | /     pub unsafe fn from_raw_parts(ptr: *mut T, capacity: usize, head: usize, tail: usize) -> Self {
+LL | |
+LL | |         debug_assert!(head <= tail);
+LL | |         let d = Self {
+...  |
+LL | |         d
+LL | |     }
+   | |_____^
+   |
+   = help: ensure returned values and pointer arguments do not alias storage that dies inside this function
+   = note: `-D rpl::safedrop-dangling-pointer` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_dangling_pointer)]`
+
+error: aborting due to 1 previous error
+

@@ -1,0 +1,17 @@
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_009.rs:29:5
+   |
+LL |     }
+   |     ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `value1` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_009.rs:18:28
+   |
+LL |     fn pair(index1: usize, value1: A, index2: usize, value2: A) -> Self {
+   |                            ^^^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: aborting due to 1 previous error
+
