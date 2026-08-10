@@ -1,0 +1,19 @@
+pattern string-from-utf8-as-bytes
+
+patt {
+    #[diag = "string-from-utf8-as-bytes"]
+    string-from-utf8-as-bytes = fn _ (..) -> _ {
+        let $str_to_u8: _ = copy _ as &[u8] (Transmute);
+        let $slice: _ = std::slice::SliceIndex::index(_, copy $str_to_u8);
+        'string_from_utf8_as_bytes_call:
+        let $str:_ = std::str::from_utf8(copy $slice);
+    }
+}
+
+diag {
+    string-from-utf8-as-bytes = {
+        primary(string_from_utf8_as_bytes_call) = "converts strings to bytes and back unnecessarily instead of direct slicing.",
+        name = "string_from_utf8_as_bytes",
+        level = "warn",
+    }
+}

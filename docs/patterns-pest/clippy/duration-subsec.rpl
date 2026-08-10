@@ -1,0 +1,31 @@
+pattern duration-subsec
+
+patt {
+    #[diag = "duration_subsec"]
+    duration_subsec_nanos_to_micros = fn _ (..) -> _ {
+        let $nanos: _ = std::time::Duration::subsec_nanos(_);
+        'duration_subsec_call:
+        let $micros: _ = Div(move $nanos, const 1000_u32);
+    }
+    #[diag = "duration_subsec"]
+    duration_subsec_nanos_to_millis = fn _ (..) -> _ {
+        let $nanos: _ = std::time::Duration::subsec_nanos(_);
+        'duration_subsec_call:
+        let $micros: _ = Div(move $nanos, const 1000000_u32);
+    }
+    #[diag = "duration_subsec"]
+    duration_subsec_micros_to_millis = fn _ (..) -> _ {
+        let $nanos: _ = std::time::Duration::subsec_micros(_);
+        'duration_subsec_call:
+        let $micros: _ = Div(move $nanos, const 1000_u32);
+    }
+}
+
+diag {
+    duration_subsec = {
+        primary(duration_subsec_call)   = "using `subsec_nanos` or `subsec_micros` with division to obtain subsecond units",
+        help                            = "use `subsec_micros`, `subsec_millis`, or `subsec_nanos` directly instead of manual division",
+        name                            = "duration_subsec",
+        level                           = "warn",
+    }
+}
