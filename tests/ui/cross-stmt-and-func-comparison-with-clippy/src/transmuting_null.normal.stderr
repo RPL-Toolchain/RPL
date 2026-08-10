@@ -29,7 +29,7 @@ error: transmuting a known null pointer into a reference
 LL |         let x: &u64 = std::mem::transmute(null_ptr);
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
-   = note: `std::ptr::null::<u64>()` is known to be a null pointer, so transmuting it into a reference is undefined behavior
+   = note: `null_ptr` is known to be a null pointer, so transmuting it into a reference is undefined behavior
 
 error: aborting due to 4 previous errors
 

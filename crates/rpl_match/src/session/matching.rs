@@ -465,6 +465,13 @@ impl<'a, 'pcx, 'tcx> SessionMatching<'a, 'pcx, 'tcx> {
         if !has_fn && !has_adt {
             return;
         }
+        let pattern_has_mir_body = self.fn_slots.iter().any(|slot| !slot.fn_pat.is_signature_only());
+        let has_mir_body_match = assignments.iter().any(|assignment| {
+            matches!(&assignment.candidate, SlotCandidate::Fn(candidate) if !candidate.matched.basic_blocks.is_empty())
+        });
+        if pattern_has_mir_body && !has_mir_body_match {
+            return;
+        }
         let requires_fn = self.fn_slots.iter().any(|s| !s.optional);
         if requires_fn && !has_fn {
             return;

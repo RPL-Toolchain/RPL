@@ -27,6 +27,7 @@ rpl_config = { path = "./crates/rpl_config" }
 rpl_constraints = { path = "./crates/rpl_constraints" }
 rpl_doc = { path = "./crates/rpl_doc" }
 rpl_resolve = { path = "./crates/rpl_resolve" }
+mirsa = "0.2.3"
 rustc_tools_util = "0.3.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }

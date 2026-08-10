@@ -8,7 +8,7 @@ use rpl_context::{PatCtxt, pat};
 use rpl_resolve::{PatItemKind, def_path_res};
 use rustc_abi::FieldIdx;
 use rustc_data_structures::fx::{FxHashMap, FxIndexSet};
-use rustc_hir::def::Res;
+use rustc_hir::def::{DefKind, Res};
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
 use rustc_hir::definitions::{DefPathData, DefPathDataName};
 use rustc_index::IndexVec;
@@ -372,7 +372,35 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
         args: ty::GenericArgsRef<'tcx>,
     ) -> bool {
         let generics = self.tcx().generics_of(def_id);
-        self.match_path(path_with_args.path, def_id) && self.match_generic_args(&path_with_args.args, args, generics)
+        if !self.match_path(path_with_args.path, def_id) {
+            return false;
+        }
+        self.match_generic_args(&path_with_args.args, args, generics)
+            || self.match_parent_self_ty_args(&path_with_args.args, def_id, args)
+    }
+
+    #[instrument(level = "trace", skip(self), ret)]
+    fn match_parent_self_ty_args(
+        &self,
+        args_pat: &[pat::GenericArgKind<'pcx>],
+        def_id: DefId,
+        args: ty::GenericArgsRef<'tcx>,
+    ) -> bool {
+        if args_pat.is_empty() || !args.is_empty() {
+            return false;
+        }
+
+        let Some(parent) = self.tcx().opt_parent(def_id) else {
+            return false;
+        };
+        if !matches!(self.tcx().def_kind(parent), DefKind::Impl { .. }) {
+            return false;
+        }
+
+        match *self.tcx().type_of(parent).instantiate_identity().kind() {
+            ty::Adt(adt, args) => self.match_generic_args(args_pat, args, self.tcx().generics_of(adt.did())),
+            _ => false,
+        }
     }
 
     #[instrument(level = "debug", skip(self), ret)]
@@ -405,30 +433,27 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
         };
         let res = def_path_res(self.tcx(), path.0, kind);
         trace!(?res);
-        let mut res = res.into_iter().filter_map(|res| match res {
-            Res::Def(_, id) => Some(id),
-            _ => None,
-        });
-        match res.next() {
-            Some(pat_id) => {
-                // FIXME: there should be at most one item matching specific item kind
-                assert!(res.next().is_none());
-
-                trace!(?pat_id, ?def_id);
-
-                pat_id == def_id
-            },
-            None => {
-                let def_path = self.tcx().def_path(def_id);
-                let def_path: Vec<_> = std::iter::once(self.tcx().crate_name(def_path.krate))
-                    .chain(def_path.data.iter().map(|data| match data.data.name() {
-                        DefPathDataName::Named(symbol) | DefPathDataName::Anon { namespace: symbol } => symbol,
-                    }))
-                    .collect();
-                debug!(?path, ?def_id, ?kind, ?def_path, "fallback");
-                path.0 == def_path
-            },
+        let res = res
+            .into_iter()
+            .filter_map(|res| match res {
+                Res::Def(_, id) => Some(id),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        if !res.is_empty() {
+            let matched = res.contains(&def_id);
+            trace!(?res, ?def_id, matched);
+            return matched;
         }
+
+        let def_path = self.tcx().def_path(def_id);
+        let def_path: Vec<_> = std::iter::once(self.tcx().crate_name(def_path.krate))
+            .chain(def_path.data.iter().map(|data| match data.data.name() {
+                DefPathDataName::Named(symbol) | DefPathDataName::Anon { namespace: symbol } => symbol,
+            }))
+            .collect();
+        debug!(?path, ?def_id, ?kind, ?def_path, "fallback");
+        path.0 == def_path
     }
 
     #[instrument(level = "trace", skip(self), ret)]

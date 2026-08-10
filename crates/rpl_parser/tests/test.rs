@@ -24,6 +24,7 @@ fn mir_rvalue_or_call() {
     full_test!(MirRvalueCast, "copy $x as isize (IntToInt)");
     full_test!(MirRvalue, "copy $x as isize (IntToInt)");
     full_test!(MirRvalueOrCall, "copy $x as isize (IntToInt)");
+    full_test!(MirCall, "_(..)");
     full_test!(MirRvalue, "copy (*$from_vec_mut_borrow).buf.inner.ptr.pointer");
     full_test!(MirRvalue, "copy (((((*$from_vec_mut_borrow).buf).inner).ptr).pointer)");
     full_test!(MirRvalue, "copy ((((*$x).0).0).0)");
@@ -33,6 +34,7 @@ fn mir_rvalue_or_call() {
 fn predicates() {
     full_test!(Predicate, "p1(self)");
     full_test!(Predicate, "p1('a, 'b, std::mem::transmute)");
+    full_test!(Predicate, "p1(0, 42usize, 0xff_u16, 0b1010)");
     full_test!(PredicateTerm, "!p($T)");
     full_test!(PredicateClause, "!p($T)");
     full_test!(PredicateClause, "(!p($T) || p($T))");
@@ -486,6 +488,7 @@ fn mir_operand() {
     full_test!(MirOperand, "copy $p");
     full_test!(MirOperand, "copy (*$p)");
     full_test!(MirOperand, "move $p as DstVec");
+    full_test!(MirCall, "_(.., move $p, ..)");
 }
 
 #[test]
