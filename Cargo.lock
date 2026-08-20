@@ -1151,6 +1151,78 @@ dependencies = [
 ]
 
 [[package]]
+name = "mirsa"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea33a39667fb98e09ed1bc536559ec9a7832a7f5fe0d577675bd47e63378b930"
+dependencies = [
+ "mirsa-analysis",
+ "mirsa-contracts",
+ "mirsa-core",
+ "mirsa-domains",
+ "mirsa-framework",
+ "mirsa-relations",
+]
+
+[[package]]
+name = "mirsa-analysis"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c39b1ac377132bee01c948213056abc899b139bf731400aa94166eee50e581f1"
+dependencies = [
+ "mirsa-contracts",
+ "mirsa-core",
+ "mirsa-domains",
+ "mirsa-framework",
+ "mirsa-relations",
+]
+
+[[package]]
+name = "mirsa-contracts"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73c98586771a7d9cf8e317092fbc795ebc31ac267c9ef90e4c217e2b8121a7da"
+dependencies = [
+ "mirsa-domains",
+ "mirsa-framework",
+ "mirsa-relations",
+]
+
+[[package]]
+name = "mirsa-core"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0cfabdf648d561aaedc0d783edffdedc56df53c9ffd8334727ca4b9132c2e20d"
+
+[[package]]
+name = "mirsa-domains"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9bccaa51485bc0324f013db821a81b102b1a6d1473c83c22c955f2b5bffc4a6a"
+dependencies = [
+ "mirsa-framework",
+ "mirsa-relations",
+]
+
+[[package]]
+name = "mirsa-framework"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60539db381807f171c9ff3ad7962ac1e9d0f1e3c6acbb7c1b00a28b7efe8d3d6"
+dependencies = [
+ "mirsa-core",
+]
+
+[[package]]
+name = "mirsa-relations"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc1c2f079ad63573ddf35c2e7a3319505a8bdecf7ea7577a5824355ba1ebf30b"
+dependencies = [
+ "mirsa-framework",
+]
+
+[[package]]
 name = "nom"
 version = "7.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1604,6 +1676,7 @@ name = "rpl_constraints"
 version = "0.1.0"
 dependencies = [
  "derive_more",
+ "mirsa",
  "pretty_assertions",
  "proc-macro2",
  "quote",

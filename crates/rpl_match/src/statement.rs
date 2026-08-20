@@ -497,7 +497,6 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
     ///
     /// If `is_copy` is `true`, the `Copy` and `Move` variants of [`mir::Operand`] are considered
     /// the same.
-    #[instrument(level = "trace", skip(self), ret)]
     fn match_operand(&self, pat: &pat::Operand<'pcx>, operand: &mir::Operand<'tcx>) -> bool {
         let matched = match (pat, operand) {
             (&pat::Operand::Copy(place_pat), &mir::Operand::Copy(place))
@@ -522,6 +521,9 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
                 }),
             ) if let &ty::FnDef(fn_did, _args) = ty.kind() => self.match_fn_pat(fn_pat, fn_did),
             (pat::Operand::Any, mir::Operand::Copy(_) | mir::Operand::Move(_) | mir::Operand::Constant(_)) => true,
+            (pat::Operand::AnyMany, mir::Operand::Copy(_) | mir::Operand::Move(_) | mir::Operand::Constant(_)) => {
+                return false;
+            },
             (
                 pat::Operand::Copy(_) | pat::Operand::Move(_) | pat::Operand::Constant(_) | pat::Operand::FnPat(_),
                 mir::Operand::Copy(_) | mir::Operand::Move(_) | mir::Operand::Constant(_),
@@ -547,13 +549,73 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
         pat: &[pat::Operand<'pcx>],
         operands: &[rustc_span::source_map::Spanned<mir::Operand<'tcx>>],
     ) -> bool {
+        if pat.iter().any(|operand| matches!(operand, pat::Operand::AnyMany)) {
+            return self.match_spanned_operands_with_any_many(pat, operands);
+        }
         pat.len() == operands.len()
             && zip(pat, operands).all(|(operand_pat, operand)| self.match_operand(operand_pat, &operand.node))
     }
 
+    fn match_spanned_operands_with_any_many(
+        &self,
+        pat: &[pat::Operand<'pcx>],
+        operands: &[rustc_span::source_map::Spanned<mir::Operand<'tcx>>],
+    ) -> bool {
+        if matches!(pat, [pat::Operand::AnyMany]) {
+            return true;
+        }
+        if let [pat::Operand::AnyMany, operand_pat, pat::Operand::AnyMany] = pat {
+            return operands
+                .iter()
+                .any(|operand| self.match_operand(operand_pat, &operand.node));
+        }
+        match (pat.split_first(), operands.split_first()) {
+            (None, None) => true,
+            (None, Some(_)) => false,
+            (Some((pat::Operand::AnyMany, rest_pat)), _) => {
+                (0..=operands.len()).any(|skip| self.match_spanned_operands_with_any_many(rest_pat, &operands[skip..]))
+            },
+            (Some((operand_pat, rest_pat)), Some((operand, rest_operands))) => {
+                self.match_operand(operand_pat, &operand.node)
+                    && self.match_spanned_operands_with_any_many(rest_pat, rest_operands)
+            },
+            (Some(_), None) => false,
+        }
+    }
+
     fn match_operands(&self, operands_pat: &[pat::Operand<'pcx>], operands: &[mir::Operand<'tcx>]) -> bool {
+        if operands_pat
+            .iter()
+            .any(|operand| matches!(operand, pat::Operand::AnyMany))
+        {
+            return self.match_operands_with_any_many(operands_pat, operands);
+        }
         operands_pat.len() == operands.len()
             && zip(operands_pat, operands).all(|(operand_pat, operand)| self.match_operand(operand_pat, operand))
+    }
+
+    fn match_operands_with_any_many(
+        &self,
+        operands_pat: &[pat::Operand<'pcx>],
+        operands: &[mir::Operand<'tcx>],
+    ) -> bool {
+        if matches!(operands_pat, [pat::Operand::AnyMany]) {
+            return true;
+        }
+        if let [pat::Operand::AnyMany, operand_pat, pat::Operand::AnyMany] = operands_pat {
+            return operands.iter().any(|operand| self.match_operand(operand_pat, operand));
+        }
+        match (operands_pat.split_first(), operands.split_first()) {
+            (None, None) => true,
+            (None, Some(_)) => false,
+            (Some((pat::Operand::AnyMany, rest_pat)), _) => {
+                (0..=operands.len()).any(|skip| self.match_operands_with_any_many(rest_pat, &operands[skip..]))
+            },
+            (Some((operand_pat, rest_pat)), Some((operand, rest_operands))) => {
+                self.match_operand(operand_pat, operand) && self.match_operands_with_any_many(rest_pat, rest_operands)
+            },
+            (Some(_), None) => false,
+        }
     }
 
     #[instrument(level = "trace", skip(self), ret)]

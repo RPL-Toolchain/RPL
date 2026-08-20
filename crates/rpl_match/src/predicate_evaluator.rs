@@ -33,7 +33,7 @@ pub struct PredicateEvaluator<'e, 'm, 'tcx> {
     body: &'e mir::Body<'tcx>,
     label_map: &'e LabelMap,
     matched: &'e Matched<'tcx>,
-    body_cache: &'e BodyInfoCache,
+    body_cache: &'e BodyInfoCache<'tcx>,
     symbol_table: &'e pat::FnSymbolTable<'m>,
     mir_ddg: Option<&'e MirDataDepGraph>,
 }
@@ -50,7 +50,7 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
         body: &'e mir::Body<'tcx>,
         label_map: &'e LabelMap,
         matched: &'e Matched<'tcx>,
-        body_cache: &'e BodyInfoCache,
+        body_cache: &'e BodyInfoCache<'tcx>,
         symbol_table: &'e pat::FnSymbolTable<'m>,
         mir_ddg: Option<&'e MirDataDepGraph>,
     ) -> Self {
@@ -201,6 +201,143 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
                     _ => panic!("PredicateArgInstance::Local expected, got {:?}", arg_instance[0]),
                 }
             },
+            PredicateKind::Location(p) => {
+                assert_eq!(arg_instance.len(), 1, "Location predicate expects one argument");
+                match &arg_instance[0] {
+                    PredicateArgInstance::Location(location) => {
+                        p(self.tcx, self.typing_env, self.body, self.body_cache, *location)
+                    },
+                    other => panic!("Location predicate expected a location, got {other:?}"),
+                }
+            },
+            PredicateKind::LocationLocal(p) => {
+                assert_eq!(arg_instance.len(), 2, "LocationLocal predicate expects two arguments");
+                match (&arg_instance[0], &arg_instance[1]) {
+                    (PredicateArgInstance::Location(location), PredicateArgInstance::Local(local)) => {
+                        p(self.tcx, self.typing_env, self.body, self.body_cache, *location, *local)
+                    },
+                    args => panic!("LocationLocal predicate expected a location and local, got {args:?}"),
+                }
+            },
+            PredicateKind::LocationLocalConst(p) => {
+                assert_eq!(
+                    arg_instance.len(),
+                    3,
+                    "LocationLocalConst predicate expects three arguments"
+                );
+                match (&arg_instance[0], &arg_instance[1], &arg_instance[2]) {
+                    (
+                        PredicateArgInstance::Location(location),
+                        PredicateArgInstance::Local(local),
+                        PredicateArgInstance::Const(konst),
+                    ) => p(
+                        self.tcx,
+                        self.typing_env,
+                        self.body,
+                        self.body_cache,
+                        *location,
+                        *local,
+                        *konst,
+                    ),
+                    args => panic!("LocationLocalConst predicate received invalid arguments: {args:?}"),
+                }
+            },
+            PredicateKind::LocationLocalTy(p) => {
+                assert_eq!(
+                    arg_instance.len(),
+                    3,
+                    "LocationLocalTy predicate expects three arguments"
+                );
+                match (&arg_instance[0], &arg_instance[1], &arg_instance[2]) {
+                    (
+                        PredicateArgInstance::Location(location),
+                        PredicateArgInstance::Local(local),
+                        PredicateArgInstance::Ty(ty),
+                    ) => p(
+                        self.tcx,
+                        self.typing_env,
+                        self.body,
+                        self.body_cache,
+                        *location,
+                        *local,
+                        *ty,
+                    ),
+                    args => panic!("LocationLocalTy predicate received invalid arguments: {args:?}"),
+                }
+            },
+            PredicateKind::LocationLocalLocal(p) => {
+                assert_eq!(
+                    arg_instance.len(),
+                    3,
+                    "LocationLocalLocal predicate expects three arguments"
+                );
+                match (&arg_instance[0], &arg_instance[1], &arg_instance[2]) {
+                    (
+                        PredicateArgInstance::Location(location),
+                        PredicateArgInstance::Local(left),
+                        PredicateArgInstance::Local(right),
+                    ) => p(
+                        self.tcx,
+                        self.typing_env,
+                        self.body,
+                        self.body_cache,
+                        *location,
+                        *left,
+                        *right,
+                    ),
+                    args => panic!("LocationLocalLocal predicate received invalid arguments: {args:?}"),
+                }
+            },
+            PredicateKind::LocationLocalLocalConst(p) => {
+                assert_eq!(
+                    arg_instance.len(),
+                    4,
+                    "LocationLocalLocalConst predicate expects four arguments"
+                );
+                match (&arg_instance[0], &arg_instance[1], &arg_instance[2], &arg_instance[3]) {
+                    (
+                        PredicateArgInstance::Location(location),
+                        PredicateArgInstance::Local(left),
+                        PredicateArgInstance::Local(right),
+                        PredicateArgInstance::Const(konst),
+                    ) => p(
+                        self.tcx,
+                        self.typing_env,
+                        self.body,
+                        self.body_cache,
+                        *location,
+                        *left,
+                        *right,
+                        *konst,
+                    ),
+                    args => panic!("LocationLocalLocalConst predicate received invalid arguments: {args:?}"),
+                }
+            },
+            PredicateKind::LocationLocalTyConst(p) => {
+                assert_eq!(
+                    arg_instance.len(),
+                    4,
+                    "LocationLocalTyConst predicate expects four arguments"
+                );
+                match (&arg_instance[0], &arg_instance[1], &arg_instance[2], &arg_instance[3]) {
+                    (
+                        PredicateArgInstance::Location(location),
+                        PredicateArgInstance::Local(local),
+                        PredicateArgInstance::Ty(ty),
+                        PredicateArgInstance::Const(konst),
+                    ) => p(
+                        self.tcx,
+                        self.typing_env,
+                        self.body,
+                        self.body_cache,
+                        *location,
+                        *local,
+                        *ty,
+                        *konst,
+                    ),
+                    args => panic!("LocationLocalTyConst predicate received invalid arguments: {args:?}"),
+                }
+            },
             PredicateKind::ItemAttr(p) => {
                 assert!(
                     arg_instance.len() == 2,
@@ -314,6 +451,24 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
                         name, self.symbol_table.meta_vars,
                     ))
                 }
+            },
+            PredicateArg::Integer(integer) => {
+                use rpl_constraints::predicates::PredicateIntegerTy;
+
+                let ty = match integer.ty {
+                    None | Some(PredicateIntegerTy::Usize) => self.tcx.types.usize,
+                    Some(PredicateIntegerTy::U8) => self.tcx.types.u8,
+                    Some(PredicateIntegerTy::U16) => self.tcx.types.u16,
+                    Some(PredicateIntegerTy::U32) => self.tcx.types.u32,
+                    Some(PredicateIntegerTy::U64) => self.tcx.types.u64,
+                    Some(PredicateIntegerTy::I8) => self.tcx.types.i8,
+                    Some(PredicateIntegerTy::I16) => self.tcx.types.i16,
+                    Some(PredicateIntegerTy::I32) => self.tcx.types.i32,
+                    Some(PredicateIntegerTy::I64) => self.tcx.types.i64,
+                    Some(PredicateIntegerTy::Isize) => self.tcx.types.isize,
+                };
+                let konst = mir::Const::from_bits(self.tcx, integer.value, self.typing_env, ty);
+                Ok(PredicateArgInstance::Const(Const::MIR(konst)))
             },
             PredicateArg::Path(path) => Ok(PredicateArgInstance::Path(path.clone())),
             PredicateArg::SelfValue => panic!("SelfValue should not be used in predicate evaluation."),

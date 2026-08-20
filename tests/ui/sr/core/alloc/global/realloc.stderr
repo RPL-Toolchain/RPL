@@ -1,0 +1,13 @@
+error: this unsafe operation violates a safety property: `GlobalAlloc::realloc` requires new_size > 0
+  --> tests/ui/sr/core/alloc/global/realloc.rs:16:17
+   |
+LL |         let _ = GlobalAlloc::realloc(&System, ptr, layout, zero_size);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a non-zero new size before calling this unsafe function
+   = note: the requested allocation size is proven to be zero
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 1 previous error
+

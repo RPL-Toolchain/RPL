@@ -1,0 +1,39 @@
+pattern core-ptr-const_ptr-offset
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "*const T::offset", requirement = "count * size_of::<T>() fits in isize")]
+    const_ptr_offset_scaled_count_too_large[$T: type] = {
+        unsafe? fn _(..) -> _ {
+            let $ptr: *const $T = _;
+            let $count: isize = _;
+            'use:
+            let $result: *const $T = const_ptr::offset(move $ptr, move $count);
+        } where {
+            size_mul_gt_const('use, $count, $T, 9223372036854775807isize)
+        }
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "*const T::offset", requirement = "count * size_of::<T>() fits in isize")]
+    const_ptr_offset_scaled_count_too_small[$T: type] = {
+        unsafe? fn _(..) -> _ {
+            let $ptr: *const $T = _;
+            let $count: isize = _;
+            'use:
+            let $result: *const $T = const_ptr::offset(move $ptr, move $count);
+        } where {
+            size_mul_lt_const('use, $count, $T, 9223372036854775808isize)
+        }
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the scaled pointer offset is proven outside the isize range",
+        help         = "use a count whose byte offset fits in isize",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

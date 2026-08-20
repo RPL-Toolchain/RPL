@@ -1,0 +1,30 @@
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_010.rs:31:56
+   |
+LL |         *self.data.lock().unwrap() = Mapping { values };
+   |                                                        ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `self.data.lock().unwrap()` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_010.rs:31:10
+   |
+LL |         *self.data.lock().unwrap() = Mapping { values };
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_010.rs:58:1
+   |
+LL | }
+   | ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `Buffer::new(vec![1, 2, 3])` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_010.rs:53:18
+   |
+LL |     let buffer = Buffer::new(vec![1, 2, 3]);
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 2 previous errors
+

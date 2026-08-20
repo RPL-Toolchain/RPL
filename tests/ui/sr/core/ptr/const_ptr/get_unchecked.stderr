@@ -1,0 +1,31 @@
+error: this unsafe operation violates a safety property: `*const [T]::get_unchecked` requires index < len
+  --> tests/ui/sr/core/ptr/const_ptr/get_unchecked.rs:18:17
+   |
+LL |         let _ = ptr.get_unchecked(index_out_of_bounds);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function
+   = note: the index violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `*const [T]::get_unchecked` requires start <= end
+  --> tests/ui/sr/core/ptr/const_ptr/get_unchecked.rs:22:17
+   |
+LL |         let _ = ptr.get_unchecked(start_after_end);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function
+   = note: the index violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `*const [T]::get_unchecked` requires end <= len
+  --> tests/ui/sr/core/ptr/const_ptr/get_unchecked.rs:26:17
+   |
+LL |         let _ = ptr.get_unchecked(end_out_of_bounds);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function
+   = note: the index violates the numeric precondition
+
+error: aborting due to 3 previous errors
+

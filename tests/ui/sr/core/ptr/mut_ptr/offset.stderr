@@ -1,0 +1,22 @@
+error: this unsafe operation violates a safety property: `*mut T::offset` requires count * size_of::<T>() fits in isize
+  --> tests/ui/sr/core/ptr/mut_ptr/offset.rs:14:17
+   |
+LL |         let _ = ptr.offset(positive_overflow);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a count whose byte offset fits in isize
+   = note: the scaled pointer offset is proven outside the isize range
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `*mut T::offset` requires count * size_of::<T>() fits in isize
+  --> tests/ui/sr/core/ptr/mut_ptr/offset.rs:18:17
+   |
+LL |         let _ = ptr.offset(negative_overflow);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a count whose byte offset fits in isize
+   = note: the scaled pointer offset is proven outside the isize range
+
+error: aborting due to 2 previous errors
+

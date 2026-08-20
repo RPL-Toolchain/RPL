@@ -9,16 +9,7 @@ patt {
         // This is a known null pointer, so transmuting it into a reference is undefined behavior.
         let $value: &$T = move $null as &$T (Transmute);
     } where {
-        is_null($null)
-    }
-
-    #[diag = "transmute_null"]
-    transmute_ptr_null[$T: type] = fn _(..) {
-        'null:
-        let $null: *const $T = std::ptr::null::<$T>();
-        'cast:
-        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
-        let $value: &$T = move $null as &$T (Transmute);
+        is_null('cast, $null)
     }
 
     #[diag = "transmute_null"]

@@ -12,15 +12,25 @@ fn main() {
     println!("cargo:rerun-if-changed={}", patterns_dir.display());
 
     let collect_patterns = |dir: &std::path::Path, category: &str, out: &mut std::fs::File| {
-        let mut collections = Vec::new();
-        for entry in std::fs::read_dir(dir).unwrap() {
-            let entry = entry.unwrap();
-            let path = entry.path();
-            if path.extension().and_then(|ext| ext.to_str()) == Some("rpl") {
-                let name = path.file_name().unwrap().to_str().unwrap();
-                collections.push(name.to_string());
+        fn collect_rpl_files(root: &std::path::Path, dir: &std::path::Path, out: &mut Vec<String>) {
+            for entry in std::fs::read_dir(dir).unwrap() {
+                let entry = entry.unwrap();
+                let path = entry.path();
+                if path.is_dir() {
+                    collect_rpl_files(root, &path, out);
+                } else if path.extension().and_then(|ext| ext.to_str()) == Some("rpl") {
+                    let name = path
+                        .strip_prefix(root)
+                        .unwrap()
+                        .to_string_lossy()
+                        .replace(std::path::MAIN_SEPARATOR, "/");
+                    out.push(name);
+                }
             }
         }
+
+        let mut collections = Vec::new();
+        collect_rpl_files(dir, dir, &mut collections);
         collections.sort_by_key(|name| name.clone());
         for name in collections {
             writeln!(out, "        \"{category}/{name}\",").unwrap();
@@ -73,6 +83,8 @@ pub fn patterns() -> Vec<(&'static str, &'static str)> {{
     collect_patterns(&patterns_dir.join("cve"), "cve", &mut out);
     writeln!(out, r"        // Common patterns based on Rust's UB").unwrap();
     collect_patterns(&patterns_dir.join("ub"), "ub", &mut out);
+    writeln!(out, r"        // Safety requirements").unwrap();
+    collect_patterns(&patterns_dir.join("sr"), "sr", &mut out);
     writeln!(out, "    ]").unwrap();
     writeln!(out, "}}").unwrap();
 }

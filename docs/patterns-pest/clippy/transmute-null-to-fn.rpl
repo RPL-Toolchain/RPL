@@ -9,7 +9,7 @@ patt {
         // This is a known null pointer, so transmuting it into a reference is undefined behavior.
         let $value: $U = move $null as $U (Transmute);
     } where {
-        is_null($null)
+        is_null('cast, $null)
     }
     #[diag = "transmute_null"]
     transmute_ptr_null_mut_inline[$T: type, $U: type where is_fn_ptr(self)] = unsafe? fn _(..) {
@@ -19,42 +19,7 @@ patt {
         // This is a known null pointer, so transmuting it into a reference is undefined behavior.
         let $value: $U = move $null as $U (Transmute);
     } where {
-        is_null($null)
-    }
-
-    #[diag = "transmute_null"]
-    transmute_ptr_null[$T: type, $U: type where is_fn_ptr(self)] = unsafe? fn _(..) {
-        'null:
-        let $null: *const $T = std::ptr::null::<$T>();
-        'cast:
-        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
-        let $value: $U = move $null as $U (Transmute);
-    }
-    #[diag = "transmute_null"]
-    transmute_ptr_null_intermediate[$T: type, $I: type, $U: type where is_fn_ptr(self)] = unsafe? fn _(..) {
-        'null:
-        let $null: *const $T = std::ptr::null::<$T>();
-        let $null_: $I = move $null as $I (PtrToPtr);
-        'cast:
-        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
-        let $value: $U = move $null_ as $U (Transmute);
-    }
-    #[diag = "transmute_null"]
-    transmute_ptr_null_mut[$T: type, $U: type where is_fn_ptr(self)] = unsafe? fn _(..) {
-        'null:
-        let $null: *mut $T = std::ptr::null_mut::<$T>();
-        'cast:
-        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
-        let $value: $U = move $null as $U (Transmute);
-    }
-    #[diag = "transmute_null"]
-    transmute_ptr_null_mut_intermediate[$T: type, $I: type, $U: type where is_fn_ptr(self)] = unsafe? fn _(..) {
-        'null:
-        let $null: *mut $T = std::ptr::null_mut::<$T>();
-        let $null_: $I = move $null as $I (PtrToPtr);
-        'cast:
-        // This is a known null pointer, so transmuting it into a reference is undefined behavior.
-        let $value: $U = move $null_ as $U (Transmute);
+        is_null('cast, $null)
     }
 
     #[diag = "transmute_null"]

@@ -1,0 +1,29 @@
+pattern core-alloc-global-GlobalAlloc-realloc
+
+patt {
+    use core::alloc::GlobalAlloc;
+    use core::alloc::Layout;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "GlobalAlloc::realloc", requirement = "new_size > 0")]
+    global_alloc_realloc_zero_new_size[$A: type] = unsafe? fn _(..) -> _ {
+        let $allocator: &$A = _;
+        let $ptr: *mut u8 = _;
+        let $layout: Layout = _;
+        let $new_size: usize = _;
+        'use:
+        let $result: *mut u8 = GlobalAlloc::realloc(move $allocator, move $ptr, move $layout, move $new_size);
+    } where {
+        eq_const('use, $new_size, 0usize)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the requested allocation size is proven to be zero",
+        help         = "use a non-zero new size before calling this unsafe function",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

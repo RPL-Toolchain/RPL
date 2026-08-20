@@ -1,0 +1,38 @@
+pattern core-char-from_u32_unchecked
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "char::from_u32_unchecked", requirement = "i <= 0x10FFFF")]
+    char_from_u32_unchecked_too_large = unsafe? fn _(..) -> _ {
+        'i:
+        let $i: u32 = _;
+        let $arg: u32 = copy $i;
+        'use:
+        _ = core::char::from_u32_unchecked(move $arg);
+    } where {
+        gt_const('use, $arg, 0x10FFFF)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "char::from_u32_unchecked", requirement = "i is not in the surrogate range 0xD800..=0xDFFF")]
+    char_from_u32_unchecked_surrogate = unsafe? fn _(..) -> _ {
+        'i:
+        let $i: u32 = _;
+        let $arg: u32 = copy $i;
+        'use:
+        _ = core::char::from_u32_unchecked(move $arg);
+    } where {
+        ge_const('use, $arg, 0xD800) &&
+        le_const('use, $arg, 0xDFFF)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the value before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

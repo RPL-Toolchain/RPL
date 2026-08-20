@@ -1,0 +1,49 @@
+pattern safedrop-core-ptr-dangling-pointer
+
+patt {
+    #[diag = "safedrop_dangling_pointer"]
+    #[const(operation = "return value")]
+    return_dangling_pointer[$T: type] = unsafe? fn $pattern(..) -> _ {
+        'ret:
+        let $RET: $T = _;
+    } where {
+        has_dangling_ptr_at_exit($RET)
+    }
+
+    #[diag = "safedrop_dangling_pointer"]
+    #[const(operation = "const pointer argument")]
+    arg_dangling_pointer_const[$T: type] = unsafe? fn $pattern($arg: *const $T, ..) -> _ {
+    } where {
+        has_dangling_ptr_at_exit($arg)
+    }
+
+    #[diag = "safedrop_dangling_pointer"]
+    #[const(operation = "mutable pointer argument")]
+    arg_dangling_pointer_mut[$T: type] = unsafe? fn $pattern($arg: *mut $T, ..) -> _ {
+    } where {
+        has_dangling_ptr_at_exit($arg)
+    }
+
+    #[diag = "safedrop_dangling_pointer"]
+    #[const(operation = "shared reference argument")]
+    arg_dangling_pointer_ref[$T: type] = unsafe? fn $pattern($arg: &$T, ..) -> _ {
+    } where {
+        has_dangling_ptr_at_exit($arg)
+    }
+
+    #[diag = "safedrop_dangling_pointer"]
+    #[const(operation = "mutable reference argument")]
+    arg_dangling_pointer_ref_mut[$T: type] = unsafe? fn $pattern($arg: &mut $T, ..) -> _ {
+    } where {
+        has_dangling_ptr_at_exit($arg)
+    }
+}
+
+diag {
+    safedrop_dangling_pointer = {
+        primary(pattern) = "this function may expose a dangling pointer through its {$operation}",
+        help         = "ensure returned values and pointer arguments do not alias storage that dies inside this function",
+        name         = "safedrop_dangling_pointer",
+        level        = "warn",
+    }
+}

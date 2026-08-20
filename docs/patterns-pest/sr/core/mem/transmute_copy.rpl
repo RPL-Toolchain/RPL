@@ -1,0 +1,28 @@
+pattern core-mem-transmute_copy
+
+patt {
+    use std::mem;
+
+    #[diag = "unsafe_transmute_copy_value_precondition"]
+    transmute_copy_invalid_scalar_value[
+        $Src: type,
+        $Dst: type,
+    ] = unsafe? fn _(..) -> _ {
+        'source:
+        let $source: &$Src = _;
+        'use:
+        let $result: $Dst = std::mem::transmute_copy::<$Src, $Dst>(move $source);
+    } where {
+        value_invalid_for_type('use, $source, $Dst)
+    }
+}
+
+diag {
+    unsafe_transmute_copy_value_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `mem::transmute_copy` requires the copied bits to form a valid `{$Dst}` value",
+        note(source) = "the referenced source value has a bit pattern outside the statically known valid range of `{$Dst}`",
+        help         = "validate the source value before copying it into the destination type",
+        name         = "unsafe_transmute_copy_value_precondition",
+        level        = "warn",
+    }
+}

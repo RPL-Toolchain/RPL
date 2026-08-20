@@ -1,0 +1,17 @@
+error: this unsafe operation may use a pointer after its owner has been dropped: `precondition check`
+  --> tests/ui/safedrop/cases/case_006.rs:58:17
+   |
+LL |                 Box::from_raw(self.tail);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `self.tail` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/cases/case_006.rs:58:31
+   |
+LL |                 Box::from_raw(self.tail);
+   |                               ^^^^^^^^^
+   = note: `-D rpl::safedrop-use-after-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_use_after_free)]`
+
+error: aborting due to 1 previous error
+

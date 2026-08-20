@@ -1,0 +1,13 @@
+error: this unsafe operation violates a safety property: `*mut T::sub` requires count * size_of::<T>() fits in isize
+  --> tests/ui/sr/core/ptr/mut_ptr/sub.rs:14:17
+   |
+LL |         let _ = ptr.sub(overflow);
+   |                 ^^^^^^^^^^^^^^^^^
+   |
+   = help: use a count whose byte offset fits in isize
+   = note: the scaled pointer offset is proven outside the isize range
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 1 previous error
+

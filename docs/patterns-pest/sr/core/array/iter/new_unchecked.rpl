@@ -1,0 +1,39 @@
+pattern core-array-iter-IntoIter-new_unchecked
+
+patt {
+    use core::array::IntoIter;
+    use core::mem::MaybeUninit;
+    use core::ops::Range;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "IntoIter::new_unchecked", requirement = "initialized.start <= initialized.end")]
+    array_into_iter_new_unchecked_start_after_end[$T: type, $N: const(usize)] = unsafe? fn _(..) -> _ {
+        let $buffer: [MaybeUninit<$T>; $N] = _;
+        let $initialized: Range<usize> = _;
+        'use:
+        _ = IntoIter::new_unchecked(move $buffer, move $initialized);
+    } where {
+        range_start_gt_end('use, $initialized)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "IntoIter::new_unchecked", requirement = "initialized.end <= N")]
+    array_into_iter_new_unchecked_end_out_of_bounds[$T: type, $N: const(usize)] = unsafe? fn _(..) -> _ {
+        let $buffer: [MaybeUninit<$T>; $N] = _;
+        let $initialized: Range<usize> = _;
+        'use:
+        _ = IntoIter::new_unchecked(move $buffer, move $initialized);
+    } where {
+        range_end_gt_len('use, $buffer, $initialized)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the initialized range violates the numeric precondition",
+        help         = "validate the initialized range before constructing the iterator",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

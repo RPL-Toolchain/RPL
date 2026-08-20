@@ -1,0 +1,54 @@
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_013.rs:104:5
+   |
+LL |     }
+   |     ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `iterable.into_iter()` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_013.rs:40:20
+   |
+LL |         let iter = iterable.into_iter();
+   |                    ^^^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_013.rs:86:9
+   |
+LL |         }
+   |         ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `DropOnPanic {
+                      start,
+                      skip: index..(index + lower_size_bound),
+                      len: old_len + lower_size_bound,
+                  }` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_013.rs:55:29
+   |
+LL |               let mut guard = DropOnPanic {
+   |  _____________________________^
+LL | |                 start,
+LL | |                 skip: index..(index + lower_size_bound),
+LL | |                 len: old_len + lower_size_bound,
+LL | |             };
+   | |_____________^
+
+error: this function may expose a dangling pointer through its mutable reference argument
+  --> tests/ui/safedrop/cases/case_013.rs:39:5
+   |
+LL | /     pub fn insert_many<I: IntoIterator<Item = A::Item>>(&mut self, index: usize, iterable: I) {
+LL | |         let iter = iterable.into_iter();
+LL | |         if index == self.len() {
+LL | |             return self.extend(iter);
+...  |
+LL | |     }
+   | |_____^
+   |
+   = help: ensure returned values and pointer arguments do not alias storage that dies inside this function
+   = note: `-D rpl::safedrop-dangling-pointer` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_dangling_pointer)]`
+
+error: aborting due to 3 previous errors
+

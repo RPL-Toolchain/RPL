@@ -1,0 +1,36 @@
+error: `bytes().count()` on `str` is equivalent to `len()`
+  --> tests/ui/clippy/bytes_count_to_len.rs:9:13
+   |
+LL |     let _ = String::from("foo").bytes().count();
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `len()` instead
+   = note: `-D rpl::bytes-count-to-len` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::bytes_count_to_len)]`
+
+error: `bytes().count()` on `str` is equivalent to `len()`
+  --> tests/ui/clippy/bytes_count_to_len.rs:13:13
+   |
+LL |     let _ = s1.bytes().count();
+   |             ^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `len()` instead
+
+error: `bytes().count()` on `str` is equivalent to `len()`
+  --> tests/ui/clippy/bytes_count_to_len.rs:17:13
+   |
+LL |     let _ = "foo".bytes().count();
+   |             ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `len()` instead
+
+error: `bytes().count()` on `str` is equivalent to `len()`
+  --> tests/ui/clippy/bytes_count_to_len.rs:21:13
+   |
+LL |     let _ = s2.bytes().count();
+   |             ^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `len()` instead
+
+error: aborting due to 4 previous errors
+

@@ -1,0 +1,49 @@
+error: this unsafe operation violates a safety property: `NonZero::unchecked_add` requires that self + rhs does not overflow
+  --> tests/ui/sr/core/num/nonzero/unchecked_add.rs:10:17
+   |
+LL |         let _ = lhs.unchecked_add(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `NonZero::unchecked_add` requires that self + rhs does not overflow
+  --> tests/ui/sr/core/num/nonzero/unchecked_add.rs:15:17
+   |
+LL |         let _ = lhs.unchecked_add(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `NonZero::unchecked_add` requires that self + rhs does not overflow
+  --> tests/ui/sr/core/num/nonzero/unchecked_add.rs:20:17
+   |
+LL |         let _ = lhs.unchecked_add(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `NonZero::unchecked_add` requires that self + rhs does not overflow
+  --> tests/ui/sr/core/num/nonzero/unchecked_add.rs:25:17
+   |
+LL |         let _ = lhs.unchecked_add(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `NonZero::unchecked_add` requires that self + rhs does not overflow
+  --> tests/ui/sr/core/num/nonzero/unchecked_add.rs:30:17
+   |
+LL |         let _ = lhs.unchecked_add(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: aborting due to 5 previous errors
+

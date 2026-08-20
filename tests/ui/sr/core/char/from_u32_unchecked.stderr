@@ -1,0 +1,22 @@
+error: this unsafe operation violates a safety property: `char::from_u32_unchecked` requires i <= 0x10FFFF
+  --> tests/ui/sr/core/char/from_u32_unchecked.rs:6:17
+   |
+LL |         let _ = core::char::from_u32_unchecked(too_large);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `char::from_u32_unchecked` requires i is not in the surrogate range 0xD800..=0xDFFF
+  --> tests/ui/sr/core/char/from_u32_unchecked.rs:10:17
+   |
+LL |         let _ = core::char::from_u32_unchecked(surrogate);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: aborting due to 2 previous errors
+

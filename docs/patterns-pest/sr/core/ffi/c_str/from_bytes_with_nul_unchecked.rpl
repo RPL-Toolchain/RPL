@@ -1,0 +1,51 @@
+pattern core-ffi-CStr-from_bytes_with_nul_unchecked
+
+patt {
+    use std::ffi::CStr;
+
+    #[diag = "unsafe_cstr_bytes_precondition"]
+    #[const(requirement = "the byte slice is non-empty and ends with a NUL byte")]
+    cstr_from_bytes_empty = unsafe? fn _(..) -> _ {
+        'bytes:
+        let $bytes: &[u8] = _;
+        'use:
+        _ = CStr::from_bytes_with_nul_unchecked(move $bytes);
+    } where {
+        byte_slice_is_empty('use, $bytes)
+    }
+
+    #[diag = "unsafe_cstr_bytes_precondition"]
+    #[const(requirement = "the byte slice is non-empty and ends with a NUL byte")]
+    cstr_from_bytes_last_byte_not_nul = unsafe? fn _(..) -> _ {
+        'bytes:
+        let $bytes: &[u8] = _;
+        'use:
+        _ = CStr::from_bytes_with_nul_unchecked(move $bytes);
+    } where {
+        !byte_slice_is_empty('use, $bytes) &&
+        byte_slice_last_byte_not_nul('use, $bytes)
+    }
+
+    #[diag = "unsafe_cstr_bytes_precondition"]
+    #[const(requirement = "the byte slice contains no interior NUL bytes")]
+    cstr_from_bytes_interior_nul = unsafe? fn _(..) -> _ {
+        'bytes:
+        let $bytes: &[u8] = _;
+        'use:
+        _ = CStr::from_bytes_with_nul_unchecked(move $bytes);
+    } where {
+        !byte_slice_is_empty('use, $bytes) &&
+        !byte_slice_last_byte_not_nul('use, $bytes) &&
+        contains_interior_nul('use, $bytes)
+    }
+}
+
+diag {
+    unsafe_cstr_bytes_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `CStr::from_bytes_with_nul_unchecked` requires {$requirement}",
+        note(bytes)   = "this byte slice violates the required C string representation",
+        help          = "use `CStr::from_bytes_with_nul` to validate the byte slice before constructing a `CStr`",
+        name          = "unsafe_cstr_bytes_precondition",
+        level         = "warn",
+    }
+}

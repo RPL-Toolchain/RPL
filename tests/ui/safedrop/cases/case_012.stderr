@@ -1,0 +1,58 @@
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_012.rs:25:5
+   |
+LL |     drop(back);
+   |     ^^^^^^^^^^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `back` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_012.rs:25:10
+   |
+LL |     drop(back);
+   |          ^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/cases/case_012.rs:30:5
+   |
+LL |     drop(back);
+   |     ^^^^^^^^^^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `back` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/cases/case_012.rs:30:10
+   |
+LL |     drop(back);
+   |          ^^^^
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `deref read`
+  --> tests/ui/safedrop/cases/case_012.rs:22:43
+   |
+LL |     let back = unsafe { array[length - 1].assume_init_read() };
+   |                                           ^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `assume_init_read()` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/cases/case_012.rs:22:43
+   |
+LL |     let back = unsafe { array[length - 1].assume_init_read() };
+   |                                           ^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-use-after-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_use_after_free)]`
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `deref read`
+  --> tests/ui/safedrop/cases/case_012.rs:28:43
+   |
+LL |     let back = unsafe { array[length - 1].assume_init_read() };
+   |                                           ^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `assume_init_read()` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/cases/case_012.rs:28:43
+   |
+LL |     let back = unsafe { array[length - 1].assume_init_read() };
+   |                                           ^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 4 previous errors
+

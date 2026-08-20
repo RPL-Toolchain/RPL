@@ -19,7 +19,7 @@ use std::borrow::Cow;
 use std::cell::RefCell;
 use std::convert::identity;
 
-use rpl_constraints::predicates::BodyInfoCache;
+use rpl_constraints::predicates::{BodyInfoCache, CrateAnalysisCache};
 use rpl_context::PatCtxt;
 use rpl_context::pat::DynamicError;
 use rpl_match::matches::artifact::{NormalizedMatched, NormalizedSpanned};
@@ -87,6 +87,7 @@ pub fn check_crate<'tcx, 'pcx, 'mcx: 'pcx>(tcx: TyCtxt<'tcx>, pcx: PatCtxt<'pcx>
     let mut check_ctxt = CheckFnCtxt {
         tcx,
         pcx,
+        crate_cache: CrateAnalysisCache::default(),
         body_caches: RefCell::default(),
         fn_candidate_cache: RefCell::default(),
         index,
@@ -126,7 +127,8 @@ fn timing_lint(tcx: TyCtxt<'_>, start: std::time::Instant, stage: &'static str) 
 struct CheckFnCtxt<'pcx, 'tcx> {
     tcx: TyCtxt<'tcx>,
     pcx: PatCtxt<'pcx>,
-    body_caches: RefCell<FxHashMap<DefId, BodyInfoCache>>,
+    crate_cache: CrateAnalysisCache,
+    body_caches: RefCell<FxHashMap<DefId, BodyInfoCache<'tcx>>>,
     fn_candidate_cache: RefCell<FxHashMap<(DefId, usize, usize), Vec<rpl_match::FnSlotCandidate<'tcx>>>>,
     index: CrateItemIndex,
 }
@@ -148,6 +150,7 @@ impl<'tcx, 'pcx> CheckFnCtxt<'pcx, 'tcx> {
                     self.tcx,
                     self.pcx,
                     pat_name,
+                    &self.crate_cache,
                     &self.body_caches,
                     &self.fn_candidate_cache,
                 );

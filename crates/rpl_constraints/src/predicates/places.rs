@@ -4,8 +4,13 @@ use rustc_middle::ty::{self, TyCtxt};
 
 use crate::predicates::BodyInfoCache;
 
-pub type MultiplePlacesPredsFnPtr =
-    for<'tcx> fn(TyCtxt<'tcx>, ty::TypingEnv<'tcx>, &mir::Body<'tcx>, &BodyInfoCache, Vec<PlaceRef<'tcx>>) -> bool;
+pub type MultiplePlacesPredsFnPtr = for<'tcx> fn(
+    TyCtxt<'tcx>,
+    ty::TypingEnv<'tcx>,
+    &mir::Body<'tcx>,
+    &BodyInfoCache<'tcx>,
+    Vec<PlaceRef<'tcx>>,
+) -> bool;
 
 /// Structural key for comparing places after peeling Use/Copy/Move temps.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -40,7 +45,7 @@ pub fn mentions_place<'tcx>(
     tcx: TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
     body: &mir::Body<'tcx>,
-    _cache: &BodyInfoCache,
+    _cache: &BodyInfoCache<'tcx>,
     places: Vec<PlaceRef<'tcx>>,
 ) -> bool {
     let [cond, src] = places.as_slice() else {

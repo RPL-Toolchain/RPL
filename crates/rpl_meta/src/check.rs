@@ -502,11 +502,12 @@ impl<'i> CheckFnCtxt<'i, '_> {
 
     fn check_mir_fn_operand(&mut self, mctx: &MetaContext<'i>, fn_operand: &'i pairs::MirFnOperand<'i>) {
         match fn_operand.deref() {
-            Choice5::_0(copy_) => self.check_mir_place(mctx, copy_.get_matched().1.MirPlace()),
-            Choice5::_1(move_) => self.check_mir_place(mctx, move_.get_matched().1.MirPlace()),
-            Choice5::_2(ty_path) => self.check_type_path(mctx, ty_path),
-            Choice5::_3(lang_item) => self.check_lang_item_with_args(mctx, lang_item),
-            Choice5::_4(_ident) => self.check_mir_fn_pat(mctx),
+            Choice6::_0(_) => {},
+            Choice6::_1(copy_) => self.check_mir_place(mctx, copy_.get_matched().1.MirPlace()),
+            Choice6::_2(move_) => self.check_mir_place(mctx, move_.get_matched().1.MirPlace()),
+            Choice6::_3(ty_path) => self.check_type_path(mctx, ty_path),
+            Choice6::_4(lang_item) => self.check_lang_item_with_args(mctx, lang_item),
+            Choice6::_5(_ident) => self.check_mir_fn_pat(mctx),
         }
     }
 

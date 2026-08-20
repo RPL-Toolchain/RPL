@@ -1,0 +1,94 @@
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:8:17
+   |
+LL |         let _ = NonZero::<u8>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:12:17
+   |
+LL |         let _ = NonZero::<u16>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:16:17
+   |
+LL |         let _ = NonZero::<u32>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:20:17
+   |
+LL |         let _ = NonZero::<u64>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:24:17
+   |
+LL |         let _ = NonZero::<usize>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:28:17
+   |
+LL |         let _ = NonZero::<i8>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:32:17
+   |
+LL |         let _ = NonZero::<i16>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:36:17
+   |
+LL |         let _ = NonZero::<i32>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:40:17
+   |
+LL |         let _ = NonZero::<i64>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `NonZero::new_unchecked` requires a non-zero value
+  --> tests/ui/sr/core/num/nonzero/new_unchecked.rs:44:17
+   |
+LL |         let _ = NonZero::<isize>::new_unchecked(zero);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the value before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: aborting due to 10 previous errors
+

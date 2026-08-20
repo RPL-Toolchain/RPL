@@ -1,0 +1,123 @@
+pattern core-num-unchecked_shl
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_u8 = unsafe? fn _(..) -> _ {
+        let $lhs: u8 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: u8 = u8::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 8u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_u16 = unsafe? fn _(..) -> _ {
+        let $lhs: u16 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: u16 = u16::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 16u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_u32 = unsafe? fn _(..) -> _ {
+        let $lhs: u32 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: u32 = u32::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 32u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_u64 = unsafe? fn _(..) -> _ {
+        let $lhs: u64 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: u64 = u64::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 64u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_usize = unsafe? fn _(..) -> _ {
+        let $lhs: usize = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: usize = usize::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 64u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_i8 = unsafe? fn _(..) -> _ {
+        let $lhs: i8 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: i8 = i8::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 8u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_i16 = unsafe? fn _(..) -> _ {
+        let $lhs: i16 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: i16 = i16::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 16u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_i32 = unsafe? fn _(..) -> _ {
+        let $lhs: i32 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: i32 = i32::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 32u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_i64 = unsafe? fn _(..) -> _ {
+        let $lhs: i64 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: i64 = i64::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 64u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_shl", requirement = "rhs < integer bit width")]
+    unchecked_shl_overflow_isize = unsafe? fn _(..) -> _ {
+        let $lhs: isize = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: isize = isize::unchecked_shl(move $lhs, move $rhs);
+    } where {
+        ge_const('use, $rhs, 64u32)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires that {$requirement}",
+        note         = "the shift amount is proven to be out of bounds",
+        help         = "validate the shift amount before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

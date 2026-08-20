@@ -1,0 +1,17 @@
+error: this function may expose a dangling pointer through its return value
+  --> tests/ui/safedrop/cases/case_005.rs:37:5
+   |
+LL | /     fn from(buffer: Buffer) -> Vec<u8> {
+LL | |
+LL | |         let mut slice = Buffer::allocate(buffer.len);
+LL | |         let len = buffer.copy_to(&mut slice);
+LL | |         unsafe { Vec::from_raw_parts(slice.as_mut_ptr(), len, slice.len()) }
+LL | |     }
+   | |_____^
+   |
+   = help: ensure returned values and pointer arguments do not alias storage that dies inside this function
+   = note: `-D rpl::safedrop-dangling-pointer` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_dangling_pointer)]`
+
+error: aborting due to 1 previous error
+

@@ -239,9 +239,9 @@ DEC_DIGIT = @{ '0'..'9' }
 HEX_DIGIT = @{ '0'..'9' | 'a'..'f' | 'A'..'F' }
 
 DEC_LITERAL = @{ DEC_DIGIT ~ (DEC_DIGIT | "_")* }
-BIN_LITERAL = @{ "0b" ~ (BIN_DIGIT | "_")* ~ BIN_DIGIT ~ (BIN_DIGIT | "_")* }
-OCT_LITERAL = @{ "0o" ~ (OCT_DIGIT | "_")* ~ OCT_DIGIT ~ (OCT_DIGIT | "_")* }
-HEX_LITERAL = @{ "0x" ~ (HEX_DIGIT | "_")* ~ HEX_DIGIT ~ (HEX_DIGIT | "_")* }
+BIN_LITERAL = @{ "0b" ~ BIN_DIGIT ~ (BIN_DIGIT | "_")* }
+OCT_LITERAL = @{ "0o" ~ OCT_DIGIT ~ (OCT_DIGIT | "_")* }
+HEX_LITERAL = @{ "0x" ~ HEX_DIGIT ~ (HEX_DIGIT | "_")* }
 
 IntegerSuffix = {
     kw_u8
@@ -272,7 +272,7 @@ PrimitiveType = {
 }
 
 Integer = {
-    (DEC_LITERAL | BIN_LITERAL | OCT_LITERAL | HEX_LITERAL) ~ IntegerSuffix?
+    (BIN_LITERAL | OCT_LITERAL | HEX_LITERAL | DEC_LITERAL) ~ IntegerSuffix?
 }
 
 String = @{
@@ -289,7 +289,7 @@ WordFollowing = @{ WordLeading | "_" | "-" | '0' .. '9' }
 Word          = @{ WordLeading ~ (WordFollowing)* }
 
 // RPL identifier and meta variables
-Identifier   = @{ !(Keywords) ~ Word }
+Identifier   = @{ (!(Keywords) ~ Word) | kw_copy_nonoverlapping }
 LabelName    = @{ Word }
 MetaVariable = ${ Dollar ~ Word }
 
@@ -312,12 +312,21 @@ PredicateArgs        = {
 PredicateArg         = {
     Label
   | MetaVariable
-  | Path
+  | Integer
+  | PredicatePath
   | kw_self
 }
 PredicateClause      = {
     PredicateTerm
   | LeftParen ~ PredicateTerm ~ (OrOr ~ PredicateTerm)* ~ RightParen
+}
+
+PredicatePath = {
+    PathLeading? ~ PredicatePathSegment ~ (Colon2 ~ PredicatePathSegment)*
+}
+
+PredicatePathSegment = {
+    Identifier ~ PathArguments?
 }
 PredicateConjunction = {
     PredicateClause ~ (AndAnd ~ PredicateClause)*
@@ -726,7 +735,8 @@ MirRvalue = {
 }
 
 MirFnOperand = {
-    LeftParen ~ MirOperandCopy ~ RightParen
+    PlaceHolder
+  | LeftParen ~ MirOperandCopy ~ RightParen
   | LeftParen ~ MirOperandMove ~ RightParen
   | TypePath
   | LangItemWithArgs

@@ -1,0 +1,38 @@
+pattern core-slice-index-RangeInclusive-SliceIndex-get_unchecked_mut
+
+patt {
+    use core::ops::RangeInclusive;
+    use core::slice::SliceIndex;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked_mut", requirement = "start <= end")]
+    slice_index_get_unchecked_mut_range_inclusive_start_after_end[$T: type] = unsafe? fn _(..) -> _ {
+        let $slice: *mut [$T] = _;
+        let $range: RangeInclusive<usize> = _;
+        'use:
+        let $value: *mut [$T] = SliceIndex::get_unchecked_mut(move $range, move $slice);
+    } where {
+        range_start_gt_end('use, $range)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "SliceIndex::get_unchecked_mut", requirement = "end < len")]
+    slice_index_get_unchecked_mut_range_inclusive_end_out_of_bounds[$T: type] = unsafe? fn _(..) -> _ {
+        let $slice: *mut [$T] = _;
+        let $range: RangeInclusive<usize> = _;
+        'use:
+        let $value: *mut [$T] = SliceIndex::get_unchecked_mut(move $range, move $slice);
+    } where {
+        range_end_ge_len('use, $slice, $range)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "this value violates the numeric precondition",
+        help         = "validate the index before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

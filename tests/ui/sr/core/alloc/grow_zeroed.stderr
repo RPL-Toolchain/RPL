@@ -1,0 +1,13 @@
+error: this unsafe operation violates a safety property: `Allocator::grow_zeroed` requires new_layout.size() >= old_layout.size()
+  --> tests/ui/sr/core/alloc/grow_zeroed.rs:39:17
+   |
+LL |         let _ = Allocator::grow_zeroed(&TestAllocator, ptr, old_layout, new_layout);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a new layout whose size is at least the old layout size
+   = note: the new allocation size is proven smaller than the old allocation size
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 1 previous error
+

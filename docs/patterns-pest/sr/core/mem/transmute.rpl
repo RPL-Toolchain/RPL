@@ -1,0 +1,30 @@
+pattern core-mem-transmute
+
+patt {
+    use std::mem;
+
+    #[diag = "unsafe_transmute_value_precondition"]
+    transmute_invalid_scalar_value[
+        $Src: type,
+        $Dst: type,
+    ] = unsafe? fn _(..) -> _ {
+        'source:
+        let $source: $Src = _;
+        'use:
+        let $result: $Dst = move $source as $Dst (Transmute);
+    } where {
+        translate_from_function('use, std::mem::transmute) &&
+        value_invalid_for_type('use, $source, $Dst)
+    }
+
+}
+
+diag {
+    unsafe_transmute_value_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `mem::transmute` requires the source bits to form a valid `{$Dst}` value",
+        note(source) = "this source value has a bit pattern outside the statically known valid range of `{$Dst}`",
+        help         = "validate the source value before transmuting it",
+        name         = "unsafe_transmute_value_precondition",
+        level        = "warn",
+    }
+}

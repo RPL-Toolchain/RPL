@@ -1,0 +1,17 @@
+error: this unsafe operation violates a safety property: `ptr::write` requires a non-null pointer, but the pointer is proven null
+  --> tests/ui/sr/core/ptr/write.rs:6:9
+   |
+LL |         core::ptr::write(write_ptr, 1);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: check the pointer for null or document and enforce a precondition that guarantees it is non-null before this unsafe operation
+note: `write_ptr` is known to be null at this program point
+  --> tests/ui/sr/core/ptr/write.rs:6:26
+   |
+LL |         core::ptr::write(write_ptr, 1);
+   |                          ^^^^^^^^^
+   = note: `-D rpl::unsafe-null-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_null_precondition)]`
+
+error: aborting due to 1 previous error
+

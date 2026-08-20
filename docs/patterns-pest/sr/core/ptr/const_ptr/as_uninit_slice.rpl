@@ -1,0 +1,28 @@
+pattern core-ptr-const_ptr-as_uninit_slice
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "*const [T]::as_uninit_slice", requirement = "ptr.len() * size_of::<T>() <= isize::MAX")]
+    const_slice_ptr_as_uninit_slice_too_large[$T: type] = {
+        unsafe fn $as_uninit_slice(_: *const [$T]) -> _;
+
+        unsafe? fn _(..) -> _ {
+            let $ptr: *const [$T] = _;
+            'use:
+            _ = $as_uninit_slice(move $ptr);
+        } where {
+            !is_null('use, $ptr) &&
+            slice_size_gt_const('use, $ptr, 9223372036854775807isize)
+        }
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the raw slice's total byte size is proven greater than isize::MAX",
+        help         = "use a slice length whose total byte size fits in isize",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

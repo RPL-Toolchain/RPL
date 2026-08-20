@@ -1,0 +1,27 @@
+pattern core-alloc-global-GlobalAlloc-alloc
+
+patt {
+    use core::alloc::GlobalAlloc;
+    use core::alloc::Layout;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "GlobalAlloc::alloc", requirement = "layout.size() != 0")]
+    global_alloc_zero_size_layout[$A: type] = unsafe? fn _(..) -> _ {
+        let $allocator: &$A = _;
+        let $layout: Layout = _;
+        'use:
+        let $result: *mut u8 = GlobalAlloc::alloc(move $allocator, move $layout);
+    } where {
+        layout_size_eq_const('use, $layout, 0usize)
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the allocation layout is proven to have size zero",
+        help         = "use a layout with a non-zero size before calling this unsafe function",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

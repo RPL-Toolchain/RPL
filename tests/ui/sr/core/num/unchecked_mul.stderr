@@ -1,0 +1,94 @@
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:7:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:12:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:17:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:22:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:27:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:32:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:37:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:42:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:47:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: this unsafe operation violates a safety property: `unchecked_mul` requires that self * rhs does not overflow
+  --> tests/ui/sr/core/num/unchecked_mul.rs:52:17
+   |
+LL |         let _ = lhs.unchecked_mul(rhs);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the operands before calling this unsafe function or use the safe checked API
+   = note: the arithmetic operation is proven to overflow
+
+error: aborting due to 10 previous errors
+

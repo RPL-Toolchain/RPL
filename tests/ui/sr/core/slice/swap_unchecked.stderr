@@ -1,0 +1,22 @@
+error: this unsafe operation violates a safety property: `slice::swap_unchecked` requires a < len
+  --> tests/ui/sr/core/slice/swap_unchecked.rs:15:9
+   |
+LL |         values.swap_unchecked(invalid_a, valid_b);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use indices smaller than the slice length
+   = note: this index is outside the slice
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `slice::swap_unchecked` requires b < len
+  --> tests/ui/sr/core/slice/swap_unchecked.rs:20:9
+   |
+LL |         values.swap_unchecked(valid_a, invalid_b);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use indices smaller than the slice length
+   = note: this index is outside the slice
+
+error: aborting due to 2 previous errors
+

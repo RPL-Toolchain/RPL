@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use rpl_constraints::predicates::BodyInfoCache;
+use rpl_constraints::predicates::{BodyInfoCache, CrateAnalysisCache};
 use rpl_context::PatCtxt;
 use rpl_context::pat::{self, FnPattern};
 use rustc_data_structures::fx::FxHashMap;
@@ -22,7 +22,8 @@ pub struct MatchCollectCtxt<'a, 'pcx, 'tcx> {
     pub tcx: TyCtxt<'tcx>,
     pub pcx: PatCtxt<'pcx>,
     pub pat_name: Symbol,
-    pub body_caches: &'a RefCell<FxHashMap<DefId, BodyInfoCache>>,
+    crate_cache: &'a CrateAnalysisCache,
+    pub body_caches: &'a RefCell<FxHashMap<DefId, BodyInfoCache<'tcx>>>,
     fn_candidate_cache: &'a FnCandidateCache<'tcx>,
 }
 
@@ -31,13 +32,15 @@ impl<'a, 'pcx, 'tcx> MatchCollectCtxt<'a, 'pcx, 'tcx> {
         tcx: TyCtxt<'tcx>,
         pcx: PatCtxt<'pcx>,
         pat_name: Symbol,
-        body_caches: &'a RefCell<FxHashMap<DefId, BodyInfoCache>>,
+        crate_cache: &'a CrateAnalysisCache,
+        body_caches: &'a RefCell<FxHashMap<DefId, BodyInfoCache<'tcx>>>,
         fn_candidate_cache: &'a FnCandidateCache<'tcx>,
     ) -> Self {
         Self {
             tcx,
             pcx,
             pat_name,
+            crate_cache,
             body_caches,
             fn_candidate_cache,
         }
@@ -191,7 +194,7 @@ impl<'a, 'pcx, 'tcx> MatchCollectCtxt<'a, 'pcx, 'tcx> {
         let mut caches = self.body_caches.borrow_mut();
         let cache = caches
             .entry(body.source.def_id())
-            .or_insert_with(|| BodyInfoCache::new(self.tcx, typing_env, body));
+            .or_insert_with(|| BodyInfoCache::new(self.tcx, typing_env, body, self.crate_cache));
         let evaluator = PredicateEvaluator::new(
             self.tcx,
             typing_env,

@@ -1,0 +1,30 @@
+error: this unsafe operation may use a pointer after its owner has been dropped: `shared reference creation`
+  --> tests/ui/safedrop/reference_creation.rs:12:17
+   |
+LL |         let _ = &*shared;
+   |                 ^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `shared = &*owner as *const usize` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/reference_creation.rs:9:9
+   |
+LL |         shared = &*owner as *const usize;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-use-after-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_use_after_free)]`
+
+error: this unsafe operation may use a pointer after its owner has been dropped: `mutable reference creation`
+  --> tests/ui/safedrop/reference_creation.rs:22:17
+   |
+LL |         let _ = &mut *mutable;
+   |                 ^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `mutable = &mut *owner as *mut usize` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/reference_creation.rs:19:9
+   |
+LL |         mutable = &mut *owner as *mut usize;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 2 previous errors
+

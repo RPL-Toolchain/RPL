@@ -1,0 +1,37 @@
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked_mut` requires index < len
+  --> tests/ui/sr/core/slice/index/get_unchecked_mut.rs:14:17
+   |
+LL |         let _ = <usize as SliceIndex<[u8]>>::get_unchecked_mut(bad_index, ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked_mut` requires index < len
+  --> tests/ui/sr/core/slice/index/get_unchecked_mut.rs:27:17
+   |
+LL |         let _ = <usize as SliceIndex<[u8]>>::get_unchecked_mut(bad_index_from_raw_parts, raw_ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked_mut` requires a non-dangling slice pointer
+  --> tests/ui/sr/core/slice/index/get_unchecked_mut.rs:44:17
+   |
+LL |         let _ = <usize as SliceIndex<[u8]>>::get_unchecked_mut(valid_index, ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the backing allocation outlives this unsafe operation
+note: `std::ptr::slice_from_raw_parts_mut(data, 1usize)` may be dangling at this program point
+  --> tests/ui/sr/core/slice/index/get_unchecked_mut.rs:40:15
+   |
+LL |     let ptr = std::ptr::slice_from_raw_parts_mut(data, 1usize);
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::unsafe-dangling-pointer-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_dangling_pointer_precondition)]`
+
+error: aborting due to 3 previous errors
+

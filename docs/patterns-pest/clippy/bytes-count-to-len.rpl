@@ -1,0 +1,20 @@
+pattern bytes-count-to-len
+
+patt {
+    #[diag = "bytes_count_to_len"]
+    bytes_count_to_len_str = fn _ (..) -> _ {
+        let $s: _;
+        let $B: _ = str::bytes(move $s);
+        'bytes_count_call:
+        let $len: _ = std::iter::Iterator::count(move $B);
+    }
+}
+
+diag {
+    bytes_count_to_len = {
+        primary(bytes_count_call) = "`bytes().count()` on `str` is equivalent to `len()`",
+        help = "use `len()` instead",
+        name = "bytes_count_to_len",
+        level = "warn",
+    }
+}

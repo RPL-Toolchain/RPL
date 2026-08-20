@@ -1,4 +1,6 @@
+use rpl_context::pat::visitor::PatternVisitor;
 use rpl_context::pat::{self, FnPattern};
+use rustc_data_structures::fx::FxHashSet;
 use rustc_hir::FnHeader;
 use rustc_hir::def::DefKind;
 use rustc_hir::def_id::LocalDefId;
@@ -157,11 +159,13 @@ pub struct AdtSlotDesc<'pcx> {
 pub fn collect_slot_descs<'pcx>(
     rust_items: &'pcx pat::RustItems<'pcx>,
 ) -> (Vec<FnSlotDesc<'pcx>>, Vec<AdtSlotDesc<'pcx>>) {
+    let referenced_fn_patterns = referenced_fn_patterns(rust_items);
     let mut fn_slots: Vec<FnSlotDesc<'pcx>> = rust_items
         .fns
         .all_fns
         .iter()
         .enumerate()
+        .filter(|(_, fn_pat)| !(fn_pat.is_signature_only() && referenced_fn_patterns.contains(&fn_pat.name)))
         .map(|(idx, fn_pat)| FnSlotDesc {
             slot: MatchSlot::Fn(idx),
             fn_pat,
@@ -169,9 +173,12 @@ pub fn collect_slot_descs<'pcx>(
         })
         .collect();
 
-    let mut next_idx = fn_slots.len();
+    let mut next_idx = rust_items.fns.all_fns.len();
     for impl_pat in rust_items.impls.values() {
         for fn_pat in impl_pat.fns.values() {
+            if fn_pat.is_signature_only() && referenced_fn_patterns.contains(&fn_pat.name) {
+                continue;
+            }
             fn_slots.push(FnSlotDesc {
                 slot: MatchSlot::Fn(next_idx),
                 fn_pat,
@@ -192,6 +199,39 @@ pub fn collect_slot_descs<'pcx>(
         .collect();
 
     (fn_slots, adt_slots)
+}
+
+fn referenced_fn_patterns<'pcx>(rust_items: &'pcx pat::RustItems<'pcx>) -> FxHashSet<Symbol> {
+    #[derive(Default)]
+    struct Collector {
+        names: FxHashSet<Symbol>,
+    }
+
+    impl<'pcx> PatternVisitor<'pcx> for Collector {
+        fn visit_fn_pat(&mut self, fn_pat: Symbol) {
+            self.names.insert(fn_pat);
+        }
+    }
+
+    fn visit_fn<'pcx>(collector: &mut Collector, fn_pat: &'pcx FnPattern<'pcx>) {
+        let Some(body) = fn_pat.body else {
+            return;
+        };
+        for (block, data) in body.basic_blocks.iter_enumerated() {
+            collector.visit_basic_block_data(block, data);
+        }
+    }
+
+    let mut collector = Collector::default();
+    for fn_pat in &rust_items.fns.all_fns {
+        visit_fn(&mut collector, fn_pat);
+    }
+    for impl_pat in rust_items.impls.values() {
+        for fn_pat in impl_pat.fns.values() {
+            visit_fn(&mut collector, fn_pat);
+        }
+    }
+    collector.names
 }
 
 /// Indexed Rust items in the crate used for full M:N matching.
@@ -269,8 +309,7 @@ impl CrateItemIndex {
 
         hir.walk_toplevel_module(&mut FnCollector { tcx, index: &mut index });
 
-        let mut seen: rustc_data_structures::fx::FxHashSet<LocalDefId> =
-            index.fns.iter().map(|item| item.def_id).collect();
+        let mut seen: FxHashSet<LocalDefId> = index.fns.iter().map(|item| item.def_id).collect();
         for def_id in tcx.hir_crate_items(()).nested_bodies() {
             if !seen.insert(def_id) {
                 continue;

@@ -1,0 +1,46 @@
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked_mut` requires start <= end
+  --> tests/ui/sr/core/slice/index/range_get_unchecked_mut.rs:15:17
+   |
+LL |         let _ = <Range<usize> as SliceIndex<[u8]>>::get_unchecked_mut(start_after_end, ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked_mut` requires end <= len
+  --> tests/ui/sr/core/slice/index/range_get_unchecked_mut.rs:19:17
+   |
+LL |         let _ = <Range<usize> as SliceIndex<[u8]>>::get_unchecked_mut(end_out_of_bounds, ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked_mut` requires end <= len
+  --> tests/ui/sr/core/slice/index/range_get_unchecked_mut.rs:32:17
+   |
+LL |         let _ = <Range<usize> as SliceIndex<[u8]>>::get_unchecked_mut(raw_end_out_of_bounds, raw_ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function or use the safe checked API
+   = note: this value violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `SliceIndex::get_unchecked_mut` requires a non-dangling slice pointer
+  --> tests/ui/sr/core/slice/index/range_get_unchecked_mut.rs:49:17
+   |
+LL |         let _ = <Range<usize> as SliceIndex<[u8]>>::get_unchecked_mut(valid_range, ptr);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the backing allocation outlives this unsafe operation
+note: `std::ptr::slice_from_raw_parts_mut(data, 1usize)` may be dangling at this program point
+  --> tests/ui/sr/core/slice/index/range_get_unchecked_mut.rs:45:15
+   |
+LL |     let ptr = std::ptr::slice_from_raw_parts_mut(data, 1usize);
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::unsafe-dangling-pointer-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_dangling_pointer_precondition)]`
+
+error: aborting due to 4 previous errors
+

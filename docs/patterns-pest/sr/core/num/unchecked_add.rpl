@@ -1,0 +1,123 @@
+pattern core-num-unchecked_add
+
+patt {
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_u8 = unsafe? fn _(..) -> _ {
+        let $lhs: u8 = _;
+        let $rhs: u8 = _;
+        'use:
+        let $result: u8 = u8::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 255u8)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_u16 = unsafe? fn _(..) -> _ {
+        let $lhs: u16 = _;
+        let $rhs: u16 = _;
+        'use:
+        let $result: u16 = u16::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 65535u16)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_u32 = unsafe? fn _(..) -> _ {
+        let $lhs: u32 = _;
+        let $rhs: u32 = _;
+        'use:
+        let $result: u32 = u32::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 4294967295u32)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_u64 = unsafe? fn _(..) -> _ {
+        let $lhs: u64 = _;
+        let $rhs: u64 = _;
+        'use:
+        let $result: u64 = u64::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 18446744073709551615u64)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_usize = unsafe? fn _(..) -> _ {
+        let $lhs: usize = _;
+        let $rhs: usize = _;
+        'use:
+        let $result: usize = usize::unchecked_add(move $lhs, move $rhs);
+    } where {
+        add_gt_const('use, $lhs, $rhs, 18446744073709551615usize)
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_i8 = unsafe? fn _(..) -> _ {
+        let $lhs: i8 = _;
+        let $rhs: i8 = _;
+        'use:
+        let $result: i8 = i8::unchecked_add(move $lhs, move $rhs);
+    } where {
+        (add_lt_const('use, $lhs, $rhs, 128i8) || add_gt_const('use, $lhs, $rhs, 127i8))
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_i16 = unsafe? fn _(..) -> _ {
+        let $lhs: i16 = _;
+        let $rhs: i16 = _;
+        'use:
+        let $result: i16 = i16::unchecked_add(move $lhs, move $rhs);
+    } where {
+        (add_lt_const('use, $lhs, $rhs, 32768i16) || add_gt_const('use, $lhs, $rhs, 32767i16))
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_i32 = unsafe? fn _(..) -> _ {
+        let $lhs: i32 = _;
+        let $rhs: i32 = _;
+        'use:
+        let $result: i32 = i32::unchecked_add(move $lhs, move $rhs);
+    } where {
+        (add_lt_const('use, $lhs, $rhs, 2147483648i32) || add_gt_const('use, $lhs, $rhs, 2147483647i32))
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_i64 = unsafe? fn _(..) -> _ {
+        let $lhs: i64 = _;
+        let $rhs: i64 = _;
+        'use:
+        let $result: i64 = i64::unchecked_add(move $lhs, move $rhs);
+    } where {
+        (add_lt_const('use, $lhs, $rhs, 9223372036854775808i64) || add_gt_const('use, $lhs, $rhs, 9223372036854775807i64))
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "unchecked_add", requirement = "self + rhs does not overflow")]
+    unchecked_add_overflow_isize = unsafe? fn _(..) -> _ {
+        let $lhs: isize = _;
+        let $rhs: isize = _;
+        'use:
+        let $result: isize = isize::unchecked_add(move $lhs, move $rhs);
+    } where {
+        (add_lt_const('use, $lhs, $rhs, 9223372036854775808isize) || add_gt_const('use, $lhs, $rhs, 9223372036854775807isize))
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires that {$requirement}",
+        note         = "the arithmetic operation is proven to overflow",
+        help         = "validate the operands before calling this unsafe function or use the safe checked API",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

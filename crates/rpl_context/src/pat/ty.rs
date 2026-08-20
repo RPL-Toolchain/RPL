@@ -593,29 +593,29 @@ impl IntValue {
     pub fn from_integer(int: &pairs::Integer<'_>) -> Self {
         let (lit, ty) = int.get_matched();
         let value = match lit {
-            Choice4::_0(dec) => {
+            Choice4::_3(dec) => {
                 let dec_str = dec.span.as_str();
                 let dec_str = &dec_str.replace('_', "");
                 u128::from_str_radix(dec_str, 10)
                     .unwrap_or_else(|err| panic!("invalid decimal integer {:?}: {}", dec_str, err))
                     .into()
             },
-            Choice4::_1(bin) => {
-                let bin_str = bin.span.as_str();
+            Choice4::_0(bin) => {
+                let bin_str = &bin.span.as_str()[2..];
                 let bin_str = &bin_str.replace('_', "");
                 u128::from_str_radix(bin_str, 2)
                     .unwrap_or_else(|err| panic!("invalid binary integer {:?}: {}", bin_str, err))
                     .into()
             },
-            Choice4::_2(oct) => {
-                let oct_str = oct.span.as_str();
+            Choice4::_1(oct) => {
+                let oct_str = &oct.span.as_str()[2..];
                 let oct_str = &oct_str.replace('_', "");
                 u128::from_str_radix(oct_str, 8)
                     .unwrap_or_else(|err| panic!("invalid octal integer {:?}: {}", oct_str, err))
                     .into()
             },
-            Choice4::_3(hex) => {
-                let hex_str = hex.span.as_str();
+            Choice4::_2(hex) => {
+                let hex_str = &hex.span.as_str()[2..];
                 let hex_str = &hex_str.replace('_', "");
                 u128::from_str_radix(hex_str, 16)
                     .unwrap_or_else(|err| panic!("invalid hexadecimal integer {:?}: {}", hex_str, err))

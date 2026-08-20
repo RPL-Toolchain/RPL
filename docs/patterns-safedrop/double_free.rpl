@@ -1,0 +1,96 @@
+pattern safedrop-core-ptr-double-free
+
+patt {
+    use $crate::release;
+    use $crate::destroy;
+
+    #[diag = "safedrop_double_free"]
+    #[const(operation = "MIR drop")]
+    #[deduplicate]
+    mir_drop_after_free[$T: type where needs_drop(self) && !is_borrow_guard(self)] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: $T = _;
+        'free:
+        drop($ptr);
+    } where {
+        is_freed('free, $ptr)
+    }
+
+    #[diag = "safedrop_double_free"]
+    #[const(operation = "MIR drop")]
+    #[deduplicate]
+    mir_borrow_guard_drop_after_pointee_drop[$T: type where needs_drop(self) && is_borrow_guard(self)] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: $T = _;
+        'free:
+        drop($ptr);
+    } where {
+        is_freed('free, $ptr),
+        is_borrow_guard_drop_after_pointee_drop('free, $ptr)
+    }
+
+    #[diag = "safedrop_double_free"]
+    #[const(operation = "dealloc")]
+    dealloc_after_free = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut u8 = _;
+        'free:
+        _ = std::alloc::dealloc(move $ptr, ..);
+    } where {
+        is_freed('free, $ptr)
+    }
+
+    #[diag = "safedrop_double_free"]
+    #[const(operation = "dealloc")]
+    rust_dealloc_after_free = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut u8 = _;
+        'free:
+        _ = alloc::alloc::__rust_dealloc(move $ptr, ..);
+    } where {
+        is_freed('free, $ptr)
+    }
+
+    #[diag = "safedrop_double_free"]
+    #[const(operation = "drop")]
+    drop_in_place_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: *mut $T = _;
+        'free:
+        _ = core::ptr::drop_in_place::<_>(move $ptr);
+    } where {
+        is_freed('free, $ptr)
+    }
+
+    #[diag = "safedrop_double_free"]
+    #[const(operation = "release")]
+    release_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: $T = _;
+        'free:
+        _ = release(move $ptr, ..);
+    } where {
+        is_freed('free, $ptr)
+    }
+
+    #[diag = "safedrop_double_free"]
+    #[const(operation = "destroy")]
+    destroy_after_free[$T: type] = unsafe? fn _(..) -> _ {
+        'ptr:
+        let $ptr: $T = _;
+        'free:
+        _ = destroy(move $ptr, ..);
+    } where {
+        is_freed('free, $ptr)
+    }
+}
+
+diag {
+    safedrop_double_free = {
+        primary(free) = "this unsafe operation may free storage that is already dead: `{$operation}`",
+        note(ptr)    = "`{$ptr}` aliases storage that is already dead at this program point",
+        help         = "ensure this storage is released exactly once, or transfer ownership before releasing it again",
+        name         = "safedrop_double_free",
+        level        = "warn",
+    }
+}

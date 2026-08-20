@@ -1,0 +1,60 @@
+pattern core-ptr-const_ptr-get_unchecked
+
+patt {
+    use core::ops::Range;
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "*const [T]::get_unchecked", requirement = "index < len")]
+    const_slice_ptr_get_unchecked_usize_out_of_bounds[$T: type] = {
+        unsafe fn $get_unchecked(_: *const [$T], _: _) -> _;
+
+        unsafe? fn _(..) -> _ {
+            let $slice: *const [$T] = _;
+            let $index: usize = _;
+            'use:
+            let $value: *const $T = $get_unchecked(move $slice, move $index);
+        } where {
+            index_ge_len('use, $slice, $index)
+        }
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "*const [T]::get_unchecked", requirement = "start <= end")]
+    const_slice_ptr_get_unchecked_range_start_after_end[$T: type] = {
+        unsafe fn $get_unchecked(_: *const [$T], _: _) -> _;
+
+        unsafe? fn _(..) -> _ {
+            let $slice: *const [$T] = _;
+            let $range: Range<usize> = _;
+            'use:
+            let $value: *const [$T] = $get_unchecked(move $slice, move $range);
+        } where {
+            range_start_gt_end('use, $range)
+        }
+    }
+
+    #[diag = "unsafe_numeric_precondition"]
+    #[const(operation = "*const [T]::get_unchecked", requirement = "end <= len")]
+    const_slice_ptr_get_unchecked_range_end_out_of_bounds[$T: type] = {
+        unsafe fn $get_unchecked(_: *const [$T], _: _) -> _;
+
+        unsafe? fn _(..) -> _ {
+            let $slice: *const [$T] = _;
+            let $range: Range<usize> = _;
+            'use:
+            let $value: *const [$T] = $get_unchecked(move $slice, move $range);
+        } where {
+            range_end_gt_len('use, $slice, $range)
+        }
+    }
+}
+
+diag {
+    unsafe_numeric_precondition = {
+        primary(use) = "this unsafe operation violates a safety property: `{$operation}` requires {$requirement}",
+        note         = "the index violates the numeric precondition",
+        help         = "validate the index before calling this unsafe function",
+        name         = "unsafe_numeric_precondition",
+        level        = "warn",
+    }
+}

@@ -1,0 +1,31 @@
+error: this unsafe operation violates a safety property: `*mut [T]::get_unchecked_mut` requires index < len
+  --> tests/ui/sr/core/ptr/mut_ptr/get_unchecked_mut.rs:18:17
+   |
+LL |         let _ = ptr.get_unchecked_mut(index_out_of_bounds);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function
+   = note: the index violates the numeric precondition
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `*mut [T]::get_unchecked_mut` requires start <= end
+  --> tests/ui/sr/core/ptr/mut_ptr/get_unchecked_mut.rs:22:17
+   |
+LL |         let _ = ptr.get_unchecked_mut(start_after_end);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function
+   = note: the index violates the numeric precondition
+
+error: this unsafe operation violates a safety property: `*mut [T]::get_unchecked_mut` requires end <= len
+  --> tests/ui/sr/core/ptr/mut_ptr/get_unchecked_mut.rs:26:17
+   |
+LL |         let _ = ptr.get_unchecked_mut(end_out_of_bounds);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the index before calling this unsafe function
+   = note: the index violates the numeric precondition
+
+error: aborting due to 3 previous errors
+

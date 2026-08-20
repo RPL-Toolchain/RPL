@@ -1,0 +1,112 @@
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:11:17
+   |
+LL |         let _ = <u8 as Step>::forward_unchecked(unsigned_start, unsigned_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:16:17
+   |
+LL |         let _ = <u16 as Step>::forward_unchecked(u16_start, u16_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:21:17
+   |
+LL |         let _ = <u32 as Step>::forward_unchecked(u32_start, u32_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:26:17
+   |
+LL |         let _ = <u64 as Step>::forward_unchecked(u64_start, u64_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:51:17
+   |
+LL |         let _ = <usize as Step>::forward_unchecked(usize_start, one);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:31:17
+   |
+LL |         let _ = <i8 as Step>::forward_unchecked(signed_start, signed_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:36:17
+   |
+LL |         let _ = <i16 as Step>::forward_unchecked(i16_start, i16_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:41:17
+   |
+LL |         let _ = <i32 as Step>::forward_unchecked(i32_start, i32_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:46:17
+   |
+LL |         let _ = <i64 as Step>::forward_unchecked(i64_start, i64_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not overflow
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:55:17
+   |
+LL |         let _ = <isize as Step>::forward_unchecked(isize_start, one);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that start + count does not exceed char::MAX
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:59:17
+   |
+LL |         let _ = <char as Step>::forward_unchecked(char_max_start, one);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: this unsafe operation violates a safety property: `Step::forward_unchecked` requires that skipping the surrogate range does not exceed char::MAX
+  --> tests/ui/sr/core/iter/range/forward_unchecked.rs:64:17
+   |
+LL |         let _ = <char as Step>::forward_unchecked(char_surrogate_skip_start, char_surrogate_skip_count);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use `Step::forward_checked` or validate the number of remaining steps before calling this function
+   = note: the step is proven to overflow
+
+error: aborting due to 12 previous errors
+

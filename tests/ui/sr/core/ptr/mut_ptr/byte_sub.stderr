@@ -1,0 +1,13 @@
+error: this unsafe operation violates a safety property: `*mut T::byte_sub` requires count fits in isize
+  --> tests/ui/sr/core/ptr/mut_ptr/byte_sub.rs:14:17
+   |
+LL |         let _ = ptr.byte_sub(overflow);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a byte count that fits in isize
+   = note: the byte offset is proven greater than isize::MAX
+   = note: `-D rpl::unsafe-numeric-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_numeric_precondition)]`
+
+error: aborting due to 1 previous error
+

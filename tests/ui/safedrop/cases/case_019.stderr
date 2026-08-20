@@ -1,0 +1,17 @@
+error: this unsafe operation may use a pointer after its owner has been dropped: `deref read`
+  --> tests/ui/safedrop/cases/case_019.rs:27:25
+   |
+LL |         let aggregate = *data.cast::<AggregateStep<'_>>();
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: ensure the owner outlives this raw pointer use, or avoid using the pointer after the owner is dropped
+note: `cast::<AggregateStep<'_>>()` aliases storage that is dead at this program point
+  --> tests/ui/safedrop/cases/case_019.rs:27:31
+   |
+LL |         let aggregate = *data.cast::<AggregateStep<'_>>();
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-use-after-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_use_after_free)]`
+
+error: aborting due to 1 previous error
+

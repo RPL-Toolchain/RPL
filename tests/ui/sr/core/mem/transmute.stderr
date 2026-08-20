@@ -1,0 +1,56 @@
+error: this unsafe operation violates a safety property: `mem::transmute` requires the source bits to form a valid `bool` value
+  --> tests/ui/sr/core/mem/transmute.rs:16:23
+   |
+LL |         let _: bool = mem::transmute(invalid_bool);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the source value before transmuting it
+note: this source value has a bit pattern outside the statically known valid range of `bool`
+  --> tests/ui/sr/core/mem/transmute.rs:16:38
+   |
+LL |         let _: bool = mem::transmute(invalid_bool);
+   |                                      ^^^^^^^^^^^^
+   = note: `-D rpl::unsafe-transmute-value-precondition` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unsafe_transmute_value_precondition)]`
+
+error: this unsafe operation violates a safety property: `mem::transmute` requires the source bits to form a valid `std::num::NonZero<u8>` value
+  --> tests/ui/sr/core/mem/transmute.rs:34:28
+   |
+LL |         let _: NonZeroU8 = mem::transmute(zero);
+   |                            ^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the source value before transmuting it
+note: this source value has a bit pattern outside the statically known valid range of `std::num::NonZero<u8>`
+  --> tests/ui/sr/core/mem/transmute.rs:34:43
+   |
+LL |         let _: NonZeroU8 = mem::transmute(zero);
+   |                                           ^^^^
+
+error: this unsafe operation violates a safety property: `mem::transmute` requires the source bits to form a valid `char` value
+  --> tests/ui/sr/core/mem/transmute.rs:23:23
+   |
+LL |         let _: char = mem::transmute(surrogate);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the source value before transmuting it
+note: this source value has a bit pattern outside the statically known valid range of `char`
+  --> tests/ui/sr/core/mem/transmute.rs:23:38
+   |
+LL |         let _: char = mem::transmute(surrogate);
+   |                                      ^^^^^^^^^
+
+error: this unsafe operation violates a safety property: `mem::transmute` requires the source bits to form a valid `char` value
+  --> tests/ui/sr/core/mem/transmute.rs:27:23
+   |
+LL |         let _: char = mem::transmute(above_char_max);
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: validate the source value before transmuting it
+note: this source value has a bit pattern outside the statically known valid range of `char`
+  --> tests/ui/sr/core/mem/transmute.rs:27:38
+   |
+LL |         let _: char = mem::transmute(above_char_max);
+   |                                      ^^^^^^^^^^^^^^
+
+error: aborting due to 4 previous errors
+

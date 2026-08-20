@@ -1,0 +1,17 @@
+error: this unsafe operation may free storage that is already dead: `MIR drop`
+  --> tests/ui/safedrop/call_edges.rs:34:1
+   |
+LL | }
+   | ^
+   |
+   = help: ensure this storage is released exactly once, or transfer ownership before releasing it again
+note: `CleanupUse { ptr }` aliases storage that is already dead at this program point
+  --> tests/ui/safedrop/call_edges.rs:32:27
+   |
+LL |     let _use_on_cleanup = CleanupUse { ptr };
+   |                           ^^^^^^^^^^^^^^^^^^
+   = note: `-D rpl::safedrop-double-free` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::safedrop_double_free)]`
+
+error: aborting due to 1 previous error
+
