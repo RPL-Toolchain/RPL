@@ -1,4 +1,4 @@
-//@rustc-env: RPL_PATS=docs/patterns-pest/safedrop/dangling_pointer.rpl
+//@rustc-env: RPL_PATS=docs/patterns-safedrop/dangling_pointer.rpl
 //@compile-flags: -Z mir-opt-level=0 -Z inline-mir=true
 
 fn return_dangling() -> *const u8 {

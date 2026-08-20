@@ -1,4 +1,4 @@
-//@rustc-env: RPL_PATS=docs/patterns-pest/safedrop/use_after_free.rpl
+//@rustc-env: RPL_PATS=docs/patterns-safedrop/use_after_free.rpl
 //@compile-flags: -Z mir-opt-level=0 -Z inline-mir=true
 fn main() {
     unsafe {

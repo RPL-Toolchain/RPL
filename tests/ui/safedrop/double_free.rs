@@ -1,4 +1,4 @@
-//@rustc-env: RPL_PATS=docs/patterns-pest/safedrop/double_free.rpl
+//@rustc-env: RPL_PATS=docs/patterns-safedrop/double_free.rpl
 //@compile-flags: -Z mir-opt-level=0 -Z inline-mir=true
 use std::alloc::{Layout, alloc, dealloc};
 

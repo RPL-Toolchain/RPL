@@ -1,4 +1,4 @@
-//@rustc-env: RPL_PATS=docs/patterns-pest/safedrop
+//@rustc-env: RPL_PATS=docs/patterns-safedrop
 //@compile-flags: -Z mir-opt-level=0 -Z inline-mir=true
 #![allow(dead_code, unsafe_op_in_unsafe_fn)]
 
