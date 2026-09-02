@@ -82,12 +82,6 @@ pub fn patterns() -> Vec<(&'static str, &'static str)> {
         "cve/CVE-2021-29941-2.rpl",
         "cve/CVE-2022-23639.rpl",
         "cve/CVE-2024-27284.rpl",
-        // Common patterns based on Rust's UB
-        "ub/allow-unchecked.rpl",
-        "ub/manually-drop.rpl",
-        "ub/private-or-generic-function-marked-inline.rpl",
-        "ub/transmute-int-to-ptr.rpl",
-        "ub/transmute-to-bool.rpl",
         // Safety requirements
         "sr/alloc/vec/from_raw_parts.rpl",
         "sr/core/alloc/global/alloc.rpl",
@@ -151,5 +145,11 @@ pub fn patterns() -> Vec<(&'static str, &'static str)> {
         "sr/core/slice/split_at_mut_unchecked.rpl",
         "sr/core/slice/split_at_unchecked.rpl",
         "sr/core/slice/swap_unchecked.rpl",
+        // Common patterns based on Rust's UB
+        "ub/allow-unchecked.rpl",
+        "ub/manually-drop.rpl",
+        "ub/private-or-generic-function-marked-inline.rpl",
+        "ub/transmute-int-to-ptr.rpl",
+        "ub/transmute-to-bool.rpl",
     ]
 }

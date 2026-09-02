@@ -1,3 +1,6 @@
+// Predicate helpers mirror the evaluator's fixed argument list.
+#![allow(clippy::too_many_arguments)]
+
 use std::time::Duration;
 
 use mirsa::analysis::combined::{AnalysisOptions, CombinedState, analyze_combined_with_config, state_before_location};
@@ -333,7 +336,7 @@ fn raw_slice_ptr_len_from_calls<'tcx>(
     exact_len.or(equiv_len)
 }
 
-fn const_operand_interval<'tcx>(konst: &mir::ConstOperand<'tcx>) -> Option<(i128, i128)> {
+fn const_operand_interval(konst: &mir::ConstOperand<'_>) -> Option<(i128, i128)> {
     let scalar = konst.const_.try_to_scalar_int()?;
     let (bit_width, signed) = match konst.ty().kind() {
         TyKind::Int(_) => (scalar.size().bits(), true),
@@ -723,9 +726,7 @@ pub(crate) fn local_interval<'tcx>(
     location: mir::Location,
     local: mir::Local,
 ) -> Option<(i128, i128)> {
-    let Some(state) = state_before_location(tcx, body, result, location) else {
-        return None;
-    };
+    let state = state_before_location(tcx, body, result, location)?;
     let place = mir::Place::from(local);
     tracked_interval(&state, place)
         .or_else(|| {
@@ -1351,12 +1352,12 @@ fn local_len<'tcx>(
         TyKind::Array(_, len) => len
             .try_to_target_usize(tcx)
             .map(|len| Interval::new(len as i128, len as i128)),
-        TyKind::Slice(_) => tracked_len(&state, place),
+        TyKind::Slice(_) => tracked_len(state, place),
         TyKind::Ref(_, inner, _) => match inner.kind() {
             TyKind::Array(_, len) => len
                 .try_to_target_usize(tcx)
                 .map(|len| Interval::new(len as i128, len as i128)),
-            TyKind::Slice(_) => tracked_len(&state, place),
+            TyKind::Slice(_) => tracked_len(state, place),
             _ => None,
         },
         TyKind::RawPtr(inner, _) => match inner.kind() {

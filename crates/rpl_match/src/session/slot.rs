@@ -207,7 +207,7 @@ fn referenced_fn_patterns<'pcx>(rust_items: &'pcx pat::RustItems<'pcx>) -> FxHas
         names: FxHashSet<Symbol>,
     }
 
-    impl<'pcx> PatternVisitor<'pcx> for Collector {
+    impl PatternVisitor<'_> for Collector {
         fn visit_fn_pat(&mut self, fn_pat: Symbol) {
             self.names.insert(fn_pat);
         }

@@ -237,7 +237,7 @@ impl PointerState {
         false
     }
 
-    fn node_before_deref<'tcx>(&self, place: Place<'tcx>) -> Option<usize> {
+    fn node_before_deref(&self, place: Place<'_>) -> Option<usize> {
         let mut node = place.local.as_usize();
         for projection in place.projection.iter() {
             match projection {
@@ -460,7 +460,7 @@ impl PointerState {
 
     // A write through `&mut T` replaces the old pointee. A write reached from a raw pointer is
     // only a weak update because its aliases cannot be resolved precisely within one body.
-    fn place_is_raw_pointer_derived<'tcx>(&self, place: Place<'tcx>) -> bool {
+    fn place_is_raw_pointer_derived(&self, place: Place<'_>) -> bool {
         let mut node = place.local.as_usize();
         for projection in place.projection.iter() {
             match projection {
@@ -586,7 +586,7 @@ struct ControlFlowInfo {
 }
 
 impl ControlFlowInfo {
-    fn new<'tcx>(body: &mir::Body<'tcx>) -> Self {
+    fn new(body: &mir::Body<'_>) -> Self {
         let mut blocks = vec![BlockInfo::default(); body.basic_blocks.len()];
         let mut father = Vec::with_capacity(body.basic_blocks.len());
         for (bb, data) in body.basic_blocks.iter_enumerated() {
@@ -1080,13 +1080,11 @@ impl<'a, 'tcx> Analyzer<'a, 'tcx> {
                 .projection
                 .iter()
                 .all(|projection| matches!(projection, ProjectionElem::Field(..)))
+            && let Some(pointee) = state.nodes[root].children.get(&ProjectionKey::Deref).copied()
+            && let Some(left) = state.prepare_place_for_assignment(self.tcx, self.typing_env, left, weak_update)
         {
-            if let Some(pointee) = state.nodes[root].children.get(&ProjectionKey::Deref).copied()
-                && let Some(left) = state.prepare_place_for_assignment(self.tcx, self.typing_env, left, weak_update)
-            {
-                state.merge_alias(left, pointee);
-                return;
-            }
+            state.merge_alias(left, pointee);
+            return;
         }
         state.assign_place_from_place(
             self.tcx,
@@ -1526,7 +1524,7 @@ fn const_to_u128<'tcx>(
         .map(|value| value.to_bits_unchecked())
 }
 
-fn callee_def_id<'tcx>(func: &Operand<'tcx>) -> Option<DefId> {
+fn callee_def_id(func: &Operand<'_>) -> Option<DefId> {
     let Operand::Constant(box mir::ConstOperand {
         const_: mir::Const::Val(mir::ConstValue::ZeroSized, ty),
         ..
@@ -1677,7 +1675,7 @@ fn is_direct_return_place(place: Place<'_>) -> bool {
     place.local == mir::RETURN_PLACE && place.projection.is_empty()
 }
 
-fn pointer_kind<'tcx>(ty: Ty<'tcx>) -> PointerKind {
+fn pointer_kind(ty: Ty<'_>) -> PointerKind {
     match ty.kind() {
         ty::RawPtr(_, _) => PointerKind::RawPtr,
         ty::Ref(_, _, _) => PointerKind::Ref,
@@ -1697,7 +1695,7 @@ fn pointer_node_props<'tcx>(
     (pointer_kind(ty), need_drop, tracked)
 }
 
-fn is_plain_value<'tcx>(ty: Ty<'tcx>) -> bool {
+fn is_plain_value(ty: Ty<'_>) -> bool {
     match ty.kind() {
         ty::Bool | ty::Char | ty::Int(_) | ty::Uint(_) | ty::Float(_) => true,
         ty::Array(ty, _) | ty::Slice(ty) => is_plain_value(*ty),

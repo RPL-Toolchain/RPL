@@ -14,12 +14,11 @@ pub(crate) fn is_freed_at_location<'tcx>(
     location: mir::Location,
     local: mir::Local,
 ) -> bool {
-    if body.basic_blocks[location.block].is_cleanup {
-        if !super::is_cleanup_release_location(body, location)
-            || has_dead_normal_drop_at_same_source(tcx, typing_env, body, cache, location)
-        {
-            return false;
-        }
+    if body.basic_blocks[location.block].is_cleanup
+        && (!super::is_cleanup_release_location(body, location)
+            || has_dead_normal_drop_at_same_source(tcx, typing_env, body, cache, location))
+    {
+        return false;
     }
     if super::is_moved_local_drop(tcx, body, location, local) {
         return false;
@@ -143,21 +142,22 @@ pub(crate) fn has_dangling_ptr_at_exit<'tcx>(
         return false;
     }
     if local == mir::RETURN_PLACE {
-        is_dead_at_exit(tcx, typing_env, body, cache, local, false, false)
-    } else if !is_arg_local(local, body) {
-        false
-    } else if matches!(body.local_decls[local].ty.kind(), ty::Ref(_, _, _))
-        && !super::should_check_reference_arg_dangling_fn(tcx, body)
-    {
-        false
-    } else if matches!(body.local_decls[local].ty.kind(), ty::RawPtr(_, _))
-        && !super::should_check_raw_arg_dangling_fn(tcx, body, body.local_decls[local].ty)
-    {
-        false
-    } else {
-        is_dead_at_exit(tcx, typing_env, body, cache, local, true, false)
-            || is_dead_at_exit(tcx, typing_env, body, cache, local, true, true)
+        return is_dead_at_exit(tcx, typing_env, body, cache, local, false, false);
     }
+    if !is_arg_local(local, body) {
+        return false;
+    }
+
+    let local_ty = body.local_decls[local].ty;
+    let should_skip = matches!(local_ty.kind(), ty::Ref(_, _, _))
+        && !super::should_check_reference_arg_dangling_fn(tcx, body)
+        || matches!(local_ty.kind(), ty::RawPtr(_, _)) && !super::should_check_raw_arg_dangling_fn(tcx, body, local_ty);
+    if should_skip {
+        return false;
+    }
+
+    is_dead_at_exit(tcx, typing_env, body, cache, local, true, false)
+        || is_dead_at_exit(tcx, typing_env, body, cache, local, true, true)
 }
 
 fn is_arg_local(local: mir::Local, body: &mir::Body<'_>) -> bool {

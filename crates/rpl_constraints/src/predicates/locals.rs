@@ -1,3 +1,6 @@
+// Predicate entry points mirror the evaluator's fixed argument list.
+#![allow(clippy::too_many_arguments)]
+
 use std::cell::{OnceCell, RefCell};
 use std::fmt;
 use std::rc::Rc;
@@ -15,6 +18,8 @@ use super::null_analysis::analyze_null;
 use super::ptr_state_analysis::{PointerSummaryCache, analyze_pointer_state_query, call_argument_is_used};
 use crate::Const;
 
+type PointerStateQueryKey = ((usize, usize), usize, bool);
+
 #[derive(Default)]
 pub struct CrateAnalysisCache {
     pointer_summaries: Rc<PointerSummaryCache>,
@@ -23,7 +28,7 @@ pub struct CrateAnalysisCache {
 pub struct BodyInfoCache<'tcx> {
     null_analysis: OnceCell<PathForwardAnalysisResult<CombinedState<'tcx>>>,
     interval_analysis: OnceCell<PathForwardAnalysisResult<CombinedState<'tcx>>>,
-    pointer_state_queries: RefCell<FxHashMap<((usize, usize), usize, bool), bool>>,
+    pointer_state_queries: RefCell<FxHashMap<PointerStateQueryKey, bool>>,
     pointer_summaries: Rc<PointerSummaryCache>,
     /// `product_of[i][j]` is `Some(true)` if `i` may be a product of `j`, `Some(false)` if `i` may
     /// be a quotient of `j`, and `None` if there is no relationship.
