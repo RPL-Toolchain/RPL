@@ -1,0 +1,38 @@
+pattern cve_2025_68260
+
+ops {
+    sync_cve[$L: type, $G: type] = {
+        fn $lock(&mut $L) -> $G;
+        fn $unlock($G) -> _;
+    }
+    intrusive_list_cve[$List: type, $TempList: type] = {
+        fn $transfer_to_temp(&mut $List, &mut $TempList) -> _;
+        fn $drain_temp(&mut $TempList) -> _;
+    }
+}
+
+patt {
+    p[$G: type] = fn _ (..) -> _ {
+        // 1. Acquire the lock on the owning list.
+        'lock:
+        let $guard: $G = $sync_cve::$lock(move _);
+
+        // 2. Transfer nodes out to a temporary list (under the lock).
+        _ = $intrusive_list_cve::$transfer_to_temp(_, _);
+
+        // 3. Release the lock.  Any argument (wildcard) since the optimized MIR
+        //    may introduce an intermediate local before the unlock sink.
+        _ = $sync_cve::$unlock(_);
+
+        // 4. Drain the temporary list OUTSIDE the lock — the bug window.
+        _ = $intrusive_list_cve::$drain_temp(_);
+    }
+}
+
+diag {
+    p = {
+        primary(lock) = "intrusive list drained outside the lock that owns it (CVE-2025-68260 bug class)",
+        help = "extract elements directly from the owning list under the lock; do not transit through an intermediate stack list",
+        name = "ops_cve_2025_68260",
+    }
+}

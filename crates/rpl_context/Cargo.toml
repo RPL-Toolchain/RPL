@@ -10,10 +10,14 @@ edition.workspace = true
 [dependencies]
 derive_more.workspace = true
 pest_typed.workspace = true
+rpl_config.workspace = true
 rpl_meta.workspace = true
 rpl_parser.workspace = true
 rpl_constraints.workspace = true
 sync-arena.workspace = true
+
+[dev-dependencies]
+rpl_config.workspace = true
 
 [features]
 

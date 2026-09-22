@@ -1,0 +1,10 @@
+error: lock without explicit release
+  --> tests/features/ops/set_op_with_ops.rs:10:14
+   |
+LL |     let _g = m.lock();
+   |              ^^^^^^^^
+   |
+   = note: `#[deny(rpl::ops_lock_no_unlock)]` on by default
+
+error: aborting due to 1 previous error
+

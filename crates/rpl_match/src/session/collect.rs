@@ -2,6 +2,7 @@ use std::cell::RefCell;
 
 use rpl_constraints::predicates::BodyInfoCache;
 use rpl_context::PatCtxt;
+use rpl_context::pat::ops_resolved::ResolvedOpBindings;
 use rpl_context::pat::{self, FnPattern};
 use rustc_data_structures::fx::FxHashMap;
 use rustc_hir::def_id::DefId;
@@ -24,6 +25,7 @@ pub struct MatchCollectCtxt<'a, 'pcx, 'tcx> {
     pub pat_name: Symbol,
     pub body_caches: &'a RefCell<FxHashMap<DefId, BodyInfoCache>>,
     fn_candidate_cache: &'a FnCandidateCache<'tcx>,
+    op_bindings: ResolvedOpBindings,
 }
 
 impl<'a, 'pcx, 'tcx> MatchCollectCtxt<'a, 'pcx, 'tcx> {
@@ -40,7 +42,14 @@ impl<'a, 'pcx, 'tcx> MatchCollectCtxt<'a, 'pcx, 'tcx> {
             pat_name,
             body_caches,
             fn_candidate_cache,
+            op_bindings: ResolvedOpBindings::empty(),
         }
+    }
+
+    /// Use one abstract-op assignment for every slot and set-op operand in this session.
+    pub fn with_op_bindings(mut self, op_bindings: ResolvedOpBindings) -> Self {
+        self.op_bindings = op_bindings;
+        self
     }
 
     pub fn collect_fn_candidates(
@@ -49,6 +58,13 @@ impl<'a, 'pcx, 'tcx> MatchCollectCtxt<'a, 'pcx, 'tcx> {
         fn_pat: &FnPattern<'pcx>,
         item: CrateFnItem,
     ) -> Vec<FnSlotCandidate<'tcx>> {
+        // The shared cache key predates abstract ops and does not identify the
+        // assignment. Keep it for ordinary patterns, but avoid reusing candidates
+        // from a different op combination. SessionMatching still caches probes
+        // within this session, whose assignment is fixed.
+        if !self.op_bindings.by_group.is_empty() {
+            return self.collect_fn_candidates_uncached(rust_items, fn_pat, item);
+        }
         let cache_key = (
             item.def_id.to_def_id(),
             fn_pat as *const FnPattern<'pcx> as usize,
@@ -85,7 +101,7 @@ impl<'a, 'pcx, 'tcx> MatchCollectCtxt<'a, 'pcx, 'tcx> {
         let (mir_cfg, mir_ddg) = self.graphs(body);
         let self_ty = self.self_ty(item.def_id);
 
-        let mir_matches = CheckMirCtxt::new(
+        let mir_matches = CheckMirCtxt::new_with_bindings(
             self.tcx,
             self.pcx,
             body,
@@ -96,6 +112,7 @@ impl<'a, 'pcx, 'tcx> MatchCollectCtxt<'a, 'pcx, 'tcx> {
             fn_pat,
             &mir_cfg,
             &mir_ddg,
+            self.op_bindings.clone(),
         )
         .check();
         mir_matches

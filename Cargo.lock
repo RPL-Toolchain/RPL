@@ -1625,6 +1625,7 @@ version = "0.1.0"
 dependencies = [
  "derive_more",
  "pest_typed",
+ "rpl_config",
  "rpl_constraints",
  "rpl_meta",
  "rpl_parser",
@@ -1647,6 +1648,7 @@ dependencies = [
 name = "rpl_driver"
 version = "0.1.0"
 dependencies = [
+ "rpl_config",
  "rpl_constraints",
  "rpl_context",
  "rpl_match",
@@ -1756,6 +1758,10 @@ version = "0.1.0"
 [[package]]
 name = "rpl_resolve"
 version = "0.1.0"
+dependencies = [
+ "rpl_context",
+ "rpl_meta",
+]
 
 [[package]]
 name = "rpl_utils"

@@ -1,0 +1,31 @@
+pattern set_op_with_ops
+
+ops {
+    sync_so[$T: type, $U: type] = {
+        fn $lock(&mut $T) -> $U;
+        fn $unlock($U) -> _;
+    }
+}
+
+util {
+    p_lock[$U: type] = fn _ (..) -> _ {
+        'lock:
+        let $guard: $U = $sync_so::$lock(move _);
+    }
+    p_uncovered[$U: type] = fn _ (..) -> _ {
+        'lock:
+        let $guard: $U = $sync_so::$lock(move _);
+        _ = $sync_so::$unlock(move $guard);
+    }
+}
+
+patt {
+    p[$U: type] = p_lock[] - p_uncovered[]
+}
+
+diag {
+    p = {
+        primary(lock) = "lock without explicit release",
+        name = "ops_lock_no_unlock",
+    }
+}

@@ -1,0 +1,26 @@
+pattern two_groups
+
+ops {
+    sync_2g[$T: type, $U: type] = {
+        fn $lock(&mut $T) -> $U;
+    }
+    logger_2g[$L: type] = {
+        fn $log($L) -> _;
+    }
+}
+
+patt {
+    p[$U: type, $L: type] = fn _ (..) -> _ {
+        'lock:
+        let $guard: $U = $sync_2g::$lock(move _);
+        let $msg: $L = _;
+        _ = $logger_2g::$log(move $msg);
+    }
+}
+
+diag {
+    p = {
+        primary(lock) = "two-groups match: lock and log in same function",
+        name = "ops_two_groups",
+    }
+}

@@ -1,0 +1,20 @@
+pattern ops_multiple_instances
+
+ops {
+    sync_2g[$T: type, $U: type] = {
+        fn $lock(&mut $T) -> $U;
+    }
+}
+
+patt {
+    p[] = fn $f(..) -> _ {
+        _ = $sync_2g::$lock(_);
+    }
+}
+
+diag {
+    p = {
+        primary(f) = "abstract lock matched for this configured instance",
+        name = "ops_multiple_instances",
+    }
+}

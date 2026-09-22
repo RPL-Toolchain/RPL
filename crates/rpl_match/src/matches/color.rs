@@ -2,6 +2,7 @@
 //! A.K.A. if we're using building blocks with the right color.
 
 use rpl_constraints::Const;
+use rpl_context::pat::ops_resolved::ResolvedOpBindings;
 use rustc_middle::{mir, ty};
 
 use crate::matches::MatchCtxt;
@@ -48,6 +49,10 @@ impl<'pcx, 'tcx> MatchStatement<'pcx, 'tcx> for MatchCtxt<'_, 'pcx, 'tcx> {
 
     fn typing_env(&self) -> ty::TypingEnv<'tcx> {
         self.cx.ty.typing_env
+    }
+
+    fn op_bindings(&self) -> &ResolvedOpBindings {
+        &self.cx.op_bindings
     }
 
     type MatchTy = Self;

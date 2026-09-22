@@ -1,0 +1,141 @@
+# RPL workspace configuration.
+#
+# [[ops.<group>]] entries provide concrete instances of abstract op groups
+# declared in .rpl pattern files.  Any pattern file that declares
+# `ops { <group>[...] = { ... } }` will receive these instances at match time.
+#
+# Substitution model (three layers, see resolve_one in ops_resolved.rs):
+#
+#   1. `type = ["$1", "$2", ...]` declares the EXISTENTIAL "free" placeholders
+#      that remain in the final expanded paths.  At match time the matcher
+#      strips `<...>` brackets and splits on `::` before DefId comparison, so
+#      these placeholders are effectively wildcards on the generic args.
+#
+#   2. Each TYPE meta-var binding (the bare-uppercase keys: `T`, `U`, `L`,
+#      `G`, `List`, ...) is a string that may reference the existential
+#      placeholders (`$1`, `$2`, ...) declared above.  These bindings define
+#      the *concrete* path each abstract type meta-var resolves to.
+#
+#   3. Each OP-NAME binding (the lowercase keys: `lock`, `unlock`, `log`, ...)
+#      is a string that may reference any of the TYPE meta-vars (`$T`, `$L`,
+#      ...) AND the existential placeholders (`$1`, ...).  This lets each
+#      op binding be written once in terms of its type meta-var, so the
+#      concrete path only needs to be spelled out at the type-binding layer.
+#
+# The resolver runs a fixed-point textual substitution over all bindings (up
+# to 16 passes) — every `$<type-meta-var>` reference is expanded into its
+# binding value before the matcher sees the result.  `$<existential-id>`
+# references (like `$1`) are NEVER substituted at config-resolve time; they
+# travel through to the matcher as wildcards.
+
+[[ops.sync]]
+type = ["$1"]
+T    = "std::sync::Mutex<$1>"
+U    = "std::sync::MutexGuard<$1>"
+lock = "$T::lock"
+
+# ---------------------------------------------------------------------------
+# folded test
+# NOTE: There are intentionally NO [[ops.sync_folded]] entries here.
+# The cartesian product over an empty instance list yields zero combinations,
+# so the ops_folded pattern produces no diagnostics (fold-on-no-instances).
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# partial_bad test — three instances, one malformed (missing `unlock`).
+# C3 (resolver's missing-op-binding check) should warn and skip the third.
+# ---------------------------------------------------------------------------
+
+[[ops.sync_pb]]
+type   = ["$1"]
+T      = "std::sync::Mutex<$1>"
+U      = "std::sync::MutexGuard<$1>"
+lock   = "$T::lock"
+unlock = "$U::drop"
+
+[[ops.sync_pb]]
+type   = ["$1"]
+T      = "parking_lot::Mutex<$1>"
+U      = "parking_lot::MutexGuard<$1>"
+lock   = "$T::lock"
+unlock = "$U::drop"
+
+[[ops.sync_pb]]
+# missing `unlock` — C3 check should warn and skip this instance
+type = ["$1"]
+T    = "std::sync::RwLock<$1>"
+U    = "std::sync::RwLockReadGuard<$1>"
+lock = "$T::read"
+
+# ---------------------------------------------------------------------------
+# set_op_with_ops test — composition via `p_lock - p_uncovered`.
+# `unlock` here is bound to a free function (`std::intrinsics::black_box`)
+# rather than a method on `$U`, so it cannot use the `$U::method` form.
+# ---------------------------------------------------------------------------
+
+[[ops.sync_so]]
+type   = ["$1"]
+T      = "std::sync::Mutex<$1>"
+U      = "std::sync::MutexGuard<$1>"
+lock   = "$T::lock"
+unlock = "std::intrinsics::black_box"
+
+# ---------------------------------------------------------------------------
+# two_groups test — cartesian product over two op groups.
+#   sync_2g:   2 instances (Mutex, RwLock)
+#   logger_2g: 1 instance  (std::intrinsics::black_box)
+# Total combinations: 2 × 1 = 2.  Only (Mutex, black_box) fires in the test
+# body; (RwLock, black_box) has no matching RwLock call site.
+#
+# In `logger_2g`, `$L` is bound to the bare existential `$1` (a wildcard
+# type) and `log` is bound to a free function — neither uses the
+# `$L::method` form, by design.
+# ---------------------------------------------------------------------------
+
+[[ops.sync_2g]]
+type = ["$1"]
+T    = "std::sync::Mutex<$1>"
+U    = "std::sync::MutexGuard<$1>"
+lock = "$T::lock"
+
+[[ops.sync_2g]]
+type = ["$1"]
+T    = "std::sync::RwLock<$1>"
+U    = "std::sync::RwLockReadGuard<$1>"
+lock = "$T::read"
+
+[[ops.logger_2g]]
+type = ["$1"]
+L    = "$1"
+log  = "std::intrinsics::black_box"
+
+# ---------------------------------------------------------------------------
+# CVE-2025-68260 POC — two op groups
+#
+# sync_cve: models the lock/unlock primitive.
+#   lock   = $L::lock  (a method on the Mutex type, $L resolves to Mutex<$1>)
+#   unlock = std::intrinsics::black_box (opaque sink representing explicit
+#            guard consumption; used because MutexGuard::drop is inlined and
+#            this is a free function, not a method on $G)
+#
+# intrusive_list_cve: models the intermediate-list transfer/drain operations.
+#   transfer_to_temp / drain_temp are free functions defined in the test
+#   binary itself.  "crate::" resolves to LOCAL_CRATE in def_path_res, so
+#   any binary that defines these two functions at the crate root will match.
+#   Since they're free functions (not methods on $List / $TempList), they
+#   cannot use the `$List::method` form.
+# ---------------------------------------------------------------------------
+
+[[ops.sync_cve]]
+type   = ["$1"]
+L      = "std::sync::Mutex<$1>"
+G      = "std::sync::MutexGuard<$1>"
+lock   = "$L::lock"
+unlock = "std::intrinsics::black_box"
+
+[[ops.intrusive_list_cve]]
+type             = ["$1", "$2"]
+List             = "$1"
+TempList         = "$2"
+transfer_to_temp = "crate::transfer_to_temp"
+drain_temp       = "crate::drain_temp"

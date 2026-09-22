@@ -1,0 +1,21 @@
+pattern lock_unlock
+
+ops {
+    sync[$T: type, $U: type] = {
+        fn $lock(&mut $T) -> $U;
+    }
+}
+
+patt {
+    p[$U: type] = fn _ (..) -> _ {
+        'lock:
+        let $guard: $U = $sync::$lock(move _);
+    }
+}
+
+diag {
+    p = {
+        primary(lock) = "lock-unlock pair detected via abstract op",
+        name = "ops_lock_unlock",
+    }
+}

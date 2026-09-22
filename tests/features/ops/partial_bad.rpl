@@ -1,0 +1,22 @@
+pattern partial_bad
+
+ops {
+    sync_pb[$T: type, $U: type] = {
+        fn $lock(&mut $T) -> $U;
+        fn $unlock(&mut $U) -> _;
+    }
+}
+
+patt {
+    p[$U: type] = fn _ (..) -> _ {
+        'lock:
+        let $guard: $U = $sync_pb::$lock(move _);
+    }
+}
+
+diag {
+    p = {
+        primary(lock) = "partial_bad pattern matched",
+        name = "ops_partial_bad",
+    }
+}

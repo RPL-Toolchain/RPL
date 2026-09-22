@@ -505,3 +505,77 @@ fn rvalue_cast() {
 fn mir_local_decl() {
     full_test!(MirLocalDecl, "let $q: DstVec = move $p as DstVec (Transmute);");
 }
+
+#[test]
+fn ops_block_basic() {
+    full_test!(
+        opsBlock,
+        "\
+ops {
+    sync[$T: type, $U: type] = {
+        fn $lock(&mut $T) -> $U;
+        fn $unlock(&mut $U) -> _;
+    }
+}"
+    );
+}
+
+#[test]
+fn ops_block_no_meta_vars() {
+    full_test!(
+        opsBlock,
+        "\
+ops {
+    sync = {
+        fn $lock();
+    }
+}"
+    );
+}
+
+#[test]
+fn ops_block_multiple_groups() {
+    full_test!(
+        opsBlock,
+        "\
+ops {
+    sync[$T: type] = { fn $lock(&mut $T) -> _; }
+    logger[$L: type] = { fn $log(&$L); }
+}"
+    );
+}
+
+#[test]
+fn ops_block_missing_semicolon_fails() {
+    use pest_typed::TypedParser as _;
+    let res = Grammar::try_parse::<pairs::opsBlock>("ops { sync = { fn $lock() } }");
+    assert!(res.is_err(), "expected parse error for missing semicolon");
+}
+
+#[test]
+fn op_ref_as_callee() {
+    // $sync::$lock parses as an OpRef.
+    full_test!(OpRef, "$sync::$lock");
+}
+
+#[test]
+fn op_ref_with_single_colon_fails() {
+    use pest_typed::TypedParser as _;
+    let res = Grammar::try_parse::<pairs::OpRef>("$sync:$lock");
+    assert!(res.is_err(), "expected parse error: single colon is not allowed");
+}
+
+#[test]
+fn op_ref_inside_let_rhs() {
+    full_test!(
+        main,
+        "\
+pattern foo
+patt {
+    p[$T: type, $U: type] = fn _ (..) -> _ {
+        let $obj: $T = _;
+        let $g: $U = $sync::$lock(move $obj);
+    }
+}"
+    );
+}

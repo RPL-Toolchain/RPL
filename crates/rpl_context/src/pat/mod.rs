@@ -1,3 +1,4 @@
+use std::cell::OnceCell;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::Deref;
@@ -6,14 +7,16 @@ use std::sync::Arc;
 pub use error::DynamicError;
 use error::DynamicErrorBuilder;
 use rpl_constraints::Constraints;
+use rpl_constraints::predicates::PredicateConjunction;
 use rpl_meta::collect_elems_separated_by_comma;
 use rpl_meta::meta::PattSymbolTables;
-use rpl_meta::symbol_table::WithPath;
+use rpl_meta::symbol_table::{GetType, MetaVariable, TypeOrPath, WithPath};
+use rpl_meta::utils::self_param_ty;
 use rpl_parser::generics::{Choice2, Choice3, Choice4};
 use rpl_parser::pairs;
-use rustc_data_structures::fx::{FxHashMap, FxIndexMap};
+use rustc_data_structures::fx::{FxHashMap, FxHashSet, FxIndexMap};
 use rustc_hir::FnDecl;
-use rustc_middle::mir::Body;
+use rustc_middle::mir::{Body, Mutability as MirMutability};
 use rustc_span::Symbol;
 use rustc_span::source_map::SourceMap;
 
@@ -27,6 +30,10 @@ mod item;
 mod matched;
 mod mir;
 mod non_local_meta_vars;
+mod ops;
+pub mod ops_resolved;
+pub mod ops_uses;
+pub mod ops_wf;
 mod pretty;
 mod table;
 mod ty;
@@ -37,6 +44,10 @@ pub use item::*;
 pub use matched::{Matched, MatchedMap};
 pub use mir::*;
 pub use non_local_meta_vars::*;
+pub use ops::*;
+pub use ops_resolved::ResolvedOpBindings;
+pub use ops_uses::{OpsUseError, check_op_refs};
+pub use ops_wf::{OpsWfError, check_ops_block, check_r6_patt_vs_ops};
 pub(crate) use table::TableHead;
 pub use ty::*;
 
@@ -135,6 +146,15 @@ pub struct RustItems<'pcx> {
     pub fns: FnPatterns<'pcx>,
     pub impls: FxHashMap<Symbol, Impl<'pcx>>,
     pub attr: PatAttr<'pcx>,
+    /// The set of op-group names referenced by `Operand::OpRef` anywhere in
+    /// this pattern's function bodies.  Populated by
+    /// [`Pattern::check_and_populate_op_refs`] after lowering completes.
+    ///
+    /// Stored in a `OnceCell` so it can be initialised via a shared `&Self`
+    /// reference (as held by `util_block`, where items are arena-allocated and
+    /// shared across multiple `PatternOperation`s).  Reads before population
+    /// return an empty set via `get_or_init`.
+    pub(crate) referenced_op_groups: OnceCell<FxHashSet<Symbol>>,
 }
 
 impl<'pcx> RustItems<'pcx> {
@@ -146,7 +166,23 @@ impl<'pcx> RustItems<'pcx> {
             fns: Default::default(),
             impls: Default::default(),
             attr,
+            referenced_op_groups: OnceCell::new(),
         }
+    }
+
+    /// Returns the set of op-group names referenced by `$group::$op` operands
+    /// anywhere in this pattern's function bodies.
+    ///
+    /// This is populated by [`Pattern::check_and_populate_op_refs`] after all
+    /// pattern items and the ops block have been lowered.  The matcher (Task
+    /// 11) consumes this to know which op-group instances to iterate.
+    ///
+    /// If called before population, returns a (durable) empty set via
+    /// `OnceCell::get_or_init`; subsequent population attempts on an
+    /// already-initialised cell are silently ignored, which preserves the
+    /// invariant that the first observed value is the final one.
+    pub fn referenced_op_groups(&self) -> &FxHashSet<Symbol> {
+        self.referenced_op_groups.get_or_init(FxHashSet::default)
     }
 
     fn add_item(
@@ -389,6 +425,31 @@ impl PatternOperation<'_> {
     pub fn post_process<M: Eq + Hash + Debug>(&self, iter: impl Iterator<Item = M>) -> impl Iterator<Item = M> {
         self.attr.post_process(iter)
     }
+
+    /// Returns the union of op-group names referenced by any operand
+    /// (positive or negative) of this set-op, recursing into nested
+    /// `PatternOperation`s.
+    ///
+    /// This is consumed by the matcher (Task 11) to know which op-group
+    /// instances to iterate over for cartesian-product expansion.
+    pub fn referenced_op_groups(&self) -> FxHashSet<Symbol> {
+        let mut all = FxHashSet::default();
+        for (_name, item, _map) in self.positive.iter().chain(self.negative.iter()) {
+            match item {
+                PatternItem::RustItems(rust_items) => {
+                    for &g in rust_items.referenced_op_groups() {
+                        all.insert(g);
+                    }
+                },
+                PatternItem::RPLPatternOperation(inner) => {
+                    for g in inner.referenced_op_groups() {
+                        all.insert(g);
+                    }
+                },
+            }
+        }
+        all
+    }
 }
 
 /// Corresponds to a pattern file in RPL, not a pattern item.
@@ -396,7 +457,11 @@ pub struct Pattern<'pcx> {
     pub pcx: PatCtxt<'pcx>,
     pub patt_block: FxIndexMap<Symbol, PatternItem<'pcx>>, // indexed by pat_name
     pub util_block: FxIndexMap<Symbol, &'pcx PatternItem<'pcx>>, // indexed by pat_name
+    pub ops_block: OpsBlock<'pcx>,
     diag_block: FxHashMap<Symbol, DynamicErrorBuilder<'pcx>>,
+    /// R4/R5 errors discovered during `check_and_populate_op_refs`.
+    /// Stored here so callers (tests, driver) can inspect them after lowering.
+    pub(crate) op_ref_errors: Vec<ops_uses::OpsUseError>,
 }
 
 impl<'pcx> Pattern<'pcx> {
@@ -405,8 +470,15 @@ impl<'pcx> Pattern<'pcx> {
             pcx,
             patt_block: Default::default(),
             util_block: Default::default(),
+            ops_block: OpsBlock::default(),
             diag_block: Default::default(),
+            op_ref_errors: Default::default(),
         }
+    }
+
+    /// Returns the R4/R5 use-site errors found during `check_and_populate_op_refs`.
+    pub fn op_ref_errors(&self) -> &[ops_uses::OpsUseError] {
+        &self.op_ref_errors
     }
 
     #[instrument(level = "debug", skip(self, source_map, body, decl))]
@@ -585,6 +657,145 @@ impl<'pcx> Pattern<'pcx> {
         };
     }
 
+    /// Lower an `opsBlock` pest pair into `self.ops_block`.
+    ///
+    /// Runs well-formedness checks R1–R3 on the raw parse tree before any
+    /// lowering so that the `unreachable!()` contracts in `OpsMetaLookup`
+    /// cannot be triggered by malformed input.  Groups that fail a check are
+    /// skipped; callers should surface the returned errors to the user.
+    ///
+    /// For each (valid) `opsItem` in the block we:
+    /// 1. Extract the group name (bare, no leading `$`).
+    /// 2. Lower the `MetaVariableDeclList` into `NonLocalMetaVars` using a minimal `GetType`
+    ///    implementation backed by the item's own type-var declarations.
+    /// 3. Lower each `OpFnDecl` into an `OpSignature` (name, params, ret).
+    /// 4. Build an `OpGroup` and insert it into `self.ops_block.groups`.
+    ///
+    /// Returns the list of well-formedness errors found (if any).
+    pub fn add_ops_block<'mcx: 'pcx>(
+        &mut self,
+        ops_block: WithPath<'mcx, &'mcx pairs::opsBlock<'mcx>>,
+    ) -> Vec<ops_wf::OpsWfError> {
+        // R1–R3: pre-validate before touching any lowering code.
+        let wf_errors = ops_wf::check_ops_block(ops_block.inner);
+        // Collect group names that have errors so we can skip them below.
+        let bad_groups: std::collections::HashSet<&str> = wf_errors.iter().map(|e| e.group.as_str()).collect();
+
+        let p = ops_block.path;
+        for item in ops_block.opsItem() {
+            // -- 1. Group name (bare Identifier, no `$`).
+            let group_name = Symbol::intern(item.Identifier().span.as_str());
+            let _span = item.span; // TODO(task-6): replace DUMMY_SP with a real rustc Span
+
+            // Skip groups that failed R1/R2/R3.
+            if bad_groups.contains(group_name.as_str()) {
+                continue;
+            }
+
+            // -- 2. Pre-scan MetaVariableDeclList to build OpsMetaLookup.
+            //    We need the lookup both for `NonLocalMetaVars::from_meta_decls`
+            //    (const/place var types) and for `Ty::from` on param types
+            //    that reference type meta-variables like `$T`.
+            let meta_decl_list = item.MetaVariableDeclList();
+            let lookup = OpsMetaLookup::from_meta_decl_list(meta_decl_list);
+
+            // -- 3. Lower the MetaVariableDeclList into NonLocalMetaVars.
+            let meta =
+                NonLocalMetaVars::from_meta_decls(meta_decl_list.map(|mdl| WithPath::new(p, mdl)), self.pcx, &lookup);
+
+            // -- 4. Lower each OpFnDecl into OpSignature.
+            let mut ops: FxIndexMap<Symbol, OpSignature<'pcx>> = FxIndexMap::default();
+            for decl in item.OpFnDecl() {
+                let sig = decl.OpFnSig();
+                // Op name: FnName is PlaceHolder | MetaVariable | Identifier.
+                // In practice op fn names are MetaVariables like `$lock`.
+                let op_name_raw = sig.FnName().span.as_str();
+                let op_name = Symbol::intern(op_name_raw.trim_start_matches('$'));
+
+                // Lower parameters.
+                let params: Vec<Param<'pcx>> = if let Some(params_pair) = sig.OpFnParamsSeparatedByComma() {
+                    let (first, rest) = params_pair.OpFnParam();
+                    std::iter::once(first)
+                        .chain(rest)
+                        .filter_map(|param| lower_op_fn_param(p, param, self.pcx, &lookup))
+                        .collect()
+                } else {
+                    Vec::new()
+                };
+
+                // Lower return type.
+                // We inline the logic of Ty::from_fn_ret because that function
+                // takes &FnSymbolTable specifically; here we use our OpsMetaLookup.
+                let ret = sig.FnRet().map(|fn_ret| {
+                    let (_, placeholder_or_ty) = fn_ret.get_matched();
+                    match placeholder_or_ty {
+                        Choice2::_0(_) => self.pcx.mk_any_ty(),
+                        Choice2::_1(ty) => Ty::from(WithPath::new(p, ty), self.pcx, &lookup),
+                    }
+                });
+
+                let op_sig = OpSignature {
+                    name: op_name,
+                    params,
+                    ret,
+                    span: rustc_span::DUMMY_SP,
+                }; // TODO(task-6): replace DUMMY_SP with a real rustc Span
+                ops.insert(op_name, op_sig);
+            }
+
+            // -- 5. Build OpGroup and insert.
+            let group = OpGroup {
+                name: group_name,
+                meta_vars: meta,
+                ops,
+                span: rustc_span::DUMMY_SP,
+            }; // TODO(task-6): replace DUMMY_SP with a real rustc Span
+            self.ops_block.groups.insert(group_name, group);
+        }
+        wf_errors
+    }
+
+    /// Run R4/R5 use-site checks on all `RustItems` in `patt_block` and
+    /// `util_block`, populate `referenced_op_groups` on each `RustItems`, and
+    /// store discovered errors in `self.op_ref_errors`.
+    ///
+    /// Call this **after** both `add_ops_block` and all `add_pattern_item`
+    /// calls have completed.
+    ///
+    /// `referenced_op_groups` is now a `OnceCell`, so population goes through
+    /// `OnceCell::set` via a shared reference.  This works uniformly for
+    /// `patt_block` (owned `PatternItem`s) and `util_block` (arena-allocated
+    /// items shared across multiple `PatternOperation`s) — no `unsafe` is
+    /// needed.  A second `set` on an already-initialised cell returns `Err`
+    /// and is ignored: by construction, each `RustItems` is visited once here
+    /// and not observed by any reader until after this function returns.
+    pub fn check_and_populate_op_refs(&mut self) {
+        let mut all_errors = Vec::new();
+
+        let process = |rust_items: &RustItems<'pcx>, errors: &mut Vec<ops_uses::OpsUseError>| {
+            let mut referenced = FxHashSet::default();
+            let errs = ops_uses::check_op_refs(rust_items, &self.ops_block, &mut referenced);
+            // `set` returns Err iff the cell was already initialised; that
+            // would indicate this function ran twice, which is a logic bug
+            // but not a soundness one — silently keep the prior value.
+            let _ = rust_items.referenced_op_groups.set(referenced);
+            errors.extend(errs);
+        };
+
+        for (_name, item) in &self.patt_block {
+            if let PatternItem::RustItems(rust_items) = item {
+                process(rust_items, &mut all_errors);
+            }
+        }
+        for (_name, item_ref) in &self.util_block {
+            if let PatternItem::RustItems(rust_items) = *item_ref {
+                process(rust_items, &mut all_errors);
+            }
+        }
+
+        self.op_ref_errors = all_errors;
+    }
+
     pub fn add_diag<'mcx: 'pcx>(
         &mut self,
         diag: WithPath<'mcx, &'mcx pairs::diagBlock<'mcx>>,
@@ -629,4 +840,151 @@ impl<'pcx> Pattern<'pcx> {
     pub fn primary_labels(&self, pat_name: Symbol) -> Option<&[&str]> {
         self.diag_block.get(&pat_name).map(|diag| diag.primary_labels())
     }
+}
+
+/// Minimal `GetType` implementation for lowering ops-item signatures.
+///
+/// Ops items do not import Rust types or paths — they only use type meta-variables
+/// (e.g. `$T`, `$U`) declared in the item's own `MetaVariableDeclList`.
+/// This struct is populated by pre-scanning that list and maps each declared
+/// type-variable name to its 0-based index.
+struct OpsMetaLookup<'i> {
+    /// (bare_name_with_dollar, index)
+    type_vars: Vec<(&'i str, usize)>,
+}
+
+impl<'i> OpsMetaLookup<'i> {
+    /// Build an `OpsMetaLookup` by scanning the `MetaVariableDeclList` of one
+    /// `opsItem`. Only `$T: type` style (type-kind) declarations are collected;
+    /// const and place vars are skipped (they would panic if their types
+    /// contained path identifiers, but that scenario is not supported yet).
+    ///
+    /// # Index-counter alignment with `NonLocalMetaVars`
+    ///
+    /// `NonLocalMetaVars::from_meta_decls` partitions declarations into three
+    /// separate buckets (type / const / place) and then pushes each bucket into
+    /// its own `IndexVec` in three independent passes — so type-var indices in
+    /// `NonLocalMetaVars` always start at 0 and count only type-kind decls.
+    /// This function counts `idx` the same way (incrementing only for
+    /// type-kind decls), so the `MetaVariable::Type(idx, …)` values we emit
+    /// for downstream consumers are aligned.  This is **Path A** from the
+    /// code-review checklist: the counter is correct as-is and must *not* be
+    /// changed to be unconditional.
+    fn from_meta_decl_list(meta_decl_list: Option<&'i pairs::MetaVariableDeclList<'i>>) -> Self {
+        let mut type_vars = Vec::new();
+        if let Some(mdl) = meta_decl_list
+            && let Some(inner) = mdl.get_matched().1
+        {
+            let decls = collect_elems_separated_by_comma!(inner).collect::<Vec<_>>();
+            let mut idx = 0usize;
+            for decl in &decls {
+                let (ident, _, ty, _) = decl.get_matched();
+                if matches!(ty.deref(), Choice3::_0(_)) {
+                    // Type meta-variable: retain name with $ prefix for matching.
+                    // idx counts only type-kind decls — see alignment note above.
+                    type_vars.push((ident.span.as_str(), idx));
+                    idx += 1;
+                }
+            }
+        }
+        Self { type_vars }
+    }
+}
+
+impl<'i> GetType<'i> for OpsMetaLookup<'i> {
+    fn get_type_or_path(
+        &self,
+        ident: &WithPath<'i, &pairs::Identifier<'i>>,
+    ) -> Result<TypeOrPath<'i>, rpl_meta::RPLMetaError<'i>> {
+        // Ops signatures must only reference meta-variables declared in their
+        // MetaVariableDeclList — bare Rust path types are not permitted.
+        // Reaching this branch means resolver check R1 (Task 6) was not run
+        // or failed to reject the invalid signature before lowering.
+        unreachable!(
+            "internal: ops signatures must use only op-level meta-vars; \
+             bare path type `{}` at {:?} should have been rejected by \
+             resolver check R1 before lowering",
+            ident.span.as_str(),
+            ident.path
+        )
+    }
+
+    fn force_get_meta_var(&self, ident: WithPath<'i, &pairs::MetaVariable<'i>>) -> MetaVariable<'i> {
+        let name = ident.inner.span.as_str();
+        // The meta variable includes the `$` prefix in its span text.
+        if let Some((_, idx)) = self.type_vars.iter().find(|(n, _)| *n == name) {
+            MetaVariable::Type(*idx, PredicateConjunction::default())
+        } else {
+            // Reaching this branch means the meta-variable was used in a
+            // signature but not declared in the ops item's MetaVariableDeclList.
+            // Resolver check R1 (Task 6) must reject this before lowering.
+            unreachable!(
+                "internal: meta-variable `{}` at {:?} is not declared in this \
+                 ops item; this should have been rejected by resolver check R1 \
+                 before lowering",
+                name, ident.path
+            )
+        }
+    }
+}
+
+/// Lower a single `OpFnParam` into a `Param`, or return `None` for the
+/// variadic `..` case (which sets `non_exhaustive` rather than adding a param).
+///
+/// Handles the five alternatives of `OpFnParam`:
+/// - `SelfParam` → self parameter with auto-inferred type
+/// - `NormalParam` → `$name: Type`
+/// - `PlaceHolderWithType` → `_: Type`
+/// - `Type` → anonymous parameter with inferred type (e.g. `&mut $T`)
+/// - `Dot2` → variadic `..`; returns `None`
+fn lower_op_fn_param<'mcx, 'pcx: 'mcx>(
+    p: &'mcx std::path::Path,
+    param: &'mcx pairs::OpFnParam<'mcx>,
+    pcx: PatCtxt<'pcx>,
+    lookup: &OpsMetaLookup<'mcx>,
+) -> Option<Param<'pcx>> {
+    use utils::mutability_from_pair_mutability;
+
+    if let Some(self_param) = param.SelfParam() {
+        let (ty, mutability) = self_param_ty(self_param);
+        let ty = Ty::from(WithPath::new(p, ty), pcx, lookup);
+        return Some(Param {
+            mutability,
+            ident: Symbol::intern("self"),
+            ty,
+        });
+    }
+
+    if let Some(normal) = param.NormalParam() {
+        let (mutability, ident, _, ty) = normal.get_matched();
+        let mutability = mutability_from_pair_mutability(mutability);
+        let ident = Symbol::intern(ident.span.as_str());
+        let ty = Ty::from(WithPath::new(p, ty), pcx, lookup);
+        return Some(Param { mutability, ident, ty });
+    }
+
+    if let Some(place_holder_with_type) = param.PlaceHolderWithType() {
+        let (mutability, _placeholder, _, ty) = place_holder_with_type.get_matched();
+        let mutability = mutability_from_pair_mutability(mutability);
+        let ty = Ty::from(WithPath::new(p, ty), pcx, lookup);
+        return Some(Param {
+            mutability,
+            ident: Symbol::intern("_"),
+            ty,
+        });
+    }
+
+    if let Some(ty_only) = param.Type() {
+        // Bare `Type` parameter: no explicit name, synthesize `_`.
+        let ty = Ty::from(WithPath::new(p, ty_only), pcx, lookup);
+        return Some(Param {
+            mutability: MirMutability::Not,
+            ident: Symbol::intern("_"),
+            ty,
+        });
+    }
+
+    // Dot2 / `..` — variadic; callers can set non_exhaustive if needed.
+    // For ops signatures we simply drop it (no body to match against).
+    None
 }

@@ -3,6 +3,7 @@ use std::cell::RefCell;
 use rpl_context::PatCtxt;
 pub use rpl_context::pat;
 pub use rpl_context::pat::MatchedMap;
+pub use rpl_context::pat::ops_resolved::ResolvedOpBindings;
 use rustc_abi::FieldIdx;
 use rustc_data_structures::fx::FxIndexSet;
 use rustc_index::IndexVec;
@@ -35,6 +36,9 @@ pub struct CheckMirCtxt<'a, 'pcx, 'tcx> {
     // mir_pdg: MirProgramDepGraph,
     pub(crate) locals: IndexVec<pat::Local, RefCell<MixedBitSet<mir::Local>>>,
     pub(crate) places: IndexVec<pat::PlaceVarIdx, RefCell<FxIndexSet<mir::PlaceRef<'tcx>>>>,
+    /// Op-group bindings for this cartesian-product combination (Task 12).
+    /// Empty when the pattern references no op groups.
+    pub(crate) op_bindings: ResolvedOpBindings,
 }
 
 impl<'a, 'pcx, 'tcx> CheckMirCtxt<'a, 'pcx, 'tcx> {
@@ -56,6 +60,43 @@ impl<'a, 'pcx, 'tcx> CheckMirCtxt<'a, 'pcx, 'tcx> {
         fn_pat: &'a pat::FnPattern<'pcx>,
         mir_cfg: &'a MirControlFlowGraph,
         mir_ddg: &'a MirDataDepGraph,
+    ) -> Self {
+        Self::new_with_bindings(
+            tcx,
+            pcx,
+            body,
+            has_self,
+            self_ty,
+            pat,
+            pat_name,
+            fn_pat,
+            mir_cfg,
+            mir_ddg,
+            ResolvedOpBindings::empty(),
+        )
+    }
+
+    /// Like [`Self::new`] but also accepts op-group bindings for `OpRef` resolution
+    /// during matching (Task 12).
+    #[expect(clippy::too_many_arguments)]
+    #[instrument(level = "debug", skip_all, fields(
+        def_id = ?body.source.def_id(),
+        pat_name = ?pat_name,
+        ?has_self,
+        ?self_ty,
+    ))]
+    pub fn new_with_bindings(
+        tcx: TyCtxt<'tcx>,
+        pcx: PatCtxt<'pcx>,
+        body: &'a mir::Body<'tcx>,
+        has_self: bool,
+        self_ty: Option<ty::Ty<'tcx>>,
+        pat: &'pcx pat::RustItems<'pcx>,
+        pat_name: Symbol,
+        fn_pat: &'a pat::FnPattern<'pcx>,
+        mir_cfg: &'a MirControlFlowGraph,
+        mir_ddg: &'a MirDataDepGraph,
+        op_bindings: ResolvedOpBindings,
     ) -> Self {
         let typing_env = ty::TypingEnv::post_analysis(tcx, body.source.def_id());
         let ty = MatchTyCtxt::new(tcx, pcx, typing_env, self_ty, pat, &fn_pat.meta);
@@ -86,6 +127,7 @@ impl<'a, 'pcx, 'tcx> CheckMirCtxt<'a, 'pcx, 'tcx> {
                 mir_pat.locals.len(),
             ),
             places: IndexVec::from_elem_n(RefCell::new(FxIndexSet::default()), fn_pat.meta.place_vars.len()),
+            op_bindings,
         }
     }
     #[instrument(level = "info", skip_all, fields(
@@ -275,6 +317,10 @@ impl<'pcx, 'tcx> MatchStatement<'pcx, 'tcx> for CheckMirCtxt<'_, 'pcx, 'tcx> {
     }
     fn typing_env(&self) -> ty::TypingEnv<'tcx> {
         self.ty.typing_env
+    }
+
+    fn op_bindings(&self) -> &ResolvedOpBindings {
+        &self.op_bindings
     }
 
     type MatchTy = MatchTyCtxt<'pcx, 'tcx>;

@@ -1,0 +1,36 @@
+error: two functions use the same abstract lock instance
+  --> tests/ui/session/ops/multiple_slots.rs:10:1
+   |
+LL | / fn mutex_first(m: &Mutex<i32>) {
+LL | |     drop(m.lock());
+LL | | }
+   | |_^
+   |
+   = note: `#[deny(rpl::ops_multiple_slots)]` on by default
+
+error: two functions use the same abstract lock instance
+  --> tests/ui/session/ops/multiple_slots.rs:14:1
+   |
+LL | / fn mutex_second(m: &Mutex<i32>) {
+LL | |     drop(m.lock());
+LL | | }
+   | |_^
+
+error: two functions use the same abstract lock instance
+  --> tests/ui/session/ops/multiple_slots.rs:18:1
+   |
+LL | / fn rwlock_first(r: &RwLock<i32>) {
+LL | |     drop(r.read());
+LL | | }
+   | |_^
+
+error: two functions use the same abstract lock instance
+  --> tests/ui/session/ops/multiple_slots.rs:22:1
+   |
+LL | / fn rwlock_second(r: &RwLock<i32>) {
+LL | |     drop(r.read());
+LL | | }
+   | |_^
+
+error: aborting due to 4 previous errors
+

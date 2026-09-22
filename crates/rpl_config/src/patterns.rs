@@ -149,6 +149,19 @@ pub(crate) fn resolve_patterns_env(
         None => return Ok(None),
     };
 
+    // An empty paths vector here can arise when `rpl.toml` exists but contains
+    // no `[patterns]` table (e.g. only `[run]` or `[[ops.<group>]]`) and the
+    // caller did not pass `--patterns`.  In that case `resolve_patterns` takes
+    // the vacuous-true branch of `selected_groups.iter().all(is_remote_spec)`
+    // and returns `Some(ResolvedPatterns { paths: vec![] })`.  Joining zero
+    // paths yields the empty string, which would propagate to the child
+    // process as `RPL_PATS=""` and trip
+    // `rpl_meta::cli E100: Cannot locate RPL pattern file ""`.  Map empty to
+    // `None` here so the child falls back to the built-in pattern set.
+    if resolved.paths.is_empty() {
+        return Ok(None);
+    }
+
     let mut entries = Vec::with_capacity(resolved.paths.len());
     for path in resolved.paths {
         if path.to_str().is_none() {

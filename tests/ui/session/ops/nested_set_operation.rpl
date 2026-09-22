@@ -1,0 +1,34 @@
+pattern ops_nested_set_operation
+
+ops {
+    sync_2g[$T: type, $U: type] = {
+        fn $lock(&mut $T) -> $U;
+    }
+}
+
+util {
+    locks[] = fn $f(..) -> _ {
+        _ = $sync_2g::$lock(_);
+    }
+    marked[] = fn $f(..) -> _ {
+        let $guard: _ = $sync_2g::$lock(_);
+        _ = $crate::cover::<_>(move $guard);
+    }
+    exempted[] = fn $f(..) -> _ {
+        let $guard: _ = $sync_2g::$lock(_);
+        _ = $crate::cover::<_>(move $guard);
+        _ = $crate::exempt();
+    }
+    covered[] = marked[] - exempted[]
+}
+
+patt {
+    p[] = locks[] - covered[]
+}
+
+diag {
+    p = {
+        primary(f) = "an abstract lock instance survives nested subtraction",
+        name = "ops_nested_set_operation",
+    }
+}

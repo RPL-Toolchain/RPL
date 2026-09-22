@@ -1,0 +1,25 @@
+pattern ops_multiple_slots
+
+ops {
+    sync_2g[$T: type, $U: type] = {
+        fn $lock(&mut $T) -> $U;
+    }
+}
+
+patt {
+    p[] = {
+        fn $first(..) -> _ {
+            _ = $sync_2g::$lock(_);
+        }
+        fn $second(..) -> _ {
+            _ = $sync_2g::$lock(_);
+        }
+    }
+}
+
+diag {
+    p = {
+        primary(first, second) = "two functions use the same abstract lock instance",
+        name = "ops_multiple_slots",
+    }
+}
