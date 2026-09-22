@@ -20,7 +20,7 @@ use ui_test::{Args, Config, Match, error_on_output_conflict};
 
 extern crate byte_slice_cast;
 extern crate bytes;
-#[cfg(any(target_os = "linux"))]
+#[cfg(target_os = "linux")]
 extern crate cassandra_cpp_sys;
 extern crate ctor;
 extern crate futures;
@@ -53,7 +53,7 @@ static TEST_DEPENDENCIES: &[&str] = &[
     "byte_slice_cast",
     "bytes",
     // for cve_2024_27284
-    #[cfg(any(target_os = "linux"))]
+    #[cfg(target_os = "linux")]
     "cassandra_cpp_sys",
     "ctor",
     "futures",
@@ -223,10 +223,14 @@ impl TestContext {
 }
 
 fn run_ui(cx: &TestContext) {
-    let config = cx.base_config("ui", true);
+    let configs = vec![
+        cx.base_config("ui", true),
+        cx.base_config("features/ops", true),
+        cx.base_config("features/ops_cve_2025_68260", true),
+    ];
 
     ui_test::run_tests_generic(
-        vec![config],
+        configs,
         ui_test::default_file_filter,
         ui_test::default_per_file_config,
         Box::<dyn StatusEmitter>::from(cx.args.format),

@@ -38,7 +38,7 @@ impl<'mcx> SymbolTables<'mcx> {
         // Collect the pattern name of the rpl file.
         let name = Self::collect_rpl_pattern_name(main);
         // Collect the blocks.
-        let (utils, patts, diags) = collect_blocks(main);
+        let (utils, patts, _ops, diags) = collect_blocks(main);
         // Collect the symbol table of the util blocks.
         let util_imports = utils.iter().flat_map(|util| util.get_matched().2.iter_matched());
         let util_items = utils.iter().flat_map(|util| util.get_matched().3.iter_matched());
@@ -104,10 +104,12 @@ pub fn collect_blocks<'mcx, 'i>(
 ) -> (
     Vec<&'mcx pairs::utilBlock<'i>>,
     Vec<&'mcx pairs::pattBlock<'i>>,
+    Vec<&'mcx pairs::opsBlock<'i>>,
     Vec<&'mcx pairs::diagBlock<'i>>,
 ) {
     let mut utils = Vec::new();
     let mut patts = Vec::new();
+    let mut ops = Vec::new();
     let mut diags = Vec::new();
 
     let blocks = main.get_matched().1.get_matched().2;
@@ -118,10 +120,12 @@ pub fn collect_blocks<'mcx, 'i>(
             utils.push(util);
         } else if let Some(patt) = block.pattBlock() {
             patts.push(patt);
+        } else if let Some(op) = block.opsBlock() {
+            ops.push(op);
         } else if let Some(diag) = block.diagBlock() {
             diags.push(diag);
         }
     }
 
-    (utils, patts, diags)
+    (utils, patts, ops, diags)
 }

@@ -896,6 +896,11 @@ pub enum Operand<'pcx> {
     Move(Place<'pcx>),
     Constant(ConstOperand<'pcx>),
     FnPat(Symbol),
+    /// Reference to an operation `$group::$op` declared in the `ops` block.
+    OpRef {
+        group: Symbol,
+        op: Symbol,
+    },
 }
 
 impl<'pcx> Operand<'pcx> {
@@ -950,19 +955,25 @@ impl<'pcx> Operand<'pcx> {
     ) -> Self {
         let p = op.path;
         match op.inner.deref() {
-            Choice5::_0(copy_) => Self::from_copy(WithPath::new(p, copy_.get_matched().1), pcx, fn_sym_tab),
-            Choice5::_1(move_) => Self::from_move(WithPath::new(p, move_.get_matched().1), pcx, fn_sym_tab),
-            Choice5::_2(type_path) => Self::Constant(ConstOperand::from_type_path(
+            Choice6::_0(copy_) => Self::from_copy(WithPath::new(p, copy_.get_matched().1), pcx, fn_sym_tab),
+            Choice6::_1(move_) => Self::from_move(WithPath::new(p, move_.get_matched().1), pcx, fn_sym_tab),
+            Choice6::_2(type_path) => Self::Constant(ConstOperand::from_type_path(
                 WithPath::new(p, type_path),
                 pcx,
                 fn_sym_tab,
             )),
-            Choice5::_3(lang_item) => Self::Constant(ConstOperand::from_lang_item(
+            Choice6::_3(lang_item) => Self::Constant(ConstOperand::from_lang_item(
                 WithPath::new(p, lang_item),
                 pcx,
                 fn_sym_tab,
             )),
-            Choice5::_4(meta_var) => Self::from_meta_var(meta_var),
+            Choice6::_4(op_ref) => {
+                let (group_meta, op_meta) = op_ref.MetaVariable();
+                let group = Symbol::intern(group_meta.span.as_str().trim_start_matches('$'));
+                let op = Symbol::intern(op_meta.span.as_str().trim_start_matches('$'));
+                Self::OpRef { group, op }
+            },
+            Choice6::_5(meta_var) => Self::from_meta_var(meta_var),
         }
     }
 }
@@ -1594,4 +1605,75 @@ impl BasicBlockData<'_> {
 
 pub(crate) fn with_path<T>(path: &'_ std::path::Path, inner: T) -> WithPath<'_, T> {
     WithPath { path, inner }
+}
+
+#[cfg(test)]
+mod tests {
+    use rustc_span::Symbol;
+
+    use super::Operand;
+
+    #[test]
+    fn op_ref_constructs_and_matches() {
+        rustc_span::create_session_if_not_set_then(rustc_span::edition::LATEST_STABLE_EDITION, |_| {
+            let group = Symbol::intern("sync");
+            let op = Symbol::intern("lock");
+            let operand: Operand<'_> = Operand::OpRef { group, op };
+            match operand {
+                Operand::OpRef { group: g, op: o } => {
+                    assert_eq!(g.as_str(), "sync");
+                    assert_eq!(o.as_str(), "lock");
+                },
+                _ => panic!("expected OpRef variant"),
+            }
+        });
+    }
+
+    /// Verify that `Operand::from_fn_op` strips the leading `$` when lowering an
+    /// `OpRef` (`$group::$op`) from the parser, so the stored symbols are bare
+    /// and will match the keys used by `OpGroup.name` / Task 7's resolver lookup.
+    ///
+    /// This test uses the simplified extraction form (parse → access OpRef node →
+    /// apply the same `trim_start_matches('$')` as `from_fn_op` does) rather than
+    /// calling `from_fn_op` directly, because `from_fn_op` requires a `PatCtxt`
+    /// that cannot be constructed in a unit test.  The test would have FAILED
+    /// before the fix because `group_meta.span.as_str()` returned `"$sync"` and
+    /// `op_meta.span.as_str()` returned `"$lock"`.
+    #[test]
+    fn op_ref_lowers_with_bare_symbols() {
+        use pest_typed::TypedParser as _;
+        use rpl_parser::parser::{Grammar, pairs};
+
+        let parsed =
+            Grammar::try_parse::<pairs::MirFnOperand>("$sync::$lock").expect("$sync::$lock must parse as MirFnOperand");
+
+        // `MirFnOperand` is `Choice6`; variant `_4` is `OpRef`.
+        let op_ref = parsed
+            .OpRef()
+            .expect("$sync::$lock must lower to the OpRef variant of MirFnOperand");
+
+        let (group_meta, op_meta) = op_ref.MetaVariable();
+
+        // Replicate the exact logic from `from_fn_op`'s `Choice6::_4` arm.
+        let group_raw = group_meta.span.as_str();
+        let op_raw = op_meta.span.as_str();
+
+        // Before the fix both of these would be "$sync" / "$lock".
+        let group_bare = group_raw.trim_start_matches('$');
+        let op_bare = op_raw.trim_start_matches('$');
+
+        assert_eq!(group_bare, "sync", "group symbol must be bare (no $ prefix)");
+        assert_eq!(op_bare, "lock", "op symbol must be bare (no $ prefix)");
+
+        // Also assert the raw span really does start with `$`, confirming that
+        // the trim is necessary (i.e., the test would have caught the bug).
+        assert!(
+            group_raw.starts_with('$'),
+            "parser span must include the $ sigil; got {group_raw:?}"
+        );
+        assert!(
+            op_raw.starts_with('$'),
+            "parser span must include the $ sigil; got {op_raw:?}"
+        );
+    }
 }

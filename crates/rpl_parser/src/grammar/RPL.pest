@@ -3,6 +3,7 @@
 kw_pattern = @{ "pattern" ~ !WordFollowing }
 kw_patt    = @{ "patt" ~ !WordFollowing }
 kw_util    = @{ "util" ~ !WordFollowing }
+kw_ops     = @{ "ops" ~ !WordFollowing }
 
 // Reserved words
 kw_cstr   = @{ "cstr" ~ !WordFollowing }
@@ -397,6 +398,9 @@ TypePath = {
     QSelf? ~ Path
 }
 
+// Reference to a named operation in a declared op group, used as a call target.
+OpRef = { MetaVariable ~ Colon2 ~ MetaVariable }
+
 Konst = {
     Literal
   | TypePath
@@ -730,6 +734,7 @@ MirFnOperand = {
   | LeftParen ~ MirOperandMove ~ RightParen
   | TypePath
   | LangItemWithArgs
+  | OpRef
   | MetaVariable
 }
 
@@ -992,6 +997,33 @@ diagBlockItem = {
     OuterDocComment* ~ Identifier ~ Assign ~ LeftBrace ~ diagItems ~ MetaVariableWithDiagMessageSeparatedByComma? ~ RightBrace
 }
 
+// ops block helpers
+// A function parameter in an op group signature: supports type-only params
+// (e.g. `&mut $T`) in addition to the named/self forms from FnParam.
+OpFnParam = {
+    SelfParam
+  | NormalParam
+  | PlaceHolderWithType
+  | Type
+  | Dot2
+}
+
+OpFnParamsSeparatedByComma = {
+    OpFnParam ~ (Comma ~ OpFnParam)* ~ Comma?
+}
+
+// Like FnSig but uses OpFnParam so type-only params like `&mut $T` are allowed.
+OpFnSig = {
+    Visibility? ~ Safety? ~ kw_fn ~ FnName ~ LeftParen ~ OpFnParamsSeparatedByComma? ~ RightParen ~ FnRet?
+}
+
+// One signature-only Rust function declaration inside an op group.
+OpFnDecl  = { OpFnSig ~ SemiColon }
+
+// One named op group, e.g. `sync[$T:type, $U:type] = { fn $lock(...); ... }`.
+opsItem   = { Attr* ~ Identifier ~ MetaVariableDeclList? ~ Assign
+              ~ LeftBrace ~ (OpFnDecl)+ ~ RightBrace }
+
 // RPL Blocks
 pattBlock =  {
     kw_patt ~ LeftBrace ~ (UsePath)* ~ (RPLPatternItem)* ~ RightBrace
@@ -999,10 +1031,13 @@ pattBlock =  {
 utilBlock =  {
     kw_util ~ LeftBrace ~ (UsePath)* ~ (RPLPatternItem)* ~ RightBrace
 }
+opsBlock  =  {
+    kw_ops ~ LeftBrace ~ (opsItem)* ~ RightBrace
+}
 diagBlock =  {
     kw_diag ~ LeftBrace ~ (diagBlockItem)* ~ RightBrace
 }
-Block     = _{ pattBlock | utilBlock | diagBlock }
+Block     = _{ pattBlock | utilBlock | opsBlock | diagBlock }
 
 // RPL Header
 RPLHeader = { kw_pattern ~ Identifier }

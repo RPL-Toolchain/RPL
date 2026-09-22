@@ -2,9 +2,12 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+mod ops;
 mod patterns;
 mod run;
 mod util;
+
+pub use ops::RawOpInstance;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ConfigError {
@@ -46,9 +49,11 @@ pub enum ConfigError {
 }
 
 #[derive(Debug, Deserialize)]
-struct RplConfig {
-    run: Option<run::RunConfig>,
-    patterns: Option<patterns::PatternsConfig>,
+pub struct RplConfig {
+    pub(crate) run: Option<run::RunConfig>,
+    pub(crate) patterns: Option<patterns::PatternsConfig>,
+    #[serde(default)]
+    pub ops: std::collections::HashMap<String, Vec<RawOpInstance>>,
 }
 
 #[derive(Debug)]
@@ -71,4 +76,23 @@ pub fn load_config(manifest_path: Option<&Path>, selected_groups: &[String]) -> 
         patterns_env,
         inline_mir,
     })
+}
+
+/// Load the raw op-group instances from `rpl.toml` in the current directory
+/// (or adjacent to `manifest_path` if given).
+///
+/// Returns an empty map when no `rpl.toml` exists or when the file contains
+/// no `[ops]` table.  Errors during config file reading are surfaced as
+/// `Err(ConfigError)`.
+pub fn load_raw_ops(
+    manifest_path: Option<&Path>,
+) -> Result<std::collections::HashMap<String, Vec<RawOpInstance>>, ConfigError> {
+    let base_dir = util::resolve_base_dir(manifest_path)?;
+    let config_path = base_dir.join("rpl.toml");
+    if config_path.exists() {
+        let config = util::read_config(&config_path)?;
+        Ok(config.ops)
+    } else {
+        Ok(std::collections::HashMap::new())
+    }
 }

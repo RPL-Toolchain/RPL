@@ -203,7 +203,7 @@ impl<'pcx> PatCtxt<'pcx> {
     ) {
         let pattern = self.new_pattern();
         // FIXME: process utils
-        let (utils, patts, diags) = collect_blocks(main);
+        let (utils, patts, ops, diags) = collect_blocks(main);
 
         let symbol_tables = &mctx.symbol_tables.get(id).unwrap();
         {
@@ -216,6 +216,22 @@ impl<'pcx> PatCtxt<'pcx> {
                     pat::PattOrUtil::Util,
                 );
             });
+        }
+        {
+            for ops_block in &ops {
+                let wf_errors = pattern.add_ops_block(with_path(mctx.get_active_path(), ops_block));
+                for err in &wf_errors {
+                    warn!("ops well-formedness: {}", err);
+                }
+            }
+            // R6: op-level meta-vars (declared in `ops { ... }`) must not leak
+            // into pattern-block bodies.  Implemented but previously never
+            // invoked — the rule was unenforced.  Surface violations as
+            // warnings here, alongside R1–R3.
+            let r6_errors = pat::check_r6_patt_vs_ops(&ops, &patts);
+            for err in &r6_errors {
+                warn!("ops well-formedness (R6): {}", err);
+            }
         }
         {
             let patt_items = patts.iter().flat_map(|patt| patt.get_matched().3.iter_matched());
@@ -235,6 +251,12 @@ impl<'pcx> PatCtxt<'pcx> {
                     patt_symbol_tables,
                 )
             }
+        }
+
+        // R4/R5 post-lowering use-site checks + referenced_op_groups population.
+        pattern.check_and_populate_op_refs();
+        for err in pattern.op_ref_errors() {
+            warn!("op-ref use-site: {}", err);
         }
 
         let mut patterns = self.rpl_patterns.lock();

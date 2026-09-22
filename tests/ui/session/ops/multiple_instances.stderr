@@ -1,0 +1,20 @@
+error: abstract lock matched for this configured instance
+  --> tests/ui/session/ops/multiple_instances.rs:10:1
+   |
+LL | / fn mutex_instance(m: &Mutex<i32>) {
+LL | |     drop(m.lock());
+LL | | }
+   | |_^
+   |
+   = note: `#[deny(rpl::ops_multiple_instances)]` on by default
+
+error: abstract lock matched for this configured instance
+  --> tests/ui/session/ops/multiple_instances.rs:14:1
+   |
+LL | / fn rwlock_instance(r: &RwLock<i32>) {
+LL | |     drop(r.read());
+LL | | }
+   | |_^
+
+error: aborting due to 2 previous errors
+

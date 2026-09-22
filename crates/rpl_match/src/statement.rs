@@ -2,6 +2,7 @@ use std::iter::zip;
 
 use rpl_context::PatCtxt;
 pub use rpl_context::pat;
+use rpl_context::pat::ops_resolved::ResolvedOpBindings;
 use rpl_mir_graph::TerminatorEdges;
 use rustc_abi::{FieldIdx, VariantIdx};
 use rustc_hash::FxHashMap;
@@ -16,6 +17,34 @@ use rustc_span::Symbol;
 use crate::MatchFnCtxt;
 use crate::graph::{MirControlFlowGraph, MirDataDepGraph, PatControlFlowGraph, PatDataDepGraph};
 use crate::ty::MatchTy;
+
+/// Strip generic-argument brackets from a path string and split on `::`.
+///
+/// Returns owned `String` segments so that callers can intern them to `Symbol`.
+///
+/// For example:
+/// - `"std::sync::Mutex<$1>::lock"` → `["std", "sync", "Mutex", "lock"]`
+/// - `"std::sync::Arc<Foo<T>>::clone"` → `["std", "sync", "Arc", "clone"]`
+///
+/// Nested brackets are handled by a depth counter.
+fn strip_generics_and_split(path: &str) -> Vec<String> {
+    let mut result = String::with_capacity(path.len());
+    let mut depth: u32 = 0;
+    for ch in path.chars() {
+        match ch {
+            '<' => depth += 1,
+            '>' => depth = depth.saturating_sub(1),
+            _ if depth == 0 => result.push(ch),
+            _ => {},
+        }
+    }
+    result
+        .split("::")
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(str::to_owned)
+        .collect()
+}
 
 fn iter_place_proj_and_ty<'pcx, 'tcx>(
     body: &mir::Body<'tcx>,
@@ -60,6 +89,10 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
     fn pcx(&self) -> PatCtxt<'pcx>;
     fn tcx(&self) -> TyCtxt<'tcx>;
     fn typing_env(&self) -> TypingEnv<'tcx>;
+
+    /// Op-group bindings for the current cartesian-product combination.
+    /// Used by `match_operand` when it encounters `Operand::OpRef { group, op }`.
+    fn op_bindings(&self) -> &ResolvedOpBindings;
 
     type MatchTy: MatchTy<'pcx, 'tcx>;
     fn ty(&self) -> &Self::MatchTy;
@@ -523,6 +556,15 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
             ) if let &ty::FnDef(fn_did, _args) = ty.kind() => self.match_fn_pat(fn_pat, fn_did),
             (pat::Operand::Any, mir::Operand::Copy(_) | mir::Operand::Move(_) | mir::Operand::Constant(_)) => true,
             (
+                &pat::Operand::OpRef { group, op },
+                mir::Operand::Constant(box mir::ConstOperand {
+                    const_: mir::Const::Val(mir::ConstValue::ZeroSized, ty),
+                    ..
+                }),
+            ) if let &ty::FnDef(fn_did, _args) = ty.kind() => self.match_op_ref(group, op, fn_did),
+            // OpRef against a non-FnDef operand: no match.
+            (pat::Operand::OpRef { .. }, _) => false,
+            (
                 pat::Operand::Copy(_) | pat::Operand::Move(_) | pat::Operand::Constant(_) | pat::Operand::FnPat(_),
                 mir::Operand::Copy(_) | mir::Operand::Move(_) | mir::Operand::Constant(_),
             ) => return false,
@@ -596,6 +638,41 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
             .get_fn_pat(fn_pat)
             .unwrap_or_else(|| panic!("fn pattern `${fn_pat}` not found"));
         MatchFnCtxt::new(self.tcx(), self.pcx(), self.pat(), fn_pat).match_fn(fn_did)
+    }
+
+    /// Resolve an `Operand::OpRef { group, op }` against a concrete MIR `fn_did`.
+    ///
+    /// Steps:
+    /// 1. Look up the `ResolvedOpInstance` for `group` in the active bindings.
+    /// 2. Fetch the expanded path string for `op` (e.g. `"std::sync::Mutex::lock"`).
+    /// 3. Strip generic-argument brackets and split on `::` to build an `ItemPath`.
+    /// 4. Delegate to `match_item_path_by_def_path`.
+    #[instrument(level = "debug", skip(self), ret)]
+    fn match_op_ref(&self, group: Symbol, op: Symbol, fn_did: DefId) -> bool {
+        let bindings = self.op_bindings();
+        let Some(instance) = bindings.get(&group) else {
+            // No binding for this group in the current cartesian combo — no match.
+            debug!(?group, "OpRef: no binding for group");
+            return false;
+        };
+        let Some(path_str) = instance.paths.get(&op) else {
+            // The resolver should have caught missing op entries; be defensive.
+            debug!(?group, ?op, "OpRef: op key not in instance.paths");
+            return false;
+        };
+        // Parse the path string into a flat sequence of symbol segments.
+        // Strategy: strip everything inside `<...>` (generic args), then split on `::`.
+        let path_str = path_str.as_str();
+        let segments = strip_generics_and_split(path_str);
+        if segments.is_empty() {
+            debug!(?path_str, "OpRef: empty path after stripping generics");
+            return false;
+        }
+        let symbols: Vec<Symbol> = segments.iter().map(|s| Symbol::intern(s)).collect();
+        let item_path = pat::ItemPath(self.pcx().mk_slice(&symbols));
+        let matched = self.ty().match_item_path_by_def_path(item_path, fn_did);
+        debug!(?path_str, ?fn_did, matched, "match_op_ref");
+        matched
     }
 
     #[instrument(level = "trace", skip(self), ret)]

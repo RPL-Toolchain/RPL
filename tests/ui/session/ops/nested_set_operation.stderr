@@ -1,0 +1,32 @@
+error: an abstract lock instance survives nested subtraction
+  --> tests/ui/session/ops/nested_set_operation.rs:18:1
+   |
+LL | / fn mutex_uncovered(m: &Mutex<i32>, r: &RwLock<i32>) {
+LL | |     drop(m.lock());
+LL | |     cover(r.read());
+LL | | }
+   | |_^
+   |
+   = note: `#[deny(rpl::ops_nested_set_operation)]` on by default
+
+error: an abstract lock instance survives nested subtraction
+  --> tests/ui/session/ops/nested_set_operation.rs:24:1
+   |
+LL | / fn rwlock_uncovered(m: &Mutex<i32>, r: &RwLock<i32>) {
+LL | |     cover(m.lock());
+LL | |     drop(r.read());
+LL | | }
+   | |_^
+
+error: an abstract lock instance survives nested subtraction
+  --> tests/ui/session/ops/nested_set_operation.rs:37:1
+   |
+LL | / fn nested_exemption(m: &Mutex<i32>, r: &RwLock<i32>) {
+LL | |     cover(m.lock());
+LL | |     cover(r.read());
+LL | |     exempt();
+LL | | }
+   | |_^
+
+error: aborting due to 3 previous errors
+

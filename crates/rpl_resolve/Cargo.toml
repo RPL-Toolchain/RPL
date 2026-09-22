@@ -10,6 +10,10 @@ repository.workspace = true
 
 [dependencies]
 
+[dev-dependencies]
+rpl_context.workspace = true
+rpl_meta.workspace = true
+
 [package.metadata.rust-analyzer]
 # This crate uses #[feature(rustc_private)]
 rustc_private = true

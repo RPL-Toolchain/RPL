@@ -198,6 +198,10 @@ pub trait PatternVisitor<'pcx>: Sized {
             ),
             Operand::Constant(const_operand) => self.visit_const_operand(const_operand),
             &Operand::FnPat(fn_pat) => self.visit_fn_pat(fn_pat),
+            // OpRef is a function-position operand (`$group::$op`); it carries
+            // no sub-operands or types to visit.  R4/R5 checks in ops_uses.rs
+            // handle validation separately; the visitor just traverses past it.
+            Operand::OpRef { .. } => {},
         }
     }
     fn super_statement(&mut self, statement: &StatementKind<'pcx>, location: Location) {
