@@ -19,7 +19,7 @@ LL |         let x: fn() = std::mem::transmute(std::ptr::null::<u64>());
    = note: `{0x0 as *const u64}` is known to be a null pointer, so transmuting it into a function pointer is undefined behavior
 
 error: transmuting a known null pointer into a function pointer
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmute_null_to_fn.rs:27:23
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmute_null_to_fn.rs:25:23
    |
 LL |         let x: fn() = std::mem::transmute(const_null_ptr::<u64>());
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -28,7 +28,7 @@ LL |         let x: fn() = std::mem::transmute(const_null_ptr::<u64>());
    = note: `{0x0 as *const u64}` is known to be a null pointer, so transmuting it into a function pointer is undefined behavior
 
 error: transmuting a known null pointer into a function pointer
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmute_null_to_fn.rs:31:23
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmute_null_to_fn.rs:38:23
    |
 LL |         let x: fn() = std::mem::transmute(null_ptr::<u64>());
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -37,7 +37,7 @@ LL |         let x: fn() = std::mem::transmute(null_ptr::<u64>());
    = note: `{0x0 as *const u64}` is known to be a null pointer, so transmuting it into a function pointer is undefined behavior
 
 error: transmuting a known null pointer into a function pointer
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmute_null_to_fn.rs:41:23
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmute_null_to_fn.rs:48:23
    |
 LL |         let x: fn() = std::mem::transmute(null_ptr);
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -46,7 +46,7 @@ LL |         let x: fn() = std::mem::transmute(null_ptr);
    = note: `0 as *const u64` is known to be a null pointer, so transmuting it into a function pointer is undefined behavior
 
 error: transmuting a known null pointer into a function pointer
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmute_null_to_fn.rs:48:23
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmute_null_to_fn.rs:58:23
    |
 LL |         let x: fn() = std::mem::transmute(null_ptr);
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

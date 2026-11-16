@@ -16,7 +16,7 @@ LL |         let x: &u64 = std::mem::transmute(std::ptr::null::<u64>());
    = note: `std::ptr::null::<u64>()` is known to be a null pointer, so transmuting it into a reference is undefined behavior
 
 error: transmuting a known null pointer into a reference
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmuting_null.rs:41:23
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmuting_null.rs:48:23
    |
 LL |         let x: &u64 = std::mem::transmute(null_ptr);
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -24,7 +24,7 @@ LL |         let x: &u64 = std::mem::transmute(null_ptr);
    = note: `null_ptr` is known to be a null pointer, so transmuting it into a reference is undefined behavior
 
 error: transmuting a known null pointer into a reference
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmuting_null.rs:48:23
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/transmuting_null.rs:58:23
    |
 LL |         let x: &u64 = std::mem::transmute(null_ptr);
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

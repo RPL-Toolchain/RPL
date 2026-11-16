@@ -16,7 +16,7 @@ LL |         let n = m.wrapping_add(0);
    = note: `()` is a zero-sized type, offsetting a pointer to it will always yield the same address
 
 error: offset calculation on zero-sized value
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:35:17
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:31:17
    |
 LL |         let n = offset(m, 0);
    |                 ^^^^^^^^^^^^
@@ -24,7 +24,7 @@ LL |         let n = offset(m, 0);
    = note: `()` is a zero-sized type, offsetting a pointer to it will always yield the same address
 
 error: offset calculation on zero-sized value
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:39:17
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:48:17
    |
 LL |         let n = wrapping_add(m, 0);
    |                 ^^^^^^^^^^^^^^^^^^
@@ -32,7 +32,7 @@ LL |         let n = wrapping_add(m, 0);
    = note: `()` is a zero-sized type, offsetting a pointer to it will always yield the same address
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:28:11
+  --> tests/ui/cross-stmt-and-func-comparison-with-clippy/src/zero_offset.rs:41:11
    |
 LL |         m.wrapping_add(n)
    |           ^^^^^^^^^^^^^^^
