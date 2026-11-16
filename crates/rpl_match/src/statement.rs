@@ -120,7 +120,13 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
         if pat.statement_index < block_pat.statements.len() {
             return false;
         }
-        let pat::TerminatorKind::Call { func, args, destination, .. } = block_pat.terminator() else {
+        let pat::TerminatorKind::Call {
+            func,
+            args,
+            destination,
+            ..
+        } = block_pat.terminator()
+        else {
             return false;
         };
 
@@ -156,7 +162,9 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
         destination: Option<&pat::Place<'pcx>>,
         _inst: ty::Instance<'tcx>,
     ) -> bool {
-        let args_wildcard = args.iter().all(|a| matches!(a, pat::Operand::Any | pat::Operand::AnyArgs));
+        let args_wildcard = args
+            .iter()
+            .all(|a| matches!(a, pat::Operand::Any | pat::Operand::AnyArgs));
         if !args_wildcard {
             return false;
         }

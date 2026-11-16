@@ -265,8 +265,8 @@ impl<'pcx> FnPattern<'pcx> {
 
         let mut builder = FnPatternBody::builder();
         builder.mk_locals(fn_sym_tab, pcx);
-        builder.mk_raw_decls(raw_decls.into_iter());
-        builder.mk_raw_stmts(raw_stmts.into_iter());
+        builder.mk_raw_decls(raw_decls);
+        builder.mk_raw_stmts(raw_stmts);
         let mir = builder.build(name, constraints.attrs.output_name);
         debug!(self_idx = ?mir.self_idx, return_idx = ?mir.return_idx, params_idx = ?mir.params_idx, "create mir pattern");
         let body = Some(pcx.mk_mir_pattern(mir));

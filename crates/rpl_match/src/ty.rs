@@ -206,7 +206,7 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchTyCtxt<'pcx, 'tcx> {
             seen: FxHashSet<pat::TyVarIdx>,
         }
 
-        impl<'pcx> PatternVisitor<'pcx> for Collect {
+        impl PatternVisitor<'_> for Collect {
             fn visit_ty_var(&mut self, ty_var: &pat::TyVar) {
                 if self.seen.insert(ty_var.idx) {
                     self.vars.push(ty_var.clone());
@@ -438,13 +438,9 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
         match (konst_pat, konst.kind()) {
             (pat::Const::ConstVar(const_var), _) => self.match_ty_const_var(const_var, konst),
             //(pat::Const::Value(_value_pat), ty::Value(_ty, ty::ValTree::Leaf(_value))) => todo!(),
-            (
-                pat::Const::Value(value_pat),
-                ty::ConstKind::Value(ty::Value {
-                    ty: konst_ty,
-                    valtree,
-                }),
-            ) if let ValTreeKind::Leaf(scalar) = *valtree => {
+            (pat::Const::Value(value_pat), ty::ConstKind::Value(ty::Value { ty: konst_ty, valtree }))
+                if let ValTreeKind::Leaf(scalar) = *valtree =>
+            {
                 // Concrete integer const generic (e.g. `[u8; 4]`): match width/signedness, then bits.
                 (match (value_pat.ty, *konst_ty.kind()) {
                     (pat::IntTy::AnyInt, ty::Int(_) | ty::Uint(_)) => true,

@@ -500,7 +500,9 @@ pub(crate) fn inlined_instances<'tcx>(body: &mir::Body<'tcx>, loc: mir::Location
 
 /// Whether the statement/terminator at `loc` was inlined from a `set_len` function.
 fn is_inlined_from_set_len(tcx: TyCtxt<'_>, body: &mir::Body<'_>, loc: mir::Location) -> bool {
-    inlined_instances(body, loc).into_iter().any(|inst| rudra_paths::is_set_len(tcx, inst.def_id()))
+    inlined_instances(body, loc)
+        .into_iter()
+        .any(|inst| rudra_paths::is_set_len(tcx, inst.def_id()))
 }
 
 fn location_unresolvable_generic<'tcx>(

@@ -44,6 +44,9 @@ pub use ty::*;
 
 pub type Label = Symbol;
 
+/// Expansion result for a sequence of raw statements: `(positive, negative)` alternatives.
+type ExpandedStatements<'pcx> = (Vec<Vec<RawStatement<'pcx>>>, Vec<Vec<RawStatement<'pcx>>>);
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Spanned {
     Location(mir::Location),
@@ -605,7 +608,15 @@ impl<'pcx> Pattern<'pcx> {
             .into_iter()
             .map(|stmts| {
                 self.register_macro_util(
-                    pat_name, p, sig, &raw_decls, stmts, positive_constraints.clone(), name, fn_symbol_table, &meta,
+                    pat_name,
+                    p,
+                    sig,
+                    &raw_decls,
+                    stmts,
+                    positive_constraints.clone(),
+                    name,
+                    fn_symbol_table,
+                    &meta,
                 )
             })
             .collect();
@@ -613,7 +624,15 @@ impl<'pcx> Pattern<'pcx> {
             .into_iter()
             .map(|stmts| {
                 self.register_macro_util(
-                    pat_name, p, sig, &raw_decls, stmts, constraints.clone(), name, fn_symbol_table, &meta,
+                    pat_name,
+                    p,
+                    sig,
+                    &raw_decls,
+                    stmts,
+                    constraints.clone(),
+                    name,
+                    fn_symbol_table,
+                    &meta,
                 )
             })
             .collect();
@@ -875,17 +894,14 @@ fn is_body_macro(mac: &pairs::MirMacro<'_>) -> bool {
 /// Expand `without!` / `or!` markers (at any nesting level) into concrete statement sequences.
 ///
 /// Returns `(positive, negative)`:
-/// - `positive`: every `or!` alternative is combined (cartesian product), `without!` fragments dropped.
+/// - `positive`: every `or!` alternative is combined (cartesian product), `without!` fragments
+///   dropped.
 /// - `negative`: for each `without!`, one body per `or!` combination with that fragment restored.
-fn expand_raw_stmts<'pcx>(
-    stmts: Vec<RawStatement<'pcx>>,
-) -> (Vec<Vec<RawStatement<'pcx>>>, Vec<Vec<RawStatement<'pcx>>>) {
+fn expand_raw_stmts(stmts: Vec<RawStatement<'_>>) -> ExpandedStatements<'_> {
     compose(stmts.into_iter().map(expand_raw_stmt).collect())
 }
 
-fn expand_raw_stmt<'pcx>(
-    stmt: RawStatement<'pcx>,
-) -> (Vec<Vec<RawStatement<'pcx>>>, Vec<Vec<RawStatement<'pcx>>>) {
+fn expand_raw_stmt(stmt: RawStatement<'_>) -> ExpandedStatements<'_> {
     match stmt {
         RawStatement::Without(frag) => {
             let (frag_pos, _) = expand_raw_stmts(frag);
@@ -908,13 +924,19 @@ fn expand_raw_stmt<'pcx>(
                 body_neg.into_iter().map(RawStatement::Loop).map(|s| vec![s]).collect(),
             )
         },
-        RawStatement::SwitchInt { label, operand, targets, otherwise } => {
-            expand_switch_int(label, operand, targets, otherwise)
-        },
+        RawStatement::SwitchInt {
+            label,
+            operand,
+            targets,
+            otherwise,
+        } => expand_switch_int(label, operand, targets, otherwise),
         RawStatement::Panic(label, frag) => {
             let (frag_pos, _) = expand_raw_stmts(frag);
             (
-                frag_pos.into_iter().map(|f| vec![RawStatement::Panic(label, f)]).collect(),
+                frag_pos
+                    .into_iter()
+                    .map(|f| vec![RawStatement::Panic(label, f)])
+                    .collect(),
                 Vec::new(),
             )
         },
@@ -923,9 +945,7 @@ fn expand_raw_stmt<'pcx>(
 }
 
 /// Compose a list of `(positive, negative)` expansion results via cartesian product.
-fn compose<'pcx>(
-    per: Vec<(Vec<Vec<RawStatement<'pcx>>>, Vec<Vec<RawStatement<'pcx>>>)>,
-) -> (Vec<Vec<RawStatement<'pcx>>>, Vec<Vec<RawStatement<'pcx>>>) {
+fn compose(per: Vec<ExpandedStatements<'_>>) -> ExpandedStatements<'_> {
     fn product<'pcx>(lists: &[Vec<Vec<RawStatement<'pcx>>>]) -> Vec<Vec<RawStatement<'pcx>>> {
         let mut acc: Vec<Vec<RawStatement<'pcx>>> = vec![Vec::new()];
         for alts in lists {
@@ -942,7 +962,7 @@ fn compose<'pcx>(
         acc
     }
 
-    let positives: Vec<Vec<Vec<RawStatement<'pcx>>>> = per.iter().map(|(p, _)| p.clone()).collect();
+    let positives: Vec<Vec<Vec<RawStatement<'_>>>> = per.iter().map(|(p, _)| p.clone()).collect();
     let positive = product(&positives);
 
     let mut negative = Vec::new();
@@ -969,12 +989,12 @@ fn expand_switch_int<'pcx>(
     operand: Operand<'pcx>,
     targets: Vec<(IntValue, Vec<RawStatement<'pcx>>)>,
     otherwise: Option<Vec<RawStatement<'pcx>>>,
-) -> (Vec<Vec<RawStatement<'pcx>>>, Vec<Vec<RawStatement<'pcx>>>) {
+) -> ExpandedStatements<'pcx> {
     let n_targets = targets.len();
     let has_otherwise = otherwise.is_some();
 
     // Each body slot expands to (positive, negative) alternatives.
-    let slots: Vec<(Vec<Vec<RawStatement<'pcx>>>, Vec<Vec<RawStatement<'pcx>>>)> = targets
+    let slots: Vec<ExpandedStatements<'pcx>> = targets
         .iter()
         .map(|(_, body)| expand_raw_stmts(body.clone()))
         .chain(otherwise.iter().map(|body| expand_raw_stmts(body.clone())))
@@ -997,9 +1017,7 @@ fn expand_switch_int<'pcx>(
     };
 
     // Cartesian product over slots, keeping each slot's chosen body separate.
-    fn slot_product<'pcx>(
-        slots: &[(Vec<Vec<RawStatement<'pcx>>>, Vec<Vec<RawStatement<'pcx>>>)],
-    ) -> Vec<Vec<Vec<RawStatement<'pcx>>>> {
+    fn slot_product<'pcx>(slots: &[ExpandedStatements<'pcx>]) -> Vec<Vec<Vec<RawStatement<'pcx>>>> {
         let mut acc: Vec<Vec<Vec<RawStatement<'pcx>>>> = vec![Vec::new()];
         for (pos, _) in slots {
             let mut next = Vec::new();
@@ -1015,7 +1033,10 @@ fn expand_switch_int<'pcx>(
         acc
     }
 
-    let positive = slot_product(&slots).into_iter().map(|bodies| vec![build(bodies)]).collect();
+    let positive = slot_product(&slots)
+        .into_iter()
+        .map(|bodies| vec![build(bodies)])
+        .collect();
 
     let mut negative = Vec::new();
     for (i, (_, negs)) in slots.iter().enumerate() {
@@ -1039,8 +1060,8 @@ fn expand_switch_int<'pcx>(
 /// Collect labels that appear inside `without!` / `or!` fragments (and are therefore absent from
 /// the positive desugaring). These labels are still referenced by the `where` block of the
 /// *negative* pattern only.
-fn collect_fragment_labels<'pcx>(stmts: &[RawStatement<'pcx>]) -> FxHashSet<Symbol> {
-    fn collect_all<'pcx>(stmts: &[RawStatement<'pcx>], out: &mut FxHashSet<Symbol>) {
+fn collect_fragment_labels(stmts: &[RawStatement<'_>]) -> FxHashSet<Symbol> {
+    fn collect_all(stmts: &[RawStatement<'_>], out: &mut FxHashSet<Symbol>) {
         for stmt in stmts {
             match stmt {
                 RawStatement::Assign(label, ..)
@@ -1065,7 +1086,12 @@ fn collect_fragment_labels<'pcx>(stmts: &[RawStatement<'pcx>]) -> FxHashSet<Symb
                     }
                 },
                 RawStatement::Loop(body) => collect_all(body, out),
-                RawStatement::SwitchInt { label, targets, otherwise, .. } => {
+                RawStatement::SwitchInt {
+                    label,
+                    targets,
+                    otherwise,
+                    ..
+                } => {
                     if let Some(label) = label {
                         out.insert(*label);
                     }
@@ -1081,7 +1107,7 @@ fn collect_fragment_labels<'pcx>(stmts: &[RawStatement<'pcx>]) -> FxHashSet<Symb
         }
     }
 
-    fn visit_fragments<'pcx>(stmts: &[RawStatement<'pcx>], out: &mut FxHashSet<Symbol>) {
+    fn visit_fragments(stmts: &[RawStatement<'_>], out: &mut FxHashSet<Symbol>) {
         for stmt in stmts {
             match stmt {
                 RawStatement::Without(frag) => collect_all(frag, out),
@@ -1116,7 +1142,9 @@ fn collect_fragment_labels<'pcx>(stmts: &[RawStatement<'pcx>]) -> FxHashSet<Symb
 /// merely removed from its clause.
 fn filter_predicates(constraints: &mut Constraints, fragment_labels: &FxHashSet<Symbol>) {
     let refers_frag = |term: &PredicateTerm| {
-        term.args.iter().any(|arg| matches!(arg, PredicateArg::Label(l) if fragment_labels.contains(l)))
+        term.args
+            .iter()
+            .any(|arg| matches!(arg, PredicateArg::Label(l) if fragment_labels.contains(l)))
     };
 
     let mut preds = Vec::new();

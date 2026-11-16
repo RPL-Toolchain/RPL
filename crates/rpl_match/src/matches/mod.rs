@@ -188,7 +188,7 @@ fn collect_used_ty_vars(fn_pat: &pat::FnPattern<'_>) -> FxHashSet<pat::TyVarIdx>
         vars: FxHashSet<pat::TyVarIdx>,
     }
 
-    impl<'pcx> PatternVisitor<'pcx> for Collect {
+    impl PatternVisitor<'_> for Collect {
         fn visit_ty_var(&mut self, ty_var: &pat::TyVar) {
             self.vars.insert(ty_var.idx);
         }
@@ -438,10 +438,12 @@ pub fn local_is_arg(local: mir::Local, body: &mir::Body<'_>) -> bool {
     local.as_usize() > 0 && local.as_usize() < body.arg_count + 1
 }
 
+type OnMatch<'a, 'tcx> = RefCell<Box<dyn FnMut(&Matched<'tcx>) + 'a>>;
+
 struct MatchCtxt<'a, 'pcx, 'tcx> {
     cx: &'a CheckMirCtxt<'a, 'pcx, 'tcx>,
     matching: Matching<'tcx>,
-    on_match: RefCell<Box<dyn FnMut(&Matched<'tcx>) + 'a>>,
+    on_match: OnMatch<'a, 'tcx>,
 }
 
 impl<'a, 'pcx, 'tcx> MatchCtxt<'a, 'pcx, 'tcx> {

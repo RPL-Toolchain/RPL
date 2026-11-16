@@ -613,11 +613,19 @@ impl<'pcx> RawStatement<'pcx> {
             },
             Choice4::_1(without_) => {
                 let (_, _, _, fragment, _) = without_.get_matched();
-                Self::Without(Self::from_macro_fragment(WithPath::new(mac.path, fragment), pcx, sym_tab))
+                Self::Without(Self::from_macro_fragment(
+                    WithPath::new(mac.path, fragment),
+                    pcx,
+                    sym_tab,
+                ))
             },
             Choice4::_2(or_) => {
                 let (_, _, _, alternatives, _) = or_.get_matched();
-                Self::Or(Self::from_macro_alternatives(WithPath::new(mac.path, alternatives), pcx, sym_tab))
+                Self::Or(Self::from_macro_alternatives(
+                    WithPath::new(mac.path, alternatives),
+                    pcx,
+                    sym_tab,
+                ))
             },
             Choice4::_3(panic_) => {
                 let (label, _, _, _, fragment, _) = panic_.get_matched();

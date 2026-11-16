@@ -51,7 +51,10 @@ jobs:
           sudo apt-get install -y build-essential cmake git libssl-dev libuv1-dev zlib1g-dev libkrb5-dev
           git clone --depth 1 --branch 2.17.1 https://github.com/apache/cassandra-cpp-driver.git /tmp/cassandra-cpp-driver
           cd /tmp/cassandra-cpp-driver
-          cmake -S . -B build -DCASS_BUILD_SHARED=ON -DCASS_BUILD_EXAMPLES=OFF -DCASS_BUILD_TESTS=OFF
+          # CMake 4 removed compatibility with `cmake_minimum_required(VERSION <3.5)`,
+          # which the 2.17.1 driver still uses.
+          cmake -S . -B build -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCASS_BUILD_SHARED=ON -DCASS_BUILD_EXAMPLES=OFF -DCASS_BUILD_TESTS=OFF
           cmake --build build -j"$(nproc)"
           sudo cmake --install build
           sudo ldconfig

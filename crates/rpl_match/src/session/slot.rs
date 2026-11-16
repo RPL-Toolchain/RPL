@@ -48,6 +48,7 @@ pub struct AdtSlotCandidate<'tcx> {
 
 /// Union of slot-specific candidates.
 #[derive(Debug, Clone)]
+#[allow(clippy::large_enum_variant)] // FIXME: box the `Fn` variant if this shows up in profiles.
 pub enum SlotCandidate<'tcx> {
     Fn(FnSlotCandidate<'tcx>),
     Adt(AdtSlotCandidate<'tcx>),
@@ -87,7 +88,7 @@ pub struct SessionOutcome<'tcx> {
     pub truncated: bool,
 }
 
-impl<'tcx> SessionOutcome<'tcx> {
+impl SessionOutcome<'_> {
     pub fn empty() -> Self {
         Self {
             results: Vec::new(),

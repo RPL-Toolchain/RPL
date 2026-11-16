@@ -254,6 +254,7 @@ impl<'a, 'pcx, 'tcx> MatchCollectCtxt<'a, 'pcx, 'tcx> {
         )
     }
 
+    #[allow(clippy::too_many_arguments)] // FIXME: introduce a constraints context struct.
     fn check_constraints(
         &self,
         fn_pat: &FnPattern<'pcx>,
@@ -365,7 +366,7 @@ fn mentioned_meta_vars(constraints: &Constraints) -> impl Iterator<Item = Symbol
     })
 }
 
-fn seed_from_env<'pcx, 'tcx>(ty: &crate::MatchTyCtxt<'pcx, 'tcx>, env: &MetaBindings<'tcx>) {
+fn seed_from_env<'tcx>(ty: &crate::MatchTyCtxt<'_, 'tcx>, env: &MetaBindings<'tcx>) {
     for (idx, bound) in env.ty_vars.iter_enumerated() {
         if let Some(bound_ty) = *bound {
             ty.pin_ty_var(idx, bound_ty);

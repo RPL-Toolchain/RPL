@@ -361,6 +361,7 @@ impl<'a, 'pcx, 'tcx> SessionMatching<'a, 'pcx, 'tcx> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)] // FIXME: bundle the search state into a struct.
     fn try_fn_candidate(
         &mut self,
         desc: FnSlotDesc<'pcx>,
@@ -394,6 +395,7 @@ impl<'a, 'pcx, 'tcx> SessionMatching<'a, 'pcx, 'tcx> {
         });
     }
 
+    #[allow(clippy::too_many_arguments)] // FIXME: bundle the search state into a struct.
     fn commit_fn_candidate(
         &mut self,
         desc: FnSlotDesc<'pcx>,
@@ -429,8 +431,8 @@ impl<'a, 'pcx, 'tcx> SessionMatching<'a, 'pcx, 'tcx> {
                 self.unenest_fn_matched(desc.slot, &cand);
                 return;
             };
-            if !impl_pins.contains_key(&impl_name) {
-                impl_pins.insert(impl_name, impl_did);
+            if let std::collections::hash_map::Entry::Vacant(entry) = impl_pins.entry(impl_name) {
+                entry.insert(impl_did);
                 new_impl_pin = Some(impl_name);
             }
             if !self.collect.check_impl_constraints(
