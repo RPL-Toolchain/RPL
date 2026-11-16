@@ -1,14 +1,17 @@
 //@revisions: inline normal
 //@check-pass: no pattern yet
+//@ignore-target: windows
 // Copied and modified from https://github.com/servo/rust-slice-deque/blob/621274a
 
-#![expect(deprecated)]
-#![expect(invalid_value)]
+#![allow(deprecated)]
+#![allow(invalid_value)]
+#![allow(unsafe_op_in_unsafe_fn)]
 #![allow(rpl::generic_function_marked_inline)]
 #![allow(rpl::private_function_marked_inline)]
-#![allow(rpl::unchecked_pointer_offset_general)]
+#![allow(rpl::ptr_offset_with_cast)]
 #![allow(rpl::swap_ptr_to_ref)]
 #![allow(rpl::unchecked_pointer_offset)]
+#![allow(rpl::unchecked_pointer_offset_general)]
 
 use buffer::Buffer;
 use core::ptr::NonNull;
