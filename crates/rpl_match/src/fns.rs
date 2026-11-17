@@ -44,7 +44,18 @@ impl<'a, 'pcx, 'tcx> MatchFnCtxt<'a, 'pcx, 'tcx> {
         let poly_fn_sig = match self.ty.tcx.type_of(fn_did).instantiate_identity().kind() {
             ty::FnDef(..) => self.ty.tcx.fn_sig(fn_did).instantiate_identity(),
             ty::Closure(_, args) => args.as_closure().sig(),
-            _ => unimplemented!(),
+            kind => {
+                // The item index can also contain items whose type is not a function
+                // signature (e.g. async blocks lower to coroutines). They cannot match a
+                // `fn` slot; skip them instead of panicking with an ICE.
+                debug!(
+                    kind = ?kind,
+                    def_id = ?fn_did,
+                    path = %self.ty.tcx.def_path_str(fn_did),
+                    "skipping non-function item in function slot"
+                );
+                return false;
+            },
         };
         let fn_sig = self.ty.tcx.liberate_late_bound_regions(fn_did, poly_fn_sig);
         debug!(?fn_sig);
