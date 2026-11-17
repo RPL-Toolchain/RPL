@@ -5,30 +5,35 @@ patt {
 
     #[diag = "uninit_vec"]
     #[const(msg = "calling `set_len()` immediately after reserving a buffer creates uninitialized values")]
+    #[deduplicate]
     with_capacity[$T: type, $vec: place(Vec<$T>)] =
         with_capacity_any[$T = $T, $vec = $vec]
         - with_capacity_zero[$T = $T, $vec = $vec]
 
     #[diag = "uninit_vec"]
     #[const(msg = "calling `set_len()` immediately after reserving a buffer creates uninitialized values")]
+    #[deduplicate]
     assign_with_capacity[$T: type, $vec: place(Vec<$T>)] =
         assign_with_capacity_any[$T = $T, $vec = $vec]
         - assign_with_capacity_zero[$T = $T, $vec = $vec]
 
     #[diag = "uninit_vec"]
     #[const(msg = "calling `set_len()` immediately after reserving a buffer creates uninitialized values")]
+    #[deduplicate]
     reserve[$T: type, $vec: place(Vec<$T>)] =
         reserve_any[$T = $T, $vec = $vec]
         - reserve_zero[$T = $T, $vec = $vec]
 
     #[diag = "uninit_vec"]
     #[const(msg = "calling `set_len()` on empty `Vec` creates out-of-bound values")]
+    #[deduplicate]
     new[$T: type, $vec: place(Vec<$T>)] =
         new_any[$T = $T, $vec = $vec]
         - new_zero[$T = $T, $vec = $vec]
 
     #[diag = "uninit_vec"]
     #[const(msg = "calling `set_len()` on empty `Vec` creates out-of-bound values")]
+    #[deduplicate]
     default_default[$T: type, $vec: place(Vec<$T>)] =
         default_default_any[$T = $T, $vec = $vec]
         - default_default_zero[$T = $T, $vec = $vec]

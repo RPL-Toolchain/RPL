@@ -32,7 +32,7 @@ impl<T> Index<usize> for Slab<T> {
         unsafe { &(*(self.mem.offset(index as isize))) }
         //~^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
         //~| HELP:  check whether it's in bound before offsetting
-        //~| HELP:  to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
+        //~| HELP:  to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset_general)]`
         //~| ptr_offset_with_cast
         //~| HELP: if you’re always increasing the pointer address, you can avoid the numeric cast by using the `add` method instead.
     }

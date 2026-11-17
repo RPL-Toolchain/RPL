@@ -1,0 +1,142 @@
+error: it usually isn't necessary to apply #[inline] to generic functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:78:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     pub fn len(&self) -> usize {
+LL | |
+LL | |         self.right - self.left
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html and https://rustc-dev-guide.rust-lang.org/backend/monomorph.html
+   = note: generic functions are always `#[inline]` (monomorphization)
+   = note: `-D rpl::generic-function-marked-inline` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::generic_function_marked_inline)]`
+
+error: it usually isn't necessary to apply #[inline] to private functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:84:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     unsafe fn force_write(index: usize, value: A, chunk: &mut Self) {
+LL | |
+LL | |
+LL | |         unsafe { chunk.mut_ptr(index).write(value) }
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html
+   = note: the compiler generally makes good inline decisions about private functions
+   = note: `-D rpl::private-function-marked-inline` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::private_function_marked_inline)]`
+
+error: it usually isn't necessary to apply #[inline] to generic functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:84:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     unsafe fn force_write(index: usize, value: A, chunk: &mut Self) {
+LL | |
+LL | |
+LL | |         unsafe { chunk.mut_ptr(index).write(value) }
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html and https://rustc-dev-guide.rust-lang.org/backend/monomorph.html
+   = note: generic functions are always `#[inline]` (monomorphization)
+
+error: it usually isn't necessary to apply #[inline] to private functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:91:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     unsafe fn mut_ptr(&mut self, index: usize) -> *mut A {
+LL | |
+LL | |
+LL | |         unsafe { (&mut self.data as *mut _ as *mut A).add(index) }
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html
+   = note: the compiler generally makes good inline decisions about private functions
+
+error: it usually isn't necessary to apply #[inline] to generic functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:91:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     unsafe fn mut_ptr(&mut self, index: usize) -> *mut A {
+LL | |
+LL | |
+LL | |         unsafe { (&mut self.data as *mut _ as *mut A).add(index) }
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html and https://rustc-dev-guide.rust-lang.org/backend/monomorph.html
+   = note: generic functions are always `#[inline]` (monomorphization)
+
+error: it usually isn't necessary to apply #[inline] to private functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:98:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     unsafe fn ptr(&self, index: usize) -> *const A {
+LL | |
+LL | |
+LL | |         unsafe { (&self.data as *const _ as *const A).add(index) }
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html
+   = note: the compiler generally makes good inline decisions about private functions
+
+error: it usually isn't necessary to apply #[inline] to generic functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:98:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     unsafe fn ptr(&self, index: usize) -> *const A {
+LL | |
+LL | |
+LL | |         unsafe { (&self.data as *const _ as *const A).add(index) }
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html and https://rustc-dev-guide.rust-lang.org/backend/monomorph.html
+   = note: generic functions are always `#[inline]` (monomorphization)
+
+error: it usually isn't necessary to apply #[inline] to private functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:105:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     unsafe fn force_copy(from: usize, to: usize, count: usize, chunk: &mut Self) {
+LL | |
+LL | |
+LL | |         if count > 0 {
+...  |
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html
+   = note: the compiler generally makes good inline decisions about private functions
+
+error: it usually isn't necessary to apply #[inline] to generic functions
+  --> tests/ui/cve/cve_2020_25795/cve_2020_25795.rs:105:5
+   |
+LL |       #[inline]
+   |       --------- `#[inline]` here
+LL | /     unsafe fn force_copy(from: usize, to: usize, count: usize, chunk: &mut Self) {
+LL | |
+LL | |
+LL | |         if count > 0 {
+...  |
+LL | |     }
+   | |_____^ `#[inline]` applied here
+   |
+   = help: See https://matklad.github.io/2021/07/09/inline-in-rust.html and https://rustc-dev-guide.rust-lang.org/backend/monomorph.html
+   = note: generic functions are always `#[inline]` (monomorphization)
+
+error: aborting due to 9 previous errors
+

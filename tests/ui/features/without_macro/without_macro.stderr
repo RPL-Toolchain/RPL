@@ -1,0 +1,10 @@
+error: `Vec::set_len(0)` without a following `set_len(1)`
+  --> tests/ui/features/without_macro/without_macro.rs:11:9
+   |
+LL |         v.set_len(0);
+   |         ^^^^^^^^^^^^ `set_len(0)` called here
+   |
+   = note: `#[deny(rpl::set_len_zero_only)]` on by default
+
+error: aborting due to 1 previous error
+

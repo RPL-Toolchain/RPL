@@ -136,6 +136,11 @@ error_type!(
                 span: SpanWrapper<'i>,
             }
                 "Invalid field index `{index}` ({source}). \n{span}",
+            323 BodyMacroInPanicFragment {
+                name: &'static str,
+                span: SpanWrapper<'i>,
+            }
+                "`{name}` cannot appear inside a `panic!` fragment. \n{span}",
             /* 4xx for diagnostic errors */
             400 MissingPropertyInDiag {
                 property: &'static str,

@@ -1,0 +1,19 @@
+pattern inlined-call-with-capacity
+
+patt {
+    use std::vec::Vec;
+
+    with_capacity_seen = fn _ (..) -> _ {
+        'sink:
+        _ = Vec::with_capacity(..);
+    }
+}
+
+diag {
+    with_capacity_seen = {
+        primary(sink) = "inlined `Vec::with_capacity` detected",
+        label(sink)   = "`with_capacity` called here",
+        name          = "inlined_with_capacity",
+        level         = "deny",
+    }
+}

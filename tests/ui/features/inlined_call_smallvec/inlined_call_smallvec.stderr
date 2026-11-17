@@ -1,0 +1,26 @@
+error: inlined `SmallVec::set_len` call detected
+  --> tests/ui/features/inlined_call_smallvec/inlined_call_smallvec.rs:14:11
+   |
+LL |         v.set_len(1);
+   |           ^^^^^^^^^^ `set_len` called here
+   |
+   = note: `#[deny(rpl::inlined_smallvec_set_len)]` on by default
+
+error: inlined `SmallVec::set_len` call detected
+  --> tests/ui/features/inlined_call_smallvec/inlined_call_smallvec.rs:14:11
+   |
+LL |         v.set_len(1);
+   |           ^^^^^^^^^^ `set_len` called here
+   |
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: inlined `SmallVec::set_len` call detected
+  --> tests/ui/features/inlined_call_smallvec/inlined_call_smallvec.rs:14:11
+   |
+LL |         v.set_len(1);
+   |           ^^^^^^^^^^ `set_len` called here
+   |
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: aborting due to 3 previous errors
+

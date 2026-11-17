@@ -29,6 +29,9 @@ where
                 //~| NOTE: `#[deny(rpl::unsound_slice_cast)]` on by default
                 slice.as_ptr() as *const _,
                 slice.len() * core::mem::size_of::<T>(),
+                //~^ ERROR: found a count of bytes instead of a count of elements of `u8`
+                //~| HELP: use a count of elements instead of a count of bytes, it already gets multiplied by the size of the type
+                //~| NOTE: `#[deny(rpl::size_of_in_element_count)]` on by default
             )
         }
     }
@@ -45,6 +48,8 @@ where
                 //~^ ERROR: it is unsound to cast any slice `&mut [T]` to a byte slice `&mut [u8]`
                 slice.as_mut_ptr() as *mut _,
                 slice.len() * core::mem::size_of::<T>(),
+                //~^ ERROR: found a count of bytes instead of a count of elements of `u8`
+                //~| HELP: use a count of elements instead of a count of bytes, it already gets multiplied by the size of the type
             )
         }
     }

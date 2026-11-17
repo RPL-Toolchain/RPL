@@ -1,0 +1,22 @@
+pattern session-shared-ty-mismatch-sig
+
+patt {
+    // Signature-only companion to the MIR mismatch test.
+    p[$T: type, $U: type] = {
+        struct $Pair {
+            $first: $T,
+            $second: $U,
+        }
+
+        fn $f1(_: $Pair) {}
+
+        fn $f2(_: $Pair) {}
+    }
+}
+
+diag {
+    p = {
+        primary(f1, f2) = "session signature shared type mismatch should not match",
+        name            = "session_shared_ty_mismatch_sig",
+    }
+}

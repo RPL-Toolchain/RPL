@@ -1,0 +1,40 @@
+error: session signature slot matched on $Pair
+  --> tests/ui/features/session/sig_not_arity.rs:14:1
+   |
+LL | / fn uses_pair_a(_: Pair<u8, u16>) {
+...  |
+LL | | }
+   | |_^
+   |
+   = note: `#[deny(rpl::session_sig_not_arity)]` on by default
+
+error: session signature slot matched on $Pair
+  --> tests/ui/features/session/sig_not_arity.rs:14:1
+   |
+LL | / fn uses_pair_a(_: Pair<u8, u16>) {
+...  |
+LL | | }
+   | |_^
+   |
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: session signature slot matched on $Pair
+  --> tests/ui/features/session/sig_not_arity.rs:19:1
+   |
+LL | / fn uses_pair_b(_: Pair<u8, u16>) {
+...  |
+LL | | }
+   | |_^
+
+error: session signature slot matched on $Pair
+  --> tests/ui/features/session/sig_not_arity.rs:19:1
+   |
+LL | / fn uses_pair_b(_: Pair<u8, u16>) {
+...  |
+LL | | }
+   | |_^
+   |
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: aborting due to 4 previous errors
+

@@ -208,6 +208,7 @@ impl Operand<'_> {
     fn fmt_fn_operand(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Any => f.write_str("_"),
+            Self::AnyArgs => f.write_str(".."),
             Self::Copy(place) => write!(f, "(copy {place:?})"),
             Self::Move(place) => write!(f, "(move {place:?})"),
             Self::Constant(konst) => write!(f, "{konst:?}"),
@@ -220,6 +221,7 @@ impl fmt::Debug for Operand<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Any => f.write_str("_"),
+            Self::AnyArgs => f.write_str(".."),
             Self::Copy(place) => write!(f, "copy {place:?}"),
             Self::Move(place) => write!(f, "move {place:?}"),
             Self::Constant(konst) => write!(f, "const {konst:?}"),

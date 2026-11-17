@@ -1,12 +1,24 @@
 error: this operation will panic at runtime
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:230:24
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:233:24
    |
 LL |     unsafe { &*ptr.add(index % 0) }
    |                        ^^^^^^^^^ attempt to calculate the remainder of `_` with a divisor of zero
    |
    = note: `#[deny(unconditional_panic)]` on by default
 
- WARN rpl_constraints::predicates::multiple_consts Encountered non-integer constants in usize_lt predicate
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:5:15
+   |
+LL |         p = p.add(index);
+   |             - ^^^^^^^^^^ offset here
+   |             |
+   |             pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: `-D rpl::unchecked-pointer-offset-general` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset_general)]`
+
 error: it is an undefined behavior to offset a pointer using an unchecked integer
   --> tests/ui/cve/cve_2020_35877/minimal.rs:5:15
    |
@@ -21,18 +33,6 @@ LL |         p = p.add(index);
    = help: to override `-D warnings` add `#[allow(rpl::unchecked_pointer_offset)]`
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:5:15
-   |
-LL |         p = p.add(index);
-   |             - ^^^^^^^^^^ offset here
-   |             |
-   |             pointer used here
-   |
-   = help: check whether it's in bound before offsetting
-   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
-   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
-
-error: it is an undefined behavior to offset a pointer using an unchecked integer
   --> tests/ui/cve/cve_2020_35877/minimal.rs:17:15
    |
 LL |         p = p.add(index);
@@ -56,7 +56,18 @@ LL |         p = p.add(index);
    = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:28:16
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:17:15
+   |
+LL |         p = p.add(index);
+   |             - ^^^^^^^^^^ offset here
+   |             |
+   |             pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:29:16
    |
 LL |     let p = slice.as_ptr();
    |                   -------- pointer used here
@@ -68,7 +79,7 @@ LL |     unsafe { p.add(length) }
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:84:15
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:85:15
    |
 LL |         p = p.add(index);
    |             - ^^^^^^^^^^ offset here
@@ -79,7 +90,19 @@ LL |         p = p.add(index);
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:96:15
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:85:15
+   |
+LL |         p = p.add(index);
+   |             - ^^^^^^^^^^ offset here
+   |             |
+   |             pointer used here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:98:15
    |
 LL |         p = p.add(index);
    |             - ^^^^^^^^^^ offset here
@@ -90,7 +113,7 @@ LL |         p = p.add(index);
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:107:15
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:109:15
    |
 LL |         p = p.add(index);
    |             - ^^^^^^^^^^ offset here
@@ -101,7 +124,18 @@ LL |         p = p.add(index);
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:198:20
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:192:20
+   |
+LL |     let ptr = slice.as_ptr();
+   |                     -------- pointer used here
+LL |     unsafe { &*ptr.add(1) }
+   |                    ^^^^^^ offset here
+   |
+   = help: check whether it's in bound before offsetting
+   = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
+
+error: it is an undefined behavior to offset a pointer using an unchecked integer
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:201:20
    |
 LL |     let ptr = slice.as_ptr();
    |                     -------- pointer used here
@@ -112,7 +146,7 @@ LL |     unsafe { &*ptr.add(2) }
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:205:20
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:208:20
    |
 LL |     let ptr = slice.as_ptr();
    |                     -------- pointer used here
@@ -123,7 +157,7 @@ LL |     unsafe { &*ptr.add(4) }
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:218:20
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:221:20
    |
 LL |     let ptr = slice.as_ptr();
    |                     -------- pointer used here
@@ -134,7 +168,7 @@ LL |     unsafe { &*ptr.add(N) }
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
 error: it is an undefined behavior to offset a pointer using an unchecked integer
-  --> tests/ui/cve/cve_2020_35877/minimal.rs:269:16
+  --> tests/ui/cve/cve_2020_35877/minimal.rs:272:16
    |
 LL | fn unsafe_unchecked_in_safe<T>(p: *const T) -> *const T {
    |                                - pointer used here
@@ -145,5 +179,5 @@ LL |     unsafe { p.add(1) }
    = help: check whether it's in bound before offsetting
    = note: See the safety section in https://doc.rust-lang.org/std/primitive.pointer.html#method.offset
 
-error: aborting due to 13 previous errors
+error: aborting due to 16 previous errors
 

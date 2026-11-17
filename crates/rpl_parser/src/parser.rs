@@ -253,6 +253,11 @@ pub enum Rule {
     r#MirCallIgnoreRet,
     r#MirDrop,
     r#MirMacro,
+    r#MirMacroStmt,
+    r#MirMacroFragment,
+    r#MirMacroBlock,
+    r#MirMacroAlternative,
+    r#MirMacroAlternatives,
     r#MirUnreachable,
     r#Label,
     r#LabelWithColon,
@@ -1336,25 +1341,46 @@ mod constant_wrappers {
     impl ::pest_typed::StringWrapper for r#w_145 {
         const CONTENT: &'static ::core::primitive::str = "Group";
     }
-    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[doc = "A wrapper for `\"without\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
     pub struct r#w_146;
     impl ::pest_typed::StringWrapper for r#w_146 {
-        const CONTENT: &'static ::core::primitive::str = "\"";
+        const CONTENT: &'static ::core::primitive::str = "without";
     }
-    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[doc = "A wrapper for `\"or\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
     pub struct r#w_147;
     impl ::pest_typed::StringWrapper for r#w_147 {
+        const CONTENT: &'static ::core::primitive::str = "or";
+    }
+    #[doc = "A wrapper for `\"panic\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_148;
+    impl ::pest_typed::StringWrapper for r#w_148 {
+        const CONTENT: &'static ::core::primitive::str = "panic";
+    }
+    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_149;
+    impl ::pest_typed::StringWrapper for r#w_149 {
         const CONTENT: &'static ::core::primitive::str = "\"";
     }
     #[doc = "A wrapper for `\"\\\"\"`."]
     #[allow(non_camel_case_types)]
     #[derive(Clone, Hash, PartialEq, Eq)]
-    pub struct r#w_148;
-    impl ::pest_typed::StringWrapper for r#w_148 {
+    pub struct r#w_150;
+    impl ::pest_typed::StringWrapper for r#w_150 {
+        const CONTENT: &'static ::core::primitive::str = "\"";
+    }
+    #[doc = "A wrapper for `\"\\\"\"`."]
+    #[allow(non_camel_case_types)]
+    #[derive(Clone, Hash, PartialEq, Eq)]
+    pub struct r#w_151;
+    impl ::pest_typed::StringWrapper for r#w_151 {
         const CONTENT: &'static ::core::primitive::str = "\"";
     }
 }
@@ -6867,7 +6893,7 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#MirFnOperand , "Corresponds to expression: `((LeftParen ~ MirOperandCopy ~ RightParen) | (LeftParen ~ MirOperandMove ~ RightParen) | TypePath | LangItemWithArgs | MetaVariable)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirFnOperand , super :: super :: generics :: Choice5 :: < super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirOperandCopy :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirOperandMove :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: rules :: r#TypePath :: < 'i , INHERITED > , super :: super :: rules :: r#LangItemWithArgs :: < 'i , INHERITED > , super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#MirFnOperand , "Corresponds to expression: `(PlaceHolder | (LeftParen ~ MirOperandCopy ~ RightParen) | (LeftParen ~ MirOperandMove ~ RightParen) | TypePath | LangItemWithArgs | MetaVariable)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirFnOperand , super :: super :: generics :: Choice6 :: < super :: super :: rules :: r#PlaceHolder :: < 'i , INHERITED > , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirOperandCopy :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirOperandMove :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: rules :: r#TypePath :: < 'i , INHERITED > , super :: super :: rules :: r#LangItemWithArgs :: < 'i , INHERITED > , super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#MirFnOperand<'i, INHERITED> {
             #[doc = "A helper function to access [`LangItemWithArgs`]."]
             #[allow(non_snake_case)]
@@ -6877,7 +6903,7 @@ pub mod rules_impl {
             {
                 let res = &*self.content;
                 {
-                    let res = res._3().map(|res| res);
+                    let res = res._4().map(|res| res);
                     res
                 }
             }
@@ -6893,14 +6919,14 @@ pub mod rules_impl {
                 {
                     let res = (
                         {
-                            let res = res._0().map(|res| {
+                            let res = res._1().map(|res| {
                                 let res = &res.content.0.matched;
                                 res
                             });
                             res
                         },
                         {
-                            let res = res._1().map(|res| {
+                            let res = res._2().map(|res| {
                                 let res = &res.content.0.matched;
                                 res
                             });
@@ -6917,7 +6943,7 @@ pub mod rules_impl {
             ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MetaVariable<'i, INHERITED>> {
                 let res = &*self.content;
                 {
-                    let res = res._4().map(|res| res);
+                    let res = res._5().map(|res| res);
                     res
                 }
             }
@@ -6929,7 +6955,7 @@ pub mod rules_impl {
             {
                 let res = &*self.content;
                 {
-                    let res = res._0().map(|res| {
+                    let res = res._1().map(|res| {
                         let res = &res.content.1.matched;
                         res
                     });
@@ -6944,10 +6970,21 @@ pub mod rules_impl {
             {
                 let res = &*self.content;
                 {
-                    let res = res._1().map(|res| {
+                    let res = res._2().map(|res| {
                         let res = &res.content.1.matched;
                         res
                     });
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`PlaceHolder`]."]
+            #[allow(non_snake_case)]
+            pub fn r#PlaceHolder<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#PlaceHolder<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._0().map(|res| res);
                     res
                 }
             }
@@ -6963,14 +7000,14 @@ pub mod rules_impl {
                 {
                     let res = (
                         {
-                            let res = res._0().map(|res| {
+                            let res = res._1().map(|res| {
                                 let res = &res.content.2.matched;
                                 res
                             });
                             res
                         },
                         {
-                            let res = res._1().map(|res| {
+                            let res = res._2().map(|res| {
                                 let res = &res.content.2.matched;
                                 res
                             });
@@ -6987,7 +7024,7 @@ pub mod rules_impl {
             ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#TypePath<'i, INHERITED>> {
                 let res = &*self.content;
                 {
-                    let res = res._2().map(|res| res);
+                    let res = res._3().map(|res| res);
                     res
                 }
             }
@@ -7371,14 +7408,50 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#MirMacro , "Corresponds to expression: `(LabelWithColon? ~ kw_move ~ Bang ~ LeftParen ~ MirPlace ~ RightParen)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirMacro , super :: super :: generics :: Seq6 :: < (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#LabelWithColon :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#kw_move :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Bang :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirPlace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#MirMacro , "Corresponds to expression: `((LabelWithColon? ~ kw_move ~ Bang ~ LeftParen ~ MirPlace ~ RightParen) | (\"without\" ~ Bang ~ LeftParen ~ MirMacroFragment ~ RightParen) | (\"or\" ~ Bang ~ LeftParen ~ MirMacroAlternatives ~ RightParen) | (LabelWithColon ~ \"panic\" ~ Bang ~ LeftParen ~ MirMacroFragment ~ RightParen))`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirMacro , super :: super :: generics :: Choice4 :: < super :: super :: generics :: Seq6 :: < (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#LabelWithColon :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#kw_move :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Bang :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirPlace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq5 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_146 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Bang :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroFragment :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq5 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_147 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Bang :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroAlternatives :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Seq6 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LabelWithColon :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_148 > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Bang :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroFragment :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightParen :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#MirMacro<'i, INHERITED> {
             #[doc = "A helper function to access [`Bang`]."]
             #[allow(non_snake_case)]
-            pub fn r#Bang<'s>(&'s self) -> &'s super::super::rules::r#Bang<'i, INHERITED> {
+            pub fn r#Bang<'s>(
+                &'s self,
+            ) -> (
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Bang<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Bang<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Bang<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Bang<'i, INHERITED>>,
+            ) {
                 let res = &*self.content;
                 {
-                    let res = &res.content.2.matched;
+                    let res = (
+                        {
+                            let res = res._0().map(|res| {
+                                let res = &res.content.2.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._1().map(|res| {
+                                let res = &res.content.1.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._2().map(|res| {
+                                let res = &res.content.1.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._3().map(|res| {
+                                let res = &res.content.2.matched;
+                                res
+                            });
+                            res
+                        },
+                    );
                     res
                 }
             }
@@ -7386,50 +7459,549 @@ pub mod rules_impl {
             #[allow(non_snake_case)]
             pub fn r#LabelWithColon<'s>(
                 &'s self,
-            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#LabelWithColon<'i, INHERITED>>
-            {
+            ) -> (
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#LabelWithColon<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#LabelWithColon<'i, INHERITED>>,
+            ) {
                 let res = &*self.content;
                 {
-                    let res = &res.content.0.matched;
-                    {
-                        let res = res.as_ref().map(|res| res);
-                        res
-                    }
+                    let res = (
+                        {
+                            let res = res
+                                ._0()
+                                .map(|res| {
+                                    let res = &res.content.0.matched;
+                                    {
+                                        let res = res.as_ref().map(|res| res);
+                                        res
+                                    }
+                                })
+                                .flatten();
+                            res
+                        },
+                        {
+                            let res = res._3().map(|res| {
+                                let res = &res.content.0.matched;
+                                res
+                            });
+                            res
+                        },
+                    );
+                    res
                 }
             }
             #[doc = "A helper function to access [`LeftParen`]."]
             #[allow(non_snake_case)]
-            pub fn r#LeftParen<'s>(&'s self) -> &'s super::super::rules::r#LeftParen<'i, INHERITED> {
+            pub fn r#LeftParen<'s>(
+                &'s self,
+            ) -> (
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#LeftParen<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#LeftParen<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#LeftParen<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#LeftParen<'i, INHERITED>>,
+            ) {
+                let res = &*self.content;
+                {
+                    let res = (
+                        {
+                            let res = res._0().map(|res| {
+                                let res = &res.content.3.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._1().map(|res| {
+                                let res = &res.content.2.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._2().map(|res| {
+                                let res = &res.content.2.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._3().map(|res| {
+                                let res = &res.content.3.matched;
+                                res
+                            });
+                            res
+                        },
+                    );
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirMacroAlternatives`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirMacroAlternatives<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirMacroAlternatives<'i, INHERITED>>
+            {
+                let res = &*self.content;
+                {
+                    let res = res._2().map(|res| {
+                        let res = &res.content.3.matched;
+                        res
+                    });
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirMacroFragment`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirMacroFragment<'s>(
+                &'s self,
+            ) -> (
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirMacroFragment<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirMacroFragment<'i, INHERITED>>,
+            ) {
+                let res = &*self.content;
+                {
+                    let res = (
+                        {
+                            let res = res._1().map(|res| {
+                                let res = &res.content.3.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._3().map(|res| {
+                                let res = &res.content.4.matched;
+                                res
+                            });
+                            res
+                        },
+                    );
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirPlace`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirPlace<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirPlace<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._0().map(|res| {
+                        let res = &res.content.4.matched;
+                        res
+                    });
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`RightParen`]."]
+            #[allow(non_snake_case)]
+            pub fn r#RightParen<'s>(
+                &'s self,
+            ) -> (
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#RightParen<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#RightParen<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#RightParen<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#RightParen<'i, INHERITED>>,
+            ) {
+                let res = &*self.content;
+                {
+                    let res = (
+                        {
+                            let res = res._0().map(|res| {
+                                let res = &res.content.5.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._1().map(|res| {
+                                let res = &res.content.4.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._2().map(|res| {
+                                let res = &res.content.4.matched;
+                                res
+                            });
+                            res
+                        },
+                        {
+                            let res = res._3().map(|res| {
+                                let res = &res.content.5.matched;
+                                res
+                            });
+                            res
+                        },
+                    );
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`kw_move`]."]
+            #[allow(non_snake_case)]
+            pub fn r#kw_move<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#kw_move<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._0().map(|res| {
+                        let res = &res.content.1.matched;
+                        res
+                    });
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#MirMacroStmt , "Corresponds to expression: `(MirCallIgnoreRet | MirDrop | MirUnreachable | MirControl | MirAssign | MirLoop | MirSwitchInt | MirCopyNonOverlapping | MirMacro)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirMacroStmt , super :: super :: generics :: Choice9 :: < super :: super :: rules :: r#MirCallIgnoreRet :: < 'i , INHERITED > , super :: super :: rules :: r#MirDrop :: < 'i , INHERITED > , super :: super :: rules :: r#MirUnreachable :: < 'i , INHERITED > , super :: super :: rules :: r#MirControl :: < 'i , INHERITED > , super :: super :: rules :: r#MirAssign :: < 'i , INHERITED > , super :: super :: rules :: r#MirLoop :: < 'i , INHERITED > , super :: super :: rules :: r#MirSwitchInt :: < 'i , INHERITED > , super :: super :: rules :: r#MirCopyNonOverlapping :: < 'i , INHERITED > , super :: super :: rules :: r#MirMacro :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#MirMacroStmt<'i, INHERITED> {
+            #[doc = "A helper function to access [`MirAssign`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirAssign<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirAssign<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._4().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirCallIgnoreRet`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirCallIgnoreRet<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirCallIgnoreRet<'i, INHERITED>>
+            {
+                let res = &*self.content;
+                {
+                    let res = res._0().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirControl`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirControl<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirControl<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._3().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirCopyNonOverlapping`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirCopyNonOverlapping<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirCopyNonOverlapping<'i, INHERITED>>
+            {
+                let res = &*self.content;
+                {
+                    let res = res._7().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirDrop`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirDrop<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirDrop<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._1().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirLoop`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirLoop<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirLoop<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._5().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirMacro`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirMacro<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirMacro<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._8().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirSwitchInt`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirSwitchInt<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirSwitchInt<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = res._6().map(|res| res);
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirUnreachable`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirUnreachable<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirUnreachable<'i, INHERITED>>
+            {
+                let res = &*self.content;
+                {
+                    let res = res._2().map(|res| res);
+                    res
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#MirMacroFragment , "Corresponds to expression: `(MirMacroStmt ~ (SemiColon ~ MirMacroStmt)*)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirMacroFragment , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroStmt :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#SemiColon :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroStmt :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#MirMacroFragment<'i, INHERITED> {
+            #[doc = "A helper function to access [`MirMacroStmt`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirMacroStmt<'s>(
+                &'s self,
+            ) -> (
+                &'s super::super::rules::r#MirMacroStmt<'i, INHERITED>,
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#MirMacroStmt<'i, INHERITED>>,
+            ) {
+                let res = &*self.content;
+                {
+                    let res = (
+                        {
+                            let res = &res.content.0.matched;
+                            res
+                        },
+                        {
+                            let res = &res.content.1.matched;
+                            {
+                                let res = res
+                                    .content
+                                    .iter()
+                                    .map(|res| {
+                                        let res = &res.matched;
+                                        {
+                                            let res = &res.content.1.matched;
+                                            res
+                                        }
+                                    })
+                                    .collect::<::pest_typed::re_exported::Vec<_>>();
+                                res
+                            }
+                        },
+                    );
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`SemiColon`]."]
+            #[allow(non_snake_case)]
+            pub fn r#SemiColon<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#SemiColon<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.1.matched;
+                    {
+                        let res = res
+                            .content
+                            .iter()
+                            .map(|res| {
+                                let res = &res.matched;
+                                {
+                                    let res = &res.content.0.matched;
+                                    res
+                                }
+                            })
+                            .collect::<::pest_typed::re_exported::Vec<_>>();
+                        res
+                    }
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#MirMacroBlock , "Corresponds to expression: `(LeftBrace ~ MirMacroStmt ~ (SemiColon ~ MirMacroStmt)* ~ RightBrace)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirMacroBlock , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#LeftBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroStmt :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#SemiColon :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroStmt :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#RightBrace :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#MirMacroBlock<'i, INHERITED> {
+            #[doc = "A helper function to access [`LeftBrace`]."]
+            #[allow(non_snake_case)]
+            pub fn r#LeftBrace<'s>(&'s self) -> &'s super::super::rules::r#LeftBrace<'i, INHERITED> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.0.matched;
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirMacroStmt`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirMacroStmt<'s>(
+                &'s self,
+            ) -> (
+                &'s super::super::rules::r#MirMacroStmt<'i, INHERITED>,
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#MirMacroStmt<'i, INHERITED>>,
+            ) {
+                let res = &*self.content;
+                {
+                    let res = (
+                        {
+                            let res = &res.content.1.matched;
+                            res
+                        },
+                        {
+                            let res = &res.content.2.matched;
+                            {
+                                let res = res
+                                    .content
+                                    .iter()
+                                    .map(|res| {
+                                        let res = &res.matched;
+                                        {
+                                            let res = &res.content.1.matched;
+                                            res
+                                        }
+                                    })
+                                    .collect::<::pest_typed::re_exported::Vec<_>>();
+                                res
+                            }
+                        },
+                    );
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`RightBrace`]."]
+            #[allow(non_snake_case)]
+            pub fn r#RightBrace<'s>(&'s self) -> &'s super::super::rules::r#RightBrace<'i, INHERITED> {
                 let res = &*self.content;
                 {
                     let res = &res.content.3.matched;
                     res
                 }
             }
-            #[doc = "A helper function to access [`MirPlace`]."]
+            #[doc = "A helper function to access [`SemiColon`]."]
             #[allow(non_snake_case)]
-            pub fn r#MirPlace<'s>(&'s self) -> &'s super::super::rules::r#MirPlace<'i, INHERITED> {
+            pub fn r#SemiColon<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Vec<&'s super::super::rules::r#SemiColon<'i, INHERITED>> {
                 let res = &*self.content;
                 {
-                    let res = &res.content.4.matched;
+                    let res = &res.content.2.matched;
+                    {
+                        let res = res
+                            .content
+                            .iter()
+                            .map(|res| {
+                                let res = &res.matched;
+                                {
+                                    let res = &res.content.0.matched;
+                                    res
+                                }
+                            })
+                            .collect::<::pest_typed::re_exported::Vec<_>>();
+                        res
+                    }
+                }
+            }
+        }
+        :: pest_typed :: rule ! (r#MirMacroAlternative , "Corresponds to expression: `(MirMacroBlock | MirMacroStmt)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirMacroAlternative , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#MirMacroBlock :: < 'i , INHERITED > , super :: super :: rules :: r#MirMacroStmt :: < 'i , INHERITED > , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#MirMacroAlternative<'i, INHERITED> {
+            #[doc = "A helper function to access [`MirMacroBlock`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirMacroBlock<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirMacroBlock<'i, INHERITED>>
+            {
+                let res = &*self.content;
+                {
+                    let res = res._0().map(|res| res);
                     res
                 }
             }
-            #[doc = "A helper function to access [`RightParen`]."]
+            #[doc = "A helper function to access [`MirMacroStmt`]."]
             #[allow(non_snake_case)]
-            pub fn r#RightParen<'s>(&'s self) -> &'s super::super::rules::r#RightParen<'i, INHERITED> {
+            pub fn r#MirMacroStmt<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#MirMacroStmt<'i, INHERITED>> {
                 let res = &*self.content;
                 {
-                    let res = &res.content.5.matched;
+                    let res = res._1().map(|res| res);
                     res
                 }
             }
-            #[doc = "A helper function to access [`kw_move`]."]
+        }
+        :: pest_typed :: rule ! (r#MirMacroAlternatives , "Corresponds to expression: `(MirMacroAlternative ~ (Comma ~ MirMacroAlternative)* ~ Comma?)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#MirMacroAlternatives , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroAlternative :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Rep :: < 'i , INHERITED , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Comma :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MirMacroAlternative :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#Comma :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        impl<'i, const INHERITED: ::core::primitive::usize> r#MirMacroAlternatives<'i, INHERITED> {
+            #[doc = "A helper function to access [`Comma`]."]
             #[allow(non_snake_case)]
-            pub fn r#kw_move<'s>(&'s self) -> &'s super::super::rules::r#kw_move<'i, INHERITED> {
+            pub fn r#Comma<'s>(
+                &'s self,
+            ) -> (
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#Comma<'i, INHERITED>>,
+                ::pest_typed::re_exported::Option<&'s super::super::rules::r#Comma<'i, INHERITED>>,
+            ) {
                 let res = &*self.content;
                 {
-                    let res = &res.content.1.matched;
+                    let res = (
+                        {
+                            let res = &res.content.1.matched;
+                            {
+                                let res = res
+                                    .content
+                                    .iter()
+                                    .map(|res| {
+                                        let res = &res.matched;
+                                        {
+                                            let res = &res.content.0.matched;
+                                            res
+                                        }
+                                    })
+                                    .collect::<::pest_typed::re_exported::Vec<_>>();
+                                res
+                            }
+                        },
+                        {
+                            let res = &res.content.2.matched;
+                            {
+                                let res = res.as_ref().map(|res| res);
+                                res
+                            }
+                        },
+                    );
+                    res
+                }
+            }
+            #[doc = "A helper function to access [`MirMacroAlternative`]."]
+            #[allow(non_snake_case)]
+            pub fn r#MirMacroAlternative<'s>(
+                &'s self,
+            ) -> (
+                &'s super::super::rules::r#MirMacroAlternative<'i, INHERITED>,
+                ::pest_typed::re_exported::Vec<&'s super::super::rules::r#MirMacroAlternative<'i, INHERITED>>,
+            ) {
+                let res = &*self.content;
+                {
+                    let res = (
+                        {
+                            let res = &res.content.0.matched;
+                            res
+                        },
+                        {
+                            let res = &res.content.1.matched;
+                            {
+                                let res = res
+                                    .content
+                                    .iter()
+                                    .map(|res| {
+                                        let res = &res.matched;
+                                        {
+                                            let res = &res.content.1.matched;
+                                            res
+                                        }
+                                    })
+                                    .collect::<::pest_typed::re_exported::Vec<_>>();
+                                res
+                            }
+                        },
+                    );
                     res
                 }
             }
@@ -8745,14 +9317,14 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#Field , "Corresponds to expression: `(MetaVariable ~ Colon ~ Type)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Field , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Colon :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Type :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
+        :: pest_typed :: rule ! (r#Field , "Corresponds to expression: `(Visibility? ~ MetaVariable ~ Colon ~ Type)`. Normal rule." "" , super :: super :: Rule , super :: super :: Rule :: r#Field , super :: super :: generics :: Seq4 :: < (:: pest_typed :: predefined_node :: Skipped < :: pest_typed :: re_exported :: Option :: < super :: super :: rules :: r#Visibility :: < 'i , INHERITED > > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#MetaVariable :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Colon :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#Type :: < 'i , INHERITED > , super :: super :: generics :: Skipped < 'i > , INHERITED >) , > , super :: super :: generics :: Skipped :: < 'i > , INHERITED , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#Field<'i, INHERITED> {
             #[doc = "A helper function to access [`Colon`]."]
             #[allow(non_snake_case)]
             pub fn r#Colon<'s>(&'s self) -> &'s super::super::rules::r#Colon<'i, INHERITED> {
                 let res = &*self.content;
                 {
-                    let res = &res.content.1.matched;
+                    let res = &res.content.2.matched;
                     res
                 }
             }
@@ -8761,7 +9333,7 @@ pub mod rules_impl {
             pub fn r#MetaVariable<'s>(&'s self) -> &'s super::super::rules::r#MetaVariable<'i, INHERITED> {
                 let res = &*self.content;
                 {
-                    let res = &res.content.0.matched;
+                    let res = &res.content.1.matched;
                     res
                 }
             }
@@ -8770,8 +9342,22 @@ pub mod rules_impl {
             pub fn r#Type<'s>(&'s self) -> &'s super::super::rules::r#Type<'i, INHERITED> {
                 let res = &*self.content;
                 {
-                    let res = &res.content.2.matched;
+                    let res = &res.content.3.matched;
                     res
+                }
+            }
+            #[doc = "A helper function to access [`Visibility`]."]
+            #[allow(non_snake_case)]
+            pub fn r#Visibility<'s>(
+                &'s self,
+            ) -> ::pest_typed::re_exported::Option<&'s super::super::rules::r#Visibility<'i, INHERITED>> {
+                let res = &*self.content;
+                {
+                    let res = &res.content.0.matched;
+                    {
+                        let res = res.as_ref().map(|res| res);
+                        res
+                    }
                 }
             }
         }
@@ -9903,7 +10489,7 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#diagMessageText , "Corresponds to expression: `(!(\"\\\"\" | LeftBrace) ~ ANY)+`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageText , super :: super :: generics :: RepOnce :: < 'i , 0 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: generics :: Choice2 :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_146 > , super :: super :: rules :: r#LeftBrace :: < 'i , 0 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , 0 >) , > > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
+        :: pest_typed :: rule ! (r#diagMessageText , "Corresponds to expression: `(!(\"\\\"\" | LeftBrace) ~ ANY)+`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageText , super :: super :: generics :: RepOnce :: < 'i , 0 , super :: super :: generics :: Seq2 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Negative :: < super :: super :: generics :: Choice2 :: < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_149 > , super :: super :: rules :: r#LeftBrace :: < 'i , 0 > , > > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#ANY , super :: super :: generics :: Skipped < 'i > , 0 >) , > > , super :: super :: generics :: Skipped :: < 'i > , true , Span , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessageText<'i, INHERITED> {}
         :: pest_typed :: rule ! (r#diagMessageInner , "Corresponds to expression: `(diagMessageArg | diagMessageText)*`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessageInner , super :: super :: generics :: Rep :: < 'i , 0 , super :: super :: generics :: Choice2 :: < super :: super :: rules :: r#diagMessageArg :: < 'i , 0 > , super :: super :: rules :: r#diagMessageText :: < 'i , 0 > , > > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessageInner<'i, INHERITED> {
@@ -9954,7 +10540,7 @@ pub mod rules_impl {
                 }
             }
         }
-        :: pest_typed :: rule ! (r#diagMessage , "Corresponds to expression: `(\"\\\"\" ~ diagMessageInner ~ \"\\\"\")`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessage , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_147 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessageInner :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_148 > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
+        :: pest_typed :: rule ! (r#diagMessage , "Corresponds to expression: `(\"\\\"\" ~ diagMessageInner ~ \"\\\"\")`. Atomic rule." "" , super :: super :: Rule , super :: super :: Rule :: r#diagMessage , super :: super :: generics :: Seq3 :: < (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_150 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: rules :: r#diagMessageInner :: < 'i , 0 > , super :: super :: generics :: Skipped < 'i > , 0 >) , (:: pest_typed :: predefined_node :: Skipped < super :: super :: generics :: Str :: < super :: super :: constant_wrappers :: r#w_151 > , super :: super :: generics :: Skipped < 'i > , 0 >) , > , super :: super :: generics :: Skipped :: < 'i > , true , Both , true);
         impl<'i, const INHERITED: ::core::primitive::usize> r#diagMessage<'i, INHERITED> {
             #[doc = "A helper function to access [`diagMessageInner`]."]
             #[allow(non_snake_case)]

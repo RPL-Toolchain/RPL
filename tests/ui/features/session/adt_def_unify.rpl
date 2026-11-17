@@ -1,0 +1,29 @@
+pattern session-adt-def-unify
+
+patt {
+    p[$T: type, $U: type] = {
+        struct $Pair {
+            $first: $T,
+            $second: $U,
+        }
+
+        fn $f1(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            let $x: $T = copy (*$p).$first;
+        }
+
+        fn $f2(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            let $x: $T = copy (*$p).$first;
+        }
+    }
+}
+
+diag {
+    p = {
+        primary(read) = "session AdtDef unify should not match across distinct structs",
+        name          = "session_adt_def_unify",
+    }
+}

@@ -1,0 +1,11 @@
+error: found a count of bytes instead of a count of elements of `u8`
+  --> tests/ui/cve/cve_2021_45688/cve_2021_45688_cross_fn.rs:13:21
+   |
+LL |             count * std::mem::size_of::<T>(),
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: use a count of elements instead of a count of bytes, it already gets multiplied by the size of the type
+   = note: `#[deny(rpl::size_of_in_element_count)]` on by default
+
+error: aborting due to 1 previous error
+

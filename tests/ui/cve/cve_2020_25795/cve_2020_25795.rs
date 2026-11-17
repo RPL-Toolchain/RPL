@@ -1,3 +1,6 @@
+//@revisions: inline regular
+//@[inline]compile-flags: -Z inline-mir=true
+//@[regular]compile-flags: -Z inline-mir=false
 use std::{mem::MaybeUninit, ptr};
 
 pub trait Unsigned: Copy + Default + 'static {
@@ -131,6 +134,7 @@ where
                 Chunk::force_copy(self.left, self.left - insert_size, left_size, self);
                 let mut write_index = real_index - insert_size;
                 for value in iter {
+                    //~[inline]^ ERROR: lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
                     Chunk::force_write(write_index, value, self);
                     write_index += 1;
                 }
@@ -141,6 +145,7 @@ where
                 Chunk::force_copy(real_index, real_index + insert_size, right_size, self);
                 let mut write_index = real_index;
                 for value in iter {
+                    //~[inline]^ ERROR: lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
                     Chunk::force_write(write_index, value, self);
                     write_index += 1;
                 }
@@ -152,6 +157,8 @@ where
                 Chunk::force_copy(real_index, left_size + insert_size, right_size, self);
                 let mut write_index = left_size;
                 for value in iter {
+                    //~[inline]^ ERROR: lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
+                    //~[inline]| ERROR: lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
                     Chunk::force_write(write_index, value, self);
                     write_index += 1;
                 }

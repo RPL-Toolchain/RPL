@@ -1,0 +1,22 @@
+pattern inlined-call-mid
+
+patt {
+    use std::vec::Vec;
+
+    set_len_then_more = fn _ (..) -> _ {
+        let $vec: &mut Vec<u8> = _;
+        'sink:
+        _ = Vec::set_len(..);
+        'after:
+        _ = _;
+    }
+}
+
+diag {
+    set_len_then_more = {
+        primary(sink) = "inlined `Vec::set_len` mid-function detected",
+        label(sink)   = "`set_len` called here",
+        name          = "inlined_set_len_mid",
+        level         = "deny",
+    }
+}

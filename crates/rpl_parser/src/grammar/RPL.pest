@@ -726,7 +726,8 @@ MirRvalue = {
 }
 
 MirFnOperand = {
-    LeftParen ~ MirOperandCopy ~ RightParen
+    PlaceHolder
+  | LeftParen ~ MirOperandCopy ~ RightParen
   | LeftParen ~ MirOperandMove ~ RightParen
   | TypePath
   | LangItemWithArgs
@@ -769,6 +770,42 @@ MirDrop = {
 
 MirMacro = {
     LabelWithColon? ~ kw_move ~ Bang ~ LeftParen ~ MirPlace ~ RightParen
+  | "without" ~ Bang ~ LeftParen ~ MirMacroFragment ~ RightParen
+  | "or"      ~ Bang ~ LeftParen ~ MirMacroAlternatives ~ RightParen
+  | LabelWithColon ~ "panic" ~ Bang ~ LeftParen ~ MirMacroFragment ~ RightParen
+}
+
+// A statement without its trailing `;`, used as a fragment element inside macros.
+MirMacroStmt = {
+    MirCallIgnoreRet
+  | MirDrop
+  | MirUnreachable
+  | MirControl
+  | MirAssign
+  | MirLoop
+  | MirSwitchInt
+  | MirCopyNonOverlapping
+  | MirMacro
+}
+
+// `B; C` -- one or more statements, `;`-separated.
+MirMacroFragment = {
+    MirMacroStmt ~ (SemiColon ~ MirMacroStmt)*
+}
+
+// `{ B; C }` -- brace-wrapped fragment (an `or!` alternative).
+MirMacroBlock = {
+    LeftBrace ~ MirMacroStmt ~ (SemiColon ~ MirMacroStmt)* ~ RightBrace
+}
+
+// An `or!` alternative: either a brace block or a single statement.
+MirMacroAlternative = {
+    MirMacroBlock
+  | MirMacroStmt
+}
+
+MirMacroAlternatives = {
+    MirMacroAlternative ~ (Comma ~ MirMacroAlternative)* ~ Comma?
 }
 
 MirUnreachable = {
@@ -875,7 +912,7 @@ FnRet = {
 Fn = { FnSig ~ FnBody }
 
 Field = {
-    MetaVariable ~ Colon ~ Type
+    Visibility? ~ MetaVariable ~ Colon ~ Type
 }
 
 FieldsSeparatedByComma = {

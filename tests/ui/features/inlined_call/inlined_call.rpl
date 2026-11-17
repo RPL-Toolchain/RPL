@@ -1,0 +1,20 @@
+pattern inlined-call
+
+patt {
+    use std::vec::Vec;
+
+    set_len_seen[$T: type] = fn _ (..) -> _ {
+        let $vec: &mut Vec<$T> = _;
+        'sink:
+        _ = Vec::set_len(..);
+    }
+}
+
+diag {
+    set_len_seen = {
+        primary(sink) = "inlined `Vec::set_len` call detected",
+        label(sink)   = "`set_len` called here",
+        name          = "inlined_set_len",
+        level         = "deny",
+    }
+}

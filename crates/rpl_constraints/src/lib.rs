@@ -47,6 +47,18 @@ pub struct Constraints {
 }
 
 impl Constraints {
+    /// True if any term is `cfg_reaches(...)` (possibly negated). Used to relax DDG adjacency.
+    pub fn mentions_cfg_reaches(&self) -> bool {
+        self.preds.iter().any(|conj| {
+            conj.clauses.iter().any(|clause| {
+                clause
+                    .terms
+                    .iter()
+                    .any(|term| matches!(term.kind, predicates::PredicateKind::CfgReaches))
+            })
+        })
+    }
+
     pub fn from_where_block_opt<'i>(
         pre_attrs: impl Iterator<Item = &'i pairs::Attr<'i>>,
         where_block: &Option<pairs::WhereBlock<'i>>,

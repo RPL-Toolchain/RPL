@@ -1,0 +1,65 @@
+// Rudra-aligned Unsafe Dataflow (Panic Safety).
+//
+// Model: lifetime-bypass Call → unresolvable-generic / drop_in_place sink,
+// connected by CFG reachability (not DDG). Filters mirror Rudra skips
+// (`bypass_on_copy`, `set_len_to_zero`).
+pattern panic-safety
+
+patt {
+    #[deduplicate]
+    strong_ud = {
+        unsafe? fn _(..) -> _ {
+            'src:
+            _ = _(..);
+            without!('reset: _ = _(..));
+            'sink:
+            _ = _(..);
+        } where {
+            strong_bypass('src),
+            (unresolvable_generic('sink) || generic_drop('sink)),
+            cfg_reaches('src, 'sink),
+            cfg_reaches('src, 'reset),
+            cfg_reaches('reset, 'sink),
+            !bypass_on_copy('src),
+            set_len('reset),
+        }
+    }
+
+    #[deduplicate]
+    weak_ud = {
+        unsafe? fn _(..) -> _ {
+            'src:
+            _ = _(..);
+            without!('reset: _ = _(..));
+            'sink:
+            _ = _(..);
+        } where {
+            weak_bypass('src),
+            (unresolvable_generic('sink) || generic_drop('sink)),
+            cfg_reaches('src, 'sink),
+            cfg_reaches('src, 'reset),
+            cfg_reaches('reset, 'sink),
+            !bypass_on_copy('src),
+            set_len('reset),
+        }
+    }
+}
+
+diag {
+    strong_ud = {
+        primary(sink)   = "lifetime-bypassing operation reaches potentially panicking / unresolvable generic code",
+        label(src)      = "lifetime bypass here",
+        label(sink)     = "unresolvable generic or `drop_in_place` here",
+        help            = "restore container invariants (or use a drop guard) before calling code that may panic",
+        name            = "panic_safety_strong",
+        level           = "deny",
+    }
+    weak_ud = {
+        primary(sink)   = "weak lifetime-bypassing operation reaches potentially panicking / unresolvable generic code",
+        label(src)      = "lifetime bypass here",
+        label(sink)     = "unresolvable generic or `drop_in_place` here",
+        help            = "restore container invariants (or use a drop guard) before calling code that may panic",
+        name            = "panic_safety_weak",
+        level           = "warn",
+    }
+}

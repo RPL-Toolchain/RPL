@@ -505,3 +505,45 @@ fn rvalue_cast() {
 fn mir_local_decl() {
     full_test!(MirLocalDecl, "let $q: DstVec = move $p as DstVec (Transmute);");
 }
+
+#[test]
+fn mir_macro() {
+    // `move!(place)` — existing form.
+    full_test!(MirMacro, "move!($p)");
+
+    // `without!(fragment)` — a statement fragment that must not match.
+    full_test!(MirMacro, "without!(_ = $f(copy $x))");
+    full_test!(MirMacro, "without!(_ = $f(copy $x); _ = $g(copy $y))");
+
+    // `or!(alt, alt)` — comma-separated alternatives.
+    full_test!(MirMacro, "or!(_ = $f(copy $x), _ = $g(copy $y))");
+    full_test!(MirMacro, "or!({ _ = $f(copy $x); _ = $g(copy $y) }, drop($z))");
+
+    // `'p: panic!(fragment)` — labeled fragment that should panic.
+    full_test!(MirMacro, "'p: panic!(_ = $f(copy $x))");
+    full_test!(MirMacro, "'p: panic!(_ = $f(copy $x); _ = $g(copy $y))");
+}
+
+#[test]
+fn mir_macro_in_body() {
+    full_test!(
+        main,
+        r#"
+pattern macro-sugar
+patt {
+    p[$T: type] = fn _ (..) -> _ {
+        let $x: $T = _;
+        without!(_ = $f(copy $x));
+    }
+    q[$T: type] = fn _ (..) -> _ {
+        let $x: $T = _;
+        or!(_ = $f(copy $x), _ = $g(copy $x));
+    }
+    r[$T: type] = fn _ (..) -> _ {
+        let $x: $T = _;
+        'sink: panic!(_ = $f(copy $x));
+    }
+}
+"#
+    );
+}

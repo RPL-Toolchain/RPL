@@ -1,0 +1,19 @@
+pattern mem-alias
+
+patt {
+    mem_alias = unsafe? fn _(..) -> _ {
+        let $p: *mut u8 = _;
+        'write:
+        (*$p) = const 1_u8;
+        'read:
+        _ = copy (*$p);
+    }
+}
+
+diag {
+    mem_alias = {
+        primary(read) = "read observes a write through the same place",
+        name         = "mem_alias",
+        level        = "deny",
+    }
+}

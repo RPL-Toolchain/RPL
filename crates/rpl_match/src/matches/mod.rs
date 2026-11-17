@@ -1,4 +1,4 @@
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::fmt;
 use std::ops::Index;
 
@@ -6,7 +6,7 @@ use rpl_constraints::Const;
 use rpl_constraints::attributes::ExtraSpan;
 use rpl_context::pat::{LabelMap, Spanned};
 use rpl_mir_graph::TerminatorEdges;
-use rustc_data_structures::fx::FxIndexSet;
+use rustc_data_structures::fx::{FxHashSet, FxIndexSet};
 use rustc_data_structures::stack::ensure_sufficient_stack;
 use rustc_hir::FnDecl;
 use rustc_index::bit_set::MixedBitSet;
@@ -19,8 +19,8 @@ use rustc_span::{Span, Symbol};
 
 use crate::CountedMatch;
 use crate::adt::{
-    AdtFieldMap, all_adt_fields_resolved, collect_adt_field_bindings, reset_adt_field_bindings_after_probe,
-    seed_ty_vars_from_adt_field_candidates,
+    AdtFieldMap, all_adt_fields_resolved, collect_adt_field_bindings, collect_used_field_pats,
+    reset_adt_field_bindings_after_probe, seed_ty_vars_from_adt_field_candidates,
 };
 use crate::mir::{CheckMirCtxt, pat};
 use crate::statement::MatchStatement as _;
@@ -166,9 +166,60 @@ impl<'tcx> Index<pat::PlaceVarIdx> for Matched<'tcx> {
 }
 
 pub fn matches<'tcx>(cx: &CheckMirCtxt<'_, '_, 'tcx>) -> Vec<Matched<'tcx>> {
-    let mut matching = MatchCtxt::new(cx);
+    let mut out = Vec::new();
+    matches_with(cx, |m| out.push(m.clone()));
+    out
+}
+
+pub fn matches_with<'a, 'pcx, 'tcx>(cx: &'a CheckMirCtxt<'a, 'pcx, 'tcx>, on_match: impl FnMut(&Matched<'tcx>) + 'a) {
+    let mut matching = MatchCtxt::with_on_match(cx, Box::new(on_match));
     matching.do_match();
-    matching.matched.take()
+}
+
+/// Ty metavars mentioned in a fn pattern's signature or MIR body.
+///
+/// Includes param/return types so metavars that appear only on the signature (e.g. `-> &mut $U`
+/// with no `RET` local) are not cleared. Still excludes AdtPat field decls (visit of `AdtPat`
+/// does not walk field types), so unused ADT field seeds do not invent spurious solutions.
+fn collect_used_ty_vars(fn_pat: &pat::FnPattern<'_>) -> FxHashSet<pat::TyVarIdx> {
+    use pat::visitor::PatternVisitor;
+
+    struct Collect {
+        vars: FxHashSet<pat::TyVarIdx>,
+    }
+
+    impl PatternVisitor<'_> for Collect {
+        fn visit_ty_var(&mut self, ty_var: &pat::TyVar) {
+            self.vars.insert(ty_var.idx);
+        }
+    }
+
+    let mut collect = Collect {
+        vars: FxHashSet::default(),
+    };
+    for param in fn_pat.params.iter() {
+        collect.visit_ty(param.ty);
+    }
+    if let Some(ret) = fn_pat.ret {
+        collect.visit_ty(ret);
+    }
+    // Place/const metavar types (e.g. `$src: place($T)`) are not always mirrored as MIR
+    // locals; still count them so matching does not clear `$T` and fall back to `!`.
+    for place_var in fn_pat.meta.place_vars.iter() {
+        collect.visit_ty(place_var.ty);
+    }
+    for const_var in fn_pat.meta.const_vars.iter() {
+        collect.visit_ty(const_var.ty);
+    }
+    if let Some(mir_pat) = fn_pat.body {
+        for &ty in &mir_pat.locals {
+            collect.visit_ty(ty);
+        }
+        for (bb, block) in mir_pat.basic_blocks.iter_enumerated() {
+            collect.visit_basic_block_data(bb, block);
+        }
+    }
+    collect.vars
 }
 
 #[derive(Debug)]
@@ -387,18 +438,20 @@ pub fn local_is_arg(local: mir::Local, body: &mir::Body<'_>) -> bool {
     local.as_usize() > 0 && local.as_usize() < body.arg_count + 1
 }
 
+type OnMatch<'a, 'tcx> = RefCell<Box<dyn FnMut(&Matched<'tcx>) + 'a>>;
+
 struct MatchCtxt<'a, 'pcx, 'tcx> {
     cx: &'a CheckMirCtxt<'a, 'pcx, 'tcx>,
     matching: Matching<'tcx>,
-    matched: Cell<Vec<Matched<'tcx>>>,
+    on_match: OnMatch<'a, 'tcx>,
 }
 
 impl<'a, 'pcx, 'tcx> MatchCtxt<'a, 'pcx, 'tcx> {
-    fn new(cx: &'a CheckMirCtxt<'a, 'pcx, 'tcx>) -> Self {
+    fn with_on_match(cx: &'a CheckMirCtxt<'a, 'pcx, 'tcx>, on_match: Box<dyn FnMut(&Matched<'tcx>) + 'a>) -> Self {
         Self {
             cx,
             matching: Self::new_checking(cx),
-            matched: Cell::new(Vec::new()),
+            on_match: RefCell::new(on_match),
         }
     }
     fn new_checking(cx: &'a CheckMirCtxt<'a, 'pcx, 'tcx>) -> Matching<'tcx> {
@@ -529,6 +582,14 @@ impl<'a, 'pcx, 'tcx> MatchCtxt<'a, 'pcx, 'tcx> {
         for (candidates, matches) in core::iter::zip(&self.cx.ty.ty_vars, &mut self.matching.ty_vars) {
             matches.candidates = std::mem::take(&mut *candidates.borrow_mut());
         }
+        // Drop candidates for ty metavars never mentioned in this fn signature/MIR body.
+        // Otherwise unused Adt field types (e.g. `$second: $U`) invent spurious solutions.
+        let used_ty_vars = collect_used_ty_vars(self.cx.fn_pat);
+        for (idx, matches) in self.matching.ty_vars.iter_enumerated_mut() {
+            if !used_ty_vars.contains(&idx) {
+                matches.candidates.clear();
+            }
+        }
         for (candidates, matches) in core::iter::zip(&self.cx.ty.const_vars, &mut self.matching.const_vars) {
             matches.candidates = std::mem::take(&mut *candidates.borrow_mut());
         }
@@ -545,17 +606,7 @@ impl<'a, 'pcx, 'tcx> MatchCtxt<'a, 'pcx, 'tcx> {
         self.matching.log_candidates();
         if !self.matching.has_empty_candidates(self.cx) {
             self.match_candidates();
-            self.log_matched();
         }
-    }
-    fn log_matched(&self) {
-        let matched = self.matched.take();
-        debug!("log matched candidates: {}", matched.len());
-        for (index, matched) in matched.iter().enumerate() {
-            debug!("candidate {index}");
-            matched.log_matched();
-        }
-        self.matched.set(matched);
     }
     fn assert_ty_var_free(&self) {
         #[cfg(feature = "strict")]
@@ -683,11 +734,11 @@ impl<'a, 'pcx, 'tcx> MatchCtxt<'a, 'pcx, 'tcx> {
     }
     fn match_stmt_candidates(&self, loc_pats: &[pat::Location]) {
         let Some((&loc_pat, loc_pats)) = loc_pats.split_first() else {
-            if self.match_graph() && all_adt_fields_resolved(&self.cx.ty) {
+            if self.match_graph() && all_adt_fields_resolved(&self.cx.ty, &collect_used_field_pats(self.cx.mir_pat)) {
                 self.matching.log_matched(self.cx);
-                let mut matched = self.matched.take();
-                matched.push(self.matching.to_matched(self.cx));
-                self.matched.set(matched);
+                let matched = self.matching.to_matched(self.cx);
+                matched.log_matched();
+                (self.on_match.borrow_mut())(&matched);
             }
             return;
         };
@@ -718,6 +769,10 @@ impl<'a, 'pcx, 'tcx> MatchCtxt<'a, 'pcx, 'tcx> {
 
     #[instrument(level = "info", skip(self), ret)]
     fn match_ddg(&self) -> bool {
+        // Open queries that only require CFG reachability between labeled Calls skip DDG adjacency.
+        if self.cx.fn_pat.constraints.mentions_cfg_reaches() {
+            return true;
+        }
         self.loc_pats().all(|loc_pat| {
             let StatementMatch::Location(loc) = self.matching[loc_pat].force_get_matched() else {
                 return true;
@@ -928,6 +983,14 @@ impl<'a, 'pcx, 'tcx> MatchCtxt<'a, 'pcx, 'tcx> {
     #[instrument(level = "debug", skip(self), ret)]
     fn match_block_successors(&self, bb_pat: pat::BasicBlock, bb: mir::BasicBlock) -> bool {
         use TerminatorEdges::{AssignOnReturn, Double, Single, SwitchInt};
+        // An inlined call matches a target *statement*, not a terminator: the inlined body does not
+        // introduce a control-flow edge, so the call's target block simply continues in the same MIR
+        // block instead of branching to a successor.
+        if let pat::TerminatorKind::Call { target, .. } = self.cx.mir_pat[bb_pat].terminator()
+            && self.terminator_matched_statement(bb_pat)
+        {
+            return self.match_block_starts_with(*target, bb);
+        }
         debug!(term_pat = ?self.cx.pat_cfg[bb_pat], term = ?self.cx.mir_cfg[bb]);
         match (&self.cx.pat_cfg[bb_pat], &self.cx.mir_cfg[bb]) {
             (TerminatorEdges::None, _) => true,
@@ -961,6 +1024,15 @@ impl<'a, 'pcx, 'tcx> MatchCtxt<'a, 'pcx, 'tcx> {
             },
             _ => false,
         }
+    }
+
+    /// Whether the pattern block's terminator was matched against a target *statement* — i.e. the
+    /// terminator is an inlined call whose surviving MIR is a plain statement (not a terminator).
+    fn terminator_matched_statement(&self, bb_pat: pat::BasicBlock) -> bool {
+        matches!(
+            self.matching[bb_pat].terminator().get(),
+            Some(StatementMatch::Location(loc)) if loc.statement_index < self.cx.body[loc.block].statements.len()
+        )
     }
 
     /// Used in [`MatchCtxt::match_candidates`].
@@ -1312,10 +1384,11 @@ impl<'tcx> Matching<'tcx> {
         let ty_vars = self
             .ty_vars
             .iter_enumerated()
-            .map(|(ty_var, matching)| {
-                matching
-                    .get()
-                    .unwrap_or_else(|| panic!("bug: type variable {ty_var:?} not matched"))
+            .map(|(_ty_var, matching)| {
+                matching.get().unwrap_or_else(|| {
+                    // Unused in this fn body (candidates cleared); Never is skipped by SharedEnv merge.
+                    cx.ty.tcx.types.never
+                })
             })
             .collect();
         let const_vars = self
@@ -1324,7 +1397,7 @@ impl<'tcx> Matching<'tcx> {
             .map(|(const_var, matching)| {
                 matching
                     .get()
-                    .unwrap_or_else(|| panic!("bug: type variable {const_var:?} not matched"))
+                    .unwrap_or_else(|| panic!("bug: const variable {const_var:?} not matched"))
             })
             .collect();
         let place_vars = self

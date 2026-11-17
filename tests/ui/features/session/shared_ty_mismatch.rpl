@@ -1,0 +1,25 @@
+pattern session-shared-ty-mismatch
+
+patt {
+    // MIR path: each function binds $S / $T from the body; conflicting instantiations must not merge.
+    p[$S: type, $T: type] = {
+        fn $f1(..) -> _ {
+            let $p: &$S;
+            'read:
+            let $x: $T = copy (*$p).first;
+        }
+
+        fn $f2(..) -> _ {
+            let $p: &$S;
+            'read:
+            let $x: $T = copy (*$p).first;
+        }
+    }
+}
+
+diag {
+    p = {
+        primary(read) = "session shared type mismatch should not match",
+        name          = "session_shared_ty_mismatch",
+    }
+}

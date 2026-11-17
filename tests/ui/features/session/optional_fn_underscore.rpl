@@ -1,0 +1,26 @@
+pattern session-optional-fn-underscore
+
+patt {
+    p[$T: type, $U: type] = {
+        struct $Pair {
+            $first: $T,
+            $second: $U,
+        }
+
+        fn $f(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            let $x: $T = copy (*$p).$first;
+        }
+
+        // Optional companion: may be skipped.
+        fn _(..) {}
+    }
+}
+
+diag {
+    p = {
+        primary(read) = "session optional fn _ matched required slot",
+        name          = "session_optional_fn_underscore",
+    }
+}

@@ -34,6 +34,7 @@ impl<T> Index<usize> for Array<T> {
     fn index<'a>(&'a self, idx: usize) -> &'a Self::Output {
         let ptr = self.ptr.wrapping_offset(idx as isize);
         //~[inline]^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
+        //~[inline]|ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
         unsafe { ptr.as_ref() }.unwrap()
     }
 }
@@ -42,6 +43,7 @@ impl<T> IndexMut<usize> for Array<T> {
     fn index_mut<'a>(&'a mut self, idx: usize) -> &'a mut Self::Output {
         let ptr = self.ptr.wrapping_offset(idx as isize);
         //~[inline]^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
+        //~[inline]|ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
         unsafe { ptr.as_mut() }.unwrap()
     }
 }

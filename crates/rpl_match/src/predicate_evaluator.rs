@@ -9,8 +9,9 @@ use rustc_middle::mir::{self, Operand, PlaceRef, TerminatorKind};
 use rustc_middle::ty::{self, Ty, TyCtxt, TypeVisitableExt};
 use rustc_span::Symbol;
 
-use crate::graph::MirDataDepGraph;
+use crate::graph::{MirControlFlowGraph, MirDataDepGraph};
 use crate::matches::{Matched, StatementMatch};
+use crate::rudra_paths;
 
 /// PredicateArgInstance is the matched instance of a [PredicateArg]
 #[allow(unused)]
@@ -36,6 +37,7 @@ pub struct PredicateEvaluator<'e, 'm, 'tcx> {
     body_cache: &'e BodyInfoCache,
     symbol_table: &'e pat::FnSymbolTable<'m>,
     mir_ddg: Option<&'e MirDataDepGraph>,
+    mir_cfg: Option<&'e MirControlFlowGraph>,
 }
 
 impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
@@ -53,6 +55,7 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
         body_cache: &'e BodyInfoCache,
         symbol_table: &'e pat::FnSymbolTable<'m>,
         mir_ddg: Option<&'e MirDataDepGraph>,
+        mir_cfg: Option<&'e MirControlFlowGraph>,
     ) -> Self {
         Self {
             tcx,
@@ -64,6 +67,7 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
             body_cache,
             symbol_table,
             mir_ddg,
+            mir_cfg,
         }
     }
 
@@ -218,6 +222,22 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
             },
             PredicateKind::FlowsTo => self.eval_flows_to(&arg_instance),
             PredicateKind::MayPanic => self.eval_may_panic(&arg_instance),
+            PredicateKind::LifetimeBypass => self.eval_call_pred(&arg_instance, "lifetime_bypass", |tcx, did| {
+                rudra_paths::is_lifetime_bypass(tcx, did)
+            }),
+            PredicateKind::StrongBypass => self.eval_call_pred(&arg_instance, "strong_bypass", |tcx, did| {
+                rudra_paths::is_strong_bypass(tcx, did)
+            }),
+            PredicateKind::WeakBypass => self.eval_call_pred(&arg_instance, "weak_bypass", |tcx, did| {
+                rudra_paths::is_weak_bypass(tcx, did)
+            }),
+            PredicateKind::UnresolvableGeneric => self.eval_unresolvable_generic(&arg_instance),
+            PredicateKind::GenericDrop => self.eval_call_pred(&arg_instance, "generic_drop", |tcx, did| {
+                rudra_paths::is_generic_drop(tcx, did)
+            }),
+            PredicateKind::CfgReaches => self.eval_cfg_reaches(&arg_instance),
+            PredicateKind::BypassOnCopy => self.eval_bypass_on_copy(&arg_instance),
+            PredicateKind::SetLen => self.eval_set_len(&arg_instance),
         };
         if term.is_neg { !result } else { result }
     }
@@ -258,6 +278,114 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
             panic!("may_panic expects a Location label, got {:?}", args[0]);
         };
         location_may_panic(self.tcx, self.typing_env, self.body, *loc)
+    }
+
+    fn eval_call_pred(
+        &self,
+        args: &[PredicateArgInstance<'tcx>],
+        name: &str,
+        f: impl FnOnce(TyCtxt<'tcx>, DefId) -> bool,
+    ) -> bool {
+        assert!(args.len() == 1, "{name} expects ('loc), got {} args", args.len());
+        let PredicateArgInstance::Location(loc) = &args[0] else {
+            panic!("{name} expects a Location label, got {:?}", args[0]);
+        };
+        call_fn_def(self.tcx, self.body, *loc).is_some_and(|(did, _, _)| f(self.tcx, did))
+    }
+
+    #[instrument(level = "debug", skip(self, args), ret)]
+    fn eval_unresolvable_generic(&self, args: &[PredicateArgInstance<'tcx>]) -> bool {
+        assert!(
+            args.len() == 1,
+            "unresolvable_generic expects ('loc), got {} args",
+            args.len()
+        );
+        let PredicateArgInstance::Location(loc) = &args[0] else {
+            panic!("unresolvable_generic expects a Location label, got {:?}", args[0]);
+        };
+        location_unresolvable_generic(self.tcx, self.typing_env, self.body, *loc)
+    }
+
+    #[instrument(level = "debug", skip(self, args), ret)]
+    fn eval_cfg_reaches(&self, args: &[PredicateArgInstance<'tcx>]) -> bool {
+        assert!(
+            args.len() == 2,
+            "cfg_reaches expects ('src, 'sink), got {} args",
+            args.len()
+        );
+        let Some(cfg) = self.mir_cfg else {
+            debug!("cfg_reaches: no MIR CFG available");
+            return false;
+        };
+        let (PredicateArgInstance::Location(src), PredicateArgInstance::Location(sink)) = (&args[0], &args[1]) else {
+            panic!(
+                "cfg_reaches expects Location labels, got {:?} and {:?}",
+                args[0], args[1]
+            );
+        };
+        cfg_reaches(cfg, *src, *sink)
+    }
+
+    #[instrument(level = "debug", skip(self, args), ret)]
+    fn eval_bypass_on_copy(&self, args: &[PredicateArgInstance<'tcx>]) -> bool {
+        assert!(
+            args.len() == 1,
+            "bypass_on_copy expects ('loc), got {} args",
+            args.len()
+        );
+        let PredicateArgInstance::Location(loc) = &args[0] else {
+            panic!("bypass_on_copy expects a Location label, got {:?}", args[0]);
+        };
+        let Some((def_id, _, call_args)) = call_fn_def(self.tcx, self.body, *loc) else {
+            return false;
+        };
+        if !rudra_paths::is_ptr_read(self.tcx, def_id) && !rudra_paths::is_ptr_write(self.tcx, def_id) {
+            return false;
+        }
+        let Some(first) = call_args.first() else {
+            return false;
+        };
+        let ty = first.node.ty(self.body, self.tcx);
+        let ty::RawPtr(pointee, _) = *ty.kind() else {
+            return false;
+        };
+        self.tcx.type_is_copy_modulo_regions(self.typing_env, pointee)
+    }
+
+    #[instrument(level = "debug", skip(self, args), ret)]
+    fn eval_set_len(&self, args: &[PredicateArgInstance<'tcx>]) -> bool {
+        let (loc, len) = match args {
+            [PredicateArgInstance::Location(loc)] => (*loc, None),
+            [PredicateArgInstance::Location(loc), PredicateArgInstance::Const(len)] => (*loc, Some(len)),
+            _ => panic!("set_len expects ('loc, len) or ('loc), got {:?}", args),
+        };
+
+        // Direct (non-inlined) `set_len` call.
+        if let Some((def_id, _, call_args)) = call_fn_def(self.tcx, self.body, loc) {
+            if rudra_paths::is_set_len(self.tcx, def_id) {
+                // `set_len(self, new_len)` — new_len is the second arg.
+                let Some(len_arg) = call_args.get(1) else {
+                    info!("set_len: no length argument found in call to set_len at {:?}", loc);
+                    return false;
+                };
+                return match len {
+                    None => true, // no length specified, so any length is fine
+                    Some(Const::MIR(len)) => matches!(&len_arg.node, Operand::Constant(c) if &c.const_ == len),
+                    Some(Const::Param(len)) => match &len_arg.node {
+                        Operand::Constant(box mir::ConstOperand {
+                            const_: mir::Const::Ty(_, const_),
+                            ..
+                        }) if let ty::ConstKind::Param(const_) = const_.kind() => const_ == *len,
+                        _ => false,
+                    },
+                };
+            }
+        }
+
+        // Inlined `set_len`: the call itself was inlined away, but the surviving statement keeps
+        // rustc's `SourceScopeData::inlined` pointing at the `set_len` callee. Only the one-arg
+        // form is supported here (the length lives in the inlined write, not in the call).
+        len.is_none() && is_inlined_from_set_len(self.tcx, self.body, loc)
     }
 
     fn instantiate_arg(&self, arg: &'m PredicateArg) -> Result<PredicateArgInstance<'tcx>, String> {
@@ -319,6 +447,113 @@ impl<'e, 'm, 'tcx> PredicateEvaluator<'e, 'm, 'tcx> {
             PredicateArg::SelfValue => panic!("SelfValue should not be used in predicate evaluation."),
         }
     }
+}
+
+fn terminator_at<'a, 'tcx>(body: &'a mir::Body<'tcx>, loc: mir::Location) -> Option<&'a mir::Terminator<'tcx>> {
+    let bb_data = &body[loc.block];
+    if loc.statement_index < bb_data.statements.len() {
+        return None;
+    }
+    bb_data.terminator.as_ref()
+}
+
+/// Extract FnDef from a call terminator using `tcx`.
+fn call_fn_def<'a, 'tcx>(
+    tcx: TyCtxt<'tcx>,
+    body: &'a mir::Body<'tcx>,
+    loc: mir::Location,
+) -> Option<(
+    DefId,
+    ty::GenericArgsRef<'tcx>,
+    &'a [rustc_span::source_map::Spanned<Operand<'tcx>>],
+)> {
+    let term = terminator_at(body, loc)?;
+    let (func, args) = match &term.kind {
+        TerminatorKind::Call { func, args, .. } | TerminatorKind::TailCall { func, args, .. } => (func, args.as_ref()),
+        _ => return None,
+    };
+    let ty = func.ty(body, tcx);
+    if let ty::FnDef(def_id, gargs) = *ty.kind() {
+        Some((def_id, gargs, args))
+    } else {
+        None
+    }
+}
+
+/// The functions this MIR location's code was inlined from, innermost first.
+///
+/// rustc records the inlined callee's `Instance` in `SourceScopeData::inlined` for every statement
+/// that originated from an inlined call. Walking the scope chain lets us recover those callees even
+/// though the call itself no longer appears in MIR.
+pub(crate) fn inlined_instances<'tcx>(body: &mir::Body<'tcx>, loc: mir::Location) -> Vec<ty::Instance<'tcx>> {
+    let mut out = Vec::new();
+    let mut scope = Some(body.source_info(loc).scope);
+    while let Some(s) = scope {
+        let data = &body.source_scopes[s];
+        scope = data.inlined_parent_scope.or(data.parent_scope);
+        if let Some((inst, _)) = data.inlined {
+            out.push(inst);
+        }
+    }
+    out
+}
+
+/// Whether the statement/terminator at `loc` was inlined from a `set_len` function.
+fn is_inlined_from_set_len(tcx: TyCtxt<'_>, body: &mir::Body<'_>, loc: mir::Location) -> bool {
+    inlined_instances(body, loc)
+        .into_iter()
+        .any(|inst| rudra_paths::is_set_len(tcx, inst.def_id()))
+}
+
+fn location_unresolvable_generic<'tcx>(
+    tcx: TyCtxt<'tcx>,
+    typing_env: ty::TypingEnv<'tcx>,
+    body: &mir::Body<'tcx>,
+    loc: mir::Location,
+) -> bool {
+    let term = match terminator_at(body, loc) {
+        Some(term) => term,
+        None => return false,
+    };
+    let func = match &term.kind {
+        TerminatorKind::Call { func, .. } | TerminatorKind::TailCall { func, .. } => func,
+        _ => return false,
+    };
+    let ty = func.ty(body, tcx);
+    match *ty.kind() {
+        ty::FnDef(def_id, args) => rudra_instance_unresolvable(tcx, typing_env, def_id, args),
+        // Higher-order / unknown callee shapes treated as unresolvable sinks (Rudra intent).
+        ty::FnPtr(..)
+        | ty::Closure(..)
+        | ty::CoroutineClosure(..)
+        | ty::Coroutine(..)
+        | ty::Dynamic(..)
+        | ty::Param(_)
+        | ty::Alias(..) => true,
+        _ => false,
+    }
+}
+
+/// CFG reachability from `src` to `sink` (Rudra block taint + intrablock statement order).
+pub fn cfg_reaches(cfg: &MirControlFlowGraph, src: mir::Location, sink: mir::Location) -> bool {
+    if src == sink {
+        return false;
+    }
+    if src.block == sink.block {
+        return src.statement_index < sink.statement_index;
+    }
+    let mut visited = rustc_data_structures::fx::FxHashSet::default();
+    let mut stack: Vec<mir::BasicBlock> = cfg[src.block].successors().collect();
+    while let Some(bb) = stack.pop() {
+        if !visited.insert(bb) {
+            continue;
+        }
+        if bb == sink.block {
+            return true;
+        }
+        stack.extend(cfg[bb].successors());
+    }
+    false
 }
 
 /// Potential panic / higher-order sink sites (Assert, or Call via Rudra resolve + fallbacks).

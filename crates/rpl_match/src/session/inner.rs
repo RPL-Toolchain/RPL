@@ -1,10 +1,11 @@
 use rpl_context::pat::{self, PatternItem};
-use rustc_hir::def_id::LocalDefId;
 
 use crate::session::collect::MatchCollectCtxt;
 use crate::session::config::SessionConfig;
 use crate::session::matching::SessionMatching;
-use crate::session::slot::{CrateItemIndex, SessionResult, SlotCandidate, collect_slot_descs};
+use crate::session::slot::{
+    CrateItemIndex, MatchSlot, SessionOutcome, SessionResult, SlotCandidate, collect_slot_descs,
+};
 
 /// Orchestrates candidate collection and multi-slot matching for one pattern item.
 pub struct MatchSession<'a, 'pcx, 'tcx> {
@@ -25,51 +26,17 @@ impl<'a, 'pcx, 'tcx> MatchSession<'a, 'pcx, 'tcx> {
         &self,
         index: &CrateItemIndex,
         rust_items: &'pcx pat::RustItems<'pcx>,
-    ) -> Vec<SessionResult<'tcx>> {
+    ) -> SessionOutcome<'tcx> {
         let (fn_slots, adt_slots) = collect_slot_descs(rust_items);
 
         if fn_slots.is_empty() && adt_slots.is_empty() {
-            return Vec::new();
+            return SessionOutcome::empty();
         }
 
-        let mut results = SessionMatching::run(&self.collect, self.config, index, rust_items, &fn_slots, &adt_slots);
-        results = Self::deduplicate_fn_slot_permutations(results);
-        self.enrich_results(index, &mut results);
-        Self::deduplicate_results(rust_items.attr.should_deduplicate(), results)
-    }
-
-    fn deduplicate_fn_slot_permutations(results: Vec<SessionResult<'tcx>>) -> Vec<SessionResult<'tcx>> {
-        let (single_fn, multi_fn): (Vec<_>, Vec<_>) = results
-            .into_iter()
-            .partition(|result| Self::fn_assignment_signature(result).len() <= 1);
-
-        let mut kept_multi = Vec::new();
-        for result in multi_fn {
-            let signature = Self::fn_assignment_signature(&result);
-            if kept_multi
-                .iter()
-                .all(|existing| Self::fn_assignment_signature(existing) != signature)
-            {
-                kept_multi.push(result);
-            }
-        }
-
-        let mut kept = single_fn;
-        kept.extend(kept_multi);
-        kept
-    }
-
-    fn fn_assignment_signature(result: &SessionResult<'tcx>) -> Vec<LocalDefId> {
-        let mut defs: Vec<_> = result
-            .assignments
-            .iter()
-            .filter_map(|a| match &a.candidate {
-                SlotCandidate::Fn(c) => Some(c.def_id),
-                SlotCandidate::Adt(_) => None,
-            })
-            .collect();
-        defs.sort_by_key(|def_id| def_id.local_def_index);
-        defs
+        let mut outcome = SessionMatching::run(&self.collect, self.config, index, rust_items, &fn_slots, &adt_slots);
+        self.enrich_results(index, &mut outcome.results);
+        outcome.results = Self::deduplicate_results(rust_items.attr.should_deduplicate(), outcome.results);
+        outcome
     }
 
     fn deduplicate_results(deduplicate: bool, results: Vec<SessionResult<'tcx>>) -> Vec<SessionResult<'tcx>> {
@@ -105,12 +72,13 @@ impl<'a, 'pcx, 'tcx> MatchSession<'a, 'pcx, 'tcx> {
         &self,
         index: &CrateItemIndex,
         pat_item: &'pcx PatternItem<'pcx>,
-    ) -> Vec<SessionResult<'tcx>> {
+    ) -> SessionOutcome<'tcx> {
         match pat_item {
             PatternItem::RustItems(items) => self.match_rust_items(index, items),
             PatternItem::RPLPatternOperation(op) => {
-                let results = self.match_pattern_operation(index, op);
-                Self::deduplicate_results(op.attr.should_deduplicate(), results)
+                let mut outcome = self.match_pattern_operation(index, op);
+                outcome.results = Self::deduplicate_results(op.attr.should_deduplicate(), outcome.results);
+                outcome
             },
         }
     }
@@ -119,14 +87,15 @@ impl<'a, 'pcx, 'tcx> MatchSession<'a, 'pcx, 'tcx> {
         &self,
         index: &CrateItemIndex,
         op: &pat::PatternOperation<'pcx>,
-    ) -> Vec<SessionResult<'tcx>> {
+    ) -> SessionOutcome<'tcx> {
+        let mut truncated = false;
         let positive: Vec<_> = op
             .positive
             .iter()
             .flat_map(|(_, item, map)| {
-                self.match_pattern_item(index, item)
-                    .into_iter()
-                    .map(|result| result.map_bindings(map))
+                let out = self.match_pattern_item(index, item);
+                truncated |= out.truncated;
+                out.results.into_iter().map(|result| result.map_bindings(map))
             })
             .collect();
 
@@ -134,24 +103,23 @@ impl<'a, 'pcx, 'tcx> MatchSession<'a, 'pcx, 'tcx> {
             .negative
             .iter()
             .flat_map(|(_, item, map)| {
-                self.match_pattern_item(index, item)
-                    .into_iter()
-                    .map(|result| result.map_bindings(map))
+                let out = self.match_pattern_item(index, item);
+                truncated |= out.truncated;
+                out.results.into_iter().map(|result| result.map_bindings(map))
             })
             .collect();
 
-        positive
+        let results = positive
             .into_iter()
             .filter(|pos| {
-                let Some((pos_def, pos_norm)) = pos.operation_match_key() else {
+                if !pos.has_operation_key() {
                     return true;
-                };
-                !negative.iter().any(|neg| {
-                    neg.operation_match_key()
-                        .is_some_and(|(neg_def, neg_norm)| pos_def == neg_def && pos_norm == neg_norm)
-                })
+                }
+                !negative.iter().any(|neg| pos.subtracted_by(neg))
             })
-            .collect()
+            .collect();
+
+        SessionOutcome { results, truncated }
     }
 }
 
@@ -162,27 +130,69 @@ impl SessionResult<'_> {
             .into_iter()
             .map(|mut a| {
                 if let SlotCandidate::Fn(ref mut c) = a.candidate {
+                    let adt_defs = c.snapshot.adt_defs.clone();
                     c.normalized = c.normalized.clone().map(map);
-                    c.snapshot = super::bindings::BindingSnapshot::from_normalized(&c.normalized);
+                    c.snapshot =
+                        super::bindings::BindingSnapshot::from_normalized_with_adt_defs(&c.normalized, adt_defs);
                 }
                 a
             })
             .collect();
         Self {
             assignments,
-            bindings: self.bindings,
+            bindings: self.bindings.map(map),
             primary_fn: self.primary_fn,
         }
     }
 
+    /// Slot → DefId for MIR-body Fn slots and ADT slots.
+    ///
+    /// Signature-only Fn slots (empty `basic_blocks`, e.g. `fn $isnan(_: $T) -> bool;`) are
+    /// omitted so `#[deduplicate]` can collapse f32/f64 `$isnan` pairings of the same MIR hit.
+    /// `$f1`/`$f2` swaps still differ because both are MIR-body slots.
+    fn mir_slot_def_signature(&self) -> Vec<(MatchSlot, rustc_hir::def_id::LocalDefId)> {
+        let mut sig: Vec<_> = self
+            .assignments
+            .iter()
+            .filter_map(|a| match &a.candidate {
+                SlotCandidate::Fn(c) if !c.matched.basic_blocks.is_empty() => Some((a.slot, c.def_id)),
+                SlotCandidate::Fn(_) => None,
+                SlotCandidate::Adt(c) => Some((a.slot, c.def_id)),
+            })
+            .collect();
+        sig.sort_by_key(|(slot, def_id)| (*slot, def_id.local_def_index));
+        sig
+    }
+
     pub fn equivalent(&self, other: &Self) -> bool {
-        self.bindings.equivalent_to(&other.bindings)
-            && self.assignments.len() == other.assignments.len()
-            && self.primary_fn_slot() == other.primary_fn_slot()
-            && match (self.primary_fn_candidate(), other.primary_fn_candidate()) {
-                (Some(a), Some(b)) => a.def_id == b.def_id && a.normalized == b.normalized,
-                (None, None) => true,
-                _ => false,
+        // MIR-body (+ ADT) DefIds only: signature-only slots (e.g. `$isnan`) may differ
+        // without meaning a distinct lint. Still require SharedEnv so diag metavars like
+        // `{$T}` keep distinct instantiations.
+        if self.mir_slot_def_signature() != other.mir_slot_def_signature()
+            || !self.bindings.equivalent_to(&other.bindings)
+        {
+            return false;
+        }
+        for a in &self.assignments {
+            let SlotCandidate::Fn(pos) = &a.candidate else {
+                continue;
+            };
+            if pos.matched.basic_blocks.is_empty() {
+                continue;
             }
+            let Some(SlotCandidate::Fn(neg)) = other
+                .assignments
+                .iter()
+                .find(|b| b.slot == a.slot)
+                .map(|b| &b.candidate)
+            else {
+                return false;
+            };
+            // Label sites (ignore ty_vars noise on NormalizedMatched).
+            if !pos.normalized.same_lint_sites(&neg.normalized) {
+                return false;
+            }
+        }
+        true
     }
 }

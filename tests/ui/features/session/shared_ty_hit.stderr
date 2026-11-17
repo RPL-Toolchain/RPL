@@ -1,0 +1,37 @@
+error: session shared type variables matched
+  --> tests/ui/features/session/shared_ty_hit.rs:16:5
+   |
+LL |     p.first
+   |     ^^^^^^^
+   |
+   = note: struct and both functions assigned in one MatchSession
+   = note: `#[deny(rpl::session_shared_ty_hit)]` on by default
+
+error: session shared type variables matched
+  --> tests/ui/features/session/shared_ty_hit.rs:16:5
+   |
+LL |     p.first
+   |     ^^^^^^^
+   |
+   = note: struct and both functions assigned in one MatchSession
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: session shared type variables matched
+  --> tests/ui/features/session/shared_ty_hit.rs:22:5
+   |
+LL |     p.first
+   |     ^^^^^^^
+   |
+   = note: struct and both functions assigned in one MatchSession
+
+error: session shared type variables matched
+  --> tests/ui/features/session/shared_ty_hit.rs:22:5
+   |
+LL |     p.first
+   |     ^^^^^^^
+   |
+   = note: struct and both functions assigned in one MatchSession
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: aborting due to 4 previous errors
+

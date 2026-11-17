@@ -1,0 +1,20 @@
+pattern loop-carried
+
+patt {
+    loop_carried = fn _(..) -> _ {
+        let $x: u8 = _;
+        let $y: u8 = _;
+        'write:
+        $x = copy $y;
+        'read:
+        _ = copy $x;
+    }
+}
+
+diag {
+    loop_carried = {
+        primary(read) = "value produced before this iteration wrote it",
+        name         = "loop_carried",
+        level        = "deny",
+    }
+}

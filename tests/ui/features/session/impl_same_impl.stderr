@@ -1,0 +1,32 @@
+error: session impl methods matched on the same impl
+  --> tests/ui/features/session/impl_same_impl.rs:15:9
+   |
+LL |         self.first
+   |         ^^^^^^^^^^
+   |
+   = note: `#[deny(rpl::session_impl_same_impl)]` on by default
+
+error: session impl methods matched on the same impl
+  --> tests/ui/features/session/impl_same_impl.rs:15:9
+   |
+LL |         self.first
+   |         ^^^^^^^^^^
+   |
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: session impl methods matched on the same impl
+  --> tests/ui/features/session/impl_same_impl.rs:20:9
+   |
+LL |         self.first
+   |         ^^^^^^^^^^
+
+error: session impl methods matched on the same impl
+  --> tests/ui/features/session/impl_same_impl.rs:20:9
+   |
+LL |         self.first
+   |         ^^^^^^^^^^
+   |
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: aborting due to 4 previous errors
+

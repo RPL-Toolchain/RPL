@@ -1,0 +1,16 @@
+error: `Vec::set_len` called with 0 or 1
+  --> tests/ui/features/or_macro/or_macro.rs:10:9
+   |
+LL |         v.set_len(0);
+   |         ^^^^^^^^^^^^ `set_len` called here
+   |
+   = note: `#[deny(rpl::set_len_zero_or_one)]` on by default
+
+error: `Vec::set_len` called with 0 or 1
+  --> tests/ui/features/or_macro/or_macro.rs:17:9
+   |
+LL |         v.set_len(1);
+   |         ^^^^^^^^^^^^ `set_len` called here
+
+error: aborting due to 2 previous errors
+

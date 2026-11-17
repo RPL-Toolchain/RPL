@@ -92,6 +92,15 @@ pub const ALL_PREDICATES: &[&str] = &[
     // dataflow preds (evaluated specially in PredicateEvaluator)
     "flows_to",
     "may_panic",
+    // Rudra Unsafe Dataflow preds (evaluated specially in PredicateEvaluator)
+    "lifetime_bypass",
+    "strong_bypass",
+    "weak_bypass",
+    "unresolvable_generic",
+    "generic_drop",
+    "cfg_reaches",
+    "bypass_on_copy",
+    "set_len_to_zero",
 ];
 
 #[derive(Clone, Copy, Debug)]
@@ -112,6 +121,22 @@ pub enum PredicateKind {
     FlowsTo,
     /// `may_panic('sink)` — potential panic site; evaluated in matcher.
     MayPanic,
+    /// `lifetime_bypass('loc)` — Rudra strong∪weak lifetime-bypass Call.
+    LifetimeBypass,
+    /// `strong_bypass('loc)` — Rudra strong lifetime-bypass Call.
+    StrongBypass,
+    /// `weak_bypass('loc)` — Rudra weak lifetime-bypass Call.
+    WeakBypass,
+    /// `unresolvable_generic('loc)` — `Instance::try_resolve` → None/Err (strict Rudra sink).
+    UnresolvableGeneric,
+    /// `generic_drop('loc)` — `ptr::drop_in_place` Call (Rudra GENERIC_FN_LIST sink).
+    GenericDrop,
+    /// `cfg_reaches('src, 'sink)` — MIR CFG reachability between two labels.
+    CfgReaches,
+    /// `bypass_on_copy('loc)` — read/write bypass on a Copy pointed-to type (Rudra skip).
+    BypassOnCopy,
+    /// `set_len('loc, len)` — `Vec::set_len(len)` (Rudra skip; leak is safe).
+    SetLen,
 }
 
 impl<'i> TryFrom<SpanWrapper<'i>> for PredicateKind {
@@ -152,6 +177,14 @@ impl<'i> TryFrom<SpanWrapper<'i>> for PredicateKind {
             "has_attr" => Self::ItemAttr(has_attr),
             "flows_to" => Self::FlowsTo,
             "may_panic" => Self::MayPanic,
+            "lifetime_bypass" => Self::LifetimeBypass,
+            "strong_bypass" => Self::StrongBypass,
+            "weak_bypass" => Self::WeakBypass,
+            "unresolvable_generic" => Self::UnresolvableGeneric,
+            "generic_drop" => Self::GenericDrop,
+            "cfg_reaches" => Self::CfgReaches,
+            "bypass_on_copy" => Self::BypassOnCopy,
+            "set_len" => Self::SetLen,
             _ => {
                 return Err(PredicateError::InvalidPredicate {
                     pred: span.inner().as_str(),

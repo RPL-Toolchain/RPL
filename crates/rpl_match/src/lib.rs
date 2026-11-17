@@ -40,19 +40,21 @@ pub mod mir; // FIXME: visibility
 mod place;
 pub mod predicate_evaluator;
 pub mod resolve;
+mod rudra_paths;
 pub mod session;
 mod statement;
 mod ty;
 
 pub use adt::{
-    AdtFieldMap, AdtMatch, Candidates, MatchAdtCtxt, all_adt_fields_resolved, collect_adt_field_bindings,
-    reset_adt_field_bindings_after_probe, seed_ty_vars_from_adt_field_candidates,
+    AdtFieldMap, AdtMatch, Candidates, MatchAdtCtxt, all_adt_fields_resolved, collect_adt_def_bindings,
+    collect_adt_field_bindings, collect_used_field_pats, reset_adt_field_bindings_after_probe,
+    seed_ty_vars_from_adt_field_candidates,
 };
 pub use counted::CountedMatch;
 pub use fns::MatchFnCtxt;
 pub use place::MatchPlaceCtxt;
 pub use session::{
     BindingSnapshot, CrateItemIndex, FnSlotCandidate, MatchCollectCtxt, MatchSession, MatchSlot, MetaBindings,
-    MultiMatched, OwnedLintMatch, SessionConfig, SessionLintTarget, SessionResult,
+    MultiMatched, OwnedLintMatch, SessionConfig, SessionLintTarget, SessionOutcome, SessionResult,
 };
 pub use ty::{MatchTyCtxt, TryCmpAs};

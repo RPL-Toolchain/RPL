@@ -1,6 +1,5 @@
 //@revisions: inline normal
 //@[inline] compile-flags: -Z inline-mir=true
-//@[inline] check-pass
 //@[normal] compile-flags: -Z inline-mir=false
 use std::io;
 use std::slice;
@@ -12,6 +11,7 @@ unsafe fn get_spare_bytes<T>(result: &mut Vec<T>, count: usize) -> &mut [u8] {
             //ERROR: it violates the precondition of `std::slice::from_raw_parts_mut` to create a slice from uninitialized data
             result.as_mut_ptr() as *mut u8,
             count * std::mem::size_of::<T>(),
+            //~[inline]^ ERROR: found a count of bytes instead of a count of elements of `u8`
         )
     }
 }

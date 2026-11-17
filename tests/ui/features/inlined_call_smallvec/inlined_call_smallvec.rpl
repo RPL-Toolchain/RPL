@@ -1,0 +1,20 @@
+pattern inlined-call-smallvec
+
+patt {
+    use smallvec::SmallVec;
+
+    set_len_seen = fn _ (..) -> _ {
+        let $vec: &mut SmallVec<[u8; 4]> = _;
+        'sink:
+        _ = SmallVec::set_len(..);
+    }
+}
+
+diag {
+    set_len_seen = {
+        primary(sink) = "inlined `SmallVec::set_len` call detected",
+        label(sink)   = "`set_len` called here",
+        name          = "inlined_smallvec_set_len",
+        level         = "deny",
+    }
+}

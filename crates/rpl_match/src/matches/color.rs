@@ -91,7 +91,14 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchCtxt<'_, 'pcx, 'tcx> {
     }
 
     fn match_ty_var(&self, ty_var: pat::TyVar, ty: ty::Ty<'tcx>) -> bool {
-        self.matching.ty_vars[ty_var.idx].force_get_matched() == ty
+        let matched = self.matching.ty_vars[ty_var.idx].force_get_matched();
+        if matched == ty {
+            return true;
+        }
+        // SharedEnv may assign a concrete type from a signature slot (e.g. `$T = f64`),
+        // while generic MIR still uses a type parameter. Treat `Param` as standing for
+        // that concrete assignment (same rule as `MatchTyCtxt::match_ty_var` under pin).
+        !matches!(matched.kind(), ty::Param(_)) && matches!(ty.kind(), ty::Param(_))
     }
 
     #[instrument(level = "trace", skip(self), ret)]

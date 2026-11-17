@@ -4,6 +4,7 @@ use std::sync::Arc;
 use derive_more::derive::Debug;
 use rpl_constraints::Constraints;
 use rpl_constraints::attributes::{ExtraSpan, Safety, Visibility};
+use rpl_constraints::predicates::{PredicateArg, PredicateClause, PredicateConjunction, PredicateKind, PredicateTerm};
 use rpl_meta::collect_elems_separated_by_comma;
 use rpl_meta::symbol_table::{WithMetaTable, WithPath};
 use rpl_meta::utils::self_param_ty;
@@ -25,6 +26,33 @@ pub type Struct<'pcx> = WithMetaTable<'pcx, StructInner<'pcx>>;
 
 pub type EnumInner<'pcx> = FxIndexMap<Symbol, Variant<'pcx>>;
 pub type Enum<'pcx> = WithMetaTable<'pcx, EnumInner<'pcx>>;
+
+/// Collect the user-provided labels of every `'p: panic!(..)` statement, recursively.
+fn collect_panic_labels(stmts: &[RawStatement<'_>]) -> Vec<Symbol> {
+    fn visit(stmts: &[RawStatement<'_>], out: &mut Vec<Symbol>) {
+        for stmt in stmts {
+            match stmt {
+                RawStatement::Panic(label, inner) => {
+                    out.push(*label);
+                    visit(inner, out);
+                },
+                RawStatement::Loop(inner) => visit(inner, out),
+                RawStatement::SwitchInt { targets, otherwise, .. } => {
+                    for (_, inner) in targets {
+                        visit(inner, out);
+                    }
+                    if let Some(inner) = otherwise {
+                        visit(inner, out);
+                    }
+                },
+                _ => {},
+            }
+        }
+    }
+    let mut labels = Vec::new();
+    visit(stmts, &mut labels);
+    labels
+}
 
 #[derive(Debug)]
 pub struct Adt<'pcx> {
@@ -112,7 +140,13 @@ pub struct Variant<'pcx> {
 
 impl<'pcx> Variant<'pcx> {
     pub fn add_field(&mut self, name: Symbol, ty: Ty<'pcx>) {
-        self.fields.insert(name, Field { ty });
+        self.fields.insert(
+            name,
+            Field {
+                ty,
+                vis: Visibility::Unspecified,
+            },
+        );
     }
     pub fn field_and_index(&self, name: Symbol) -> (&Field<'pcx>, usize) {
         let (index, _, field) = self
@@ -132,6 +166,7 @@ impl<'pcx> Variant<'pcx> {
 #[derive(Debug)]
 pub struct Field<'pcx> {
     pub ty: Ty<'pcx>,
+    pub vis: Visibility,
 }
 
 pub struct Impl<'pcx> {
@@ -179,17 +214,54 @@ impl<'pcx> FnPattern<'pcx> {
 
         let (decls, stmts) = if let Some(body) = body.MirBody() {
             let (decls, stmts) = body.get_matched();
-            (decls.iter_matched().collect(), stmts.iter_matched().collect())
+            (
+                decls.iter_matched().collect::<Vec<_>>(),
+                stmts.iter_matched().collect::<Vec<_>>(),
+            )
         } else {
             (Vec::new(), Vec::new())
         };
 
         let raw_stmts = stmts
             .into_iter()
-            .map(|stmt| RawStatement::from(WithPath::new(p, stmt), pcx, fn_sym_tab));
+            .map(|stmt| RawStatement::from(WithPath::new(p, stmt), pcx, fn_sym_tab))
+            .collect();
         let raw_decls = decls
             .into_iter()
-            .map(|decl| RawDecleration::from(WithPath::new(p, decl), pcx, fn_sym_tab));
+            .map(|decl| RawDecleration::from(WithPath::new(p, decl), pcx, fn_sym_tab))
+            .collect();
+
+        Self::build(
+            name,
+            params,
+            ret,
+            raw_decls,
+            raw_stmts,
+            pcx,
+            fn_sym_tab,
+            meta,
+            constraints,
+        )
+    }
+
+    /// Build a function pattern from already-lowered declarations and statements.
+    ///
+    /// Used by `without!` / `or!` desugaring to build each expanded body from a subset of the
+    /// original function's statements while sharing the same signature and symbol table.
+    #[allow(clippy::too_many_arguments)]
+    pub fn build(
+        name: Symbol,
+        params: Params<'pcx>,
+        ret: Option<Ty<'pcx>>,
+        raw_decls: Vec<RawDecleration<'pcx>>,
+        raw_stmts: Vec<RawStatement<'pcx>>,
+        pcx: PatCtxt<'pcx>,
+        fn_sym_tab: &'pcx FnSymbolTable<'pcx>,
+        meta: Arc<NonLocalMetaVars<'pcx>>,
+        mut constraints: Constraints,
+    ) -> Self {
+        // `'p: panic!(..)` desugars to a labeled fragment plus `may_panic('p)`.
+        let panic_labels = collect_panic_labels(&raw_stmts);
 
         let mut builder = FnPatternBody::builder();
         builder.mk_locals(fn_sym_tab, pcx);
@@ -198,6 +270,18 @@ impl<'pcx> FnPattern<'pcx> {
         let mir = builder.build(name, constraints.attrs.output_name);
         debug!(self_idx = ?mir.self_idx, return_idx = ?mir.return_idx, params_idx = ?mir.params_idx, "create mir pattern");
         let body = Some(pcx.mk_mir_pattern(mir));
+
+        for label in panic_labels {
+            constraints.preds.push(PredicateConjunction {
+                clauses: vec![PredicateClause {
+                    terms: vec![PredicateTerm {
+                        kind: PredicateKind::MayPanic,
+                        args: vec![PredicateArg::Label(label)],
+                        is_neg: false,
+                    }],
+                }],
+            });
+        }
 
         Self {
             meta,
@@ -239,6 +323,22 @@ impl<'pcx> FnPattern<'pcx> {
             self.params.len() == body.arg_count
         }) && self.constraints.attrs.filter(tcx, def_id, header)
     }
+
+    /// Filter for signature-only slots when MIR is unavailable (e.g. foreign `extern` fns).
+    pub fn filter_signature_only(&self, tcx: TyCtxt<'_>, def_id: LocalDefId, header: Option<FnHeader>) -> bool {
+        let arity = tcx
+            .fn_sig(def_id.to_def_id())
+            .skip_binder()
+            .inputs()
+            .skip_binder()
+            .len();
+        (if self.params.non_exhaustive {
+            self.params.len() <= arity
+        } else {
+            self.params.len() == arity
+        }) && self.constraints.attrs.filter(tcx, def_id, header)
+    }
+
     /// Returns the extra spans for this function pattern.
     #[instrument(level = "trace", skip(self, tcx), fields(self = ?self.name), ret)]
     pub fn extra_span<'tcx>(&self, tcx: TyCtxt<'tcx>, def_id: LocalDefId) -> Option<ExtraSpan<'tcx>> {
@@ -335,10 +435,20 @@ impl<'pcx> FnPattern<'pcx> {
     }
 
     /// Returns true when the pattern has no MIR statements to match (signature-only).
+    ///
+    /// Named parameters synthesize `Assign(_, Rvalue::Any)` local inits so they can match MIR
+    /// arguments; those alone do not count as a MIR body for this check.
     pub fn is_signature_only(&self) -> bool {
         self.body.is_none_or(|body| {
             body.basic_blocks.iter().all(|bb| {
-                bb.statements.is_empty()
+                let stmts_sig_only = bb.statements.iter().all(|stmt| {
+                    matches!(
+                        stmt,
+                        super::mir::StatementKind::Assign(place, super::mir::Rvalue::Any)
+                            if place.as_local().is_some_and(|local| body.params_idx.contains(&local))
+                    )
+                });
+                stmts_sig_only
                     && matches!(
                         bb.terminator,
                         Some(super::mir::TerminatorKind::Return) | Some(super::mir::TerminatorKind::PatEnd)

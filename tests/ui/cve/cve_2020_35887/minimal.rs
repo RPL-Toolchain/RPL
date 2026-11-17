@@ -14,6 +14,7 @@ pub fn new_from_template<T: Clone>(size: usize, template: &T) {
     for i in 0..size {
         unsafe {
             ptr.write(template.clone());
+            //~[regular]^ panic_safety_weak
         }
     }
     unsafe { dealloc(ptr as *mut u8, layout) }

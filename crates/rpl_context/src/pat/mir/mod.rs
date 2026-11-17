@@ -410,6 +410,7 @@ impl<'pcx> PlaceTy<'pcx> {
 }
 
 /// Refer to [`mir::CopyNonOverlapping`] for more details.
+#[derive(Clone)]
 pub struct CopyNonOverlapping<'pcx> {
     pub src: Operand<'pcx>,
     pub dst: Operand<'pcx>,
@@ -417,6 +418,7 @@ pub struct CopyNonOverlapping<'pcx> {
 }
 
 /// Refer to [`mir::NonDivergingIntrinsic`] for more details.
+#[derive(Clone)]
 pub enum NonDivergingIntrinsic<'pcx> {
     /// Refer to [`mir::NonDivergingIntrinsic::CopyNonOverlapping`] for more details.
     CopyNonOverlapping(CopyNonOverlapping<'pcx>),
@@ -434,6 +436,7 @@ pub enum StatementKind<'pcx> {
     Move(Place<'pcx>),
 }
 
+#[derive(Clone)]
 pub enum RawDecleration<'pcx> {
     TypeAlias(Symbol, Ty<'pcx>),
     LocalInit(Option<Label>, Local, Option<RvalueOrCall<'pcx>>), /* In meta pass, we have already collect the local
@@ -474,6 +477,7 @@ impl<'pcx> RawDecleration<'pcx> {
     }
 }
 
+#[derive(Clone)]
 pub enum RawStatement<'pcx> {
     Assign(Option<Label>, Place<'pcx>, Rvalue<'pcx>),
     Call(Option<Label>, Place<'pcx>, Call<'pcx>),
@@ -482,6 +486,13 @@ pub enum RawStatement<'pcx> {
     Unreachable(Option<Label>),
     Drop(Option<Label>, Place<'pcx>),
     Move(Option<Label>, Place<'pcx>),
+    /// `'p: panic!(B)` — the fragment's first statement is labeled `'p` and
+    /// `may_panic('p)` is added to the function's `where` block.
+    Panic(Label, Vec<RawStatement<'pcx>>),
+    /// `without!(B)` — fragment `B` must not match; desugared at the pattern-item level.
+    Without(Vec<RawStatement<'pcx>>),
+    /// `or!(B, C)` — one of the alternatives must match; desugared at the pattern-item level.
+    Or(Vec<Vec<RawStatement<'pcx>>>),
     Break,
     Continue,
     Return,
@@ -585,18 +596,125 @@ impl<'pcx> RawStatement<'pcx> {
     }
 
     pub fn from_macro(
-        move_: WithPath<'pcx, &pairs::MirMacro<'pcx>>,
+        mac: WithPath<'pcx, &'pcx pairs::MirMacro<'pcx>>,
         pcx: PatCtxt<'pcx>,
-        sym_tab: &FnSymbolTable<'pcx>,
+        sym_tab: &'pcx FnSymbolTable<'pcx>,
     ) -> Self {
-        let (label, _, _, _, place, _) = move_.get_matched();
-        let place = Place::from(WithPath::new(move_.path, place), pcx, sym_tab);
-        Self::Move(
-            label
-                .as_ref()
-                .map(|label| Symbol::intern(label.Label().LabelName().span.as_str())),
-            place,
-        )
+        match mac.inner.deref() {
+            Choice4::_0(move_) => {
+                let (label, _, _, _, place, _) = move_.get_matched();
+                let place = Place::from(WithPath::new(mac.path, place), pcx, sym_tab);
+                Self::Move(
+                    label
+                        .as_ref()
+                        .map(|label| Symbol::intern(label.Label().LabelName().span.as_str())),
+                    place,
+                )
+            },
+            Choice4::_1(without_) => {
+                let (_, _, _, fragment, _) = without_.get_matched();
+                Self::Without(Self::from_macro_fragment(
+                    WithPath::new(mac.path, fragment),
+                    pcx,
+                    sym_tab,
+                ))
+            },
+            Choice4::_2(or_) => {
+                let (_, _, _, alternatives, _) = or_.get_matched();
+                Self::Or(Self::from_macro_alternatives(
+                    WithPath::new(mac.path, alternatives),
+                    pcx,
+                    sym_tab,
+                ))
+            },
+            Choice4::_3(panic_) => {
+                let (label, _, _, _, fragment, _) = panic_.get_matched();
+                let label = Symbol::intern(label.Label().LabelName().span.as_str());
+                let stmts = Self::from_macro_fragment(WithPath::new(mac.path, fragment), pcx, sym_tab);
+                Self::Panic(label, stmts)
+            },
+        }
+    }
+
+    fn from_macro_fragment(
+        fragment: WithPath<'pcx, &'pcx pairs::MirMacroFragment<'pcx>>,
+        pcx: PatCtxt<'pcx>,
+        sym_tab: &'pcx FnSymbolTable<'pcx>,
+    ) -> Vec<Self> {
+        let p = fragment.path;
+        let (first, following) = fragment.MirMacroStmt();
+        std::iter::once(Self::from_macro_stmt(with_path(p, first), pcx, sym_tab))
+            .chain(
+                following
+                    .iter()
+                    .map(|stmt| Self::from_macro_stmt(with_path(p, stmt), pcx, sym_tab)),
+            )
+            .collect()
+    }
+
+    fn from_macro_alternatives(
+        alternatives: WithPath<'pcx, &'pcx pairs::MirMacroAlternatives<'pcx>>,
+        pcx: PatCtxt<'pcx>,
+        sym_tab: &'pcx FnSymbolTable<'pcx>,
+    ) -> Vec<Vec<Self>> {
+        let p = alternatives.path;
+        let (first, following) = alternatives.MirMacroAlternative();
+        std::iter::once(Self::from_macro_alternative(with_path(p, first), pcx, sym_tab))
+            .chain(
+                following
+                    .iter()
+                    .map(|alt| Self::from_macro_alternative(with_path(p, alt), pcx, sym_tab)),
+            )
+            .collect()
+    }
+
+    fn from_macro_alternative(
+        alternative: WithPath<'pcx, &'pcx pairs::MirMacroAlternative<'pcx>>,
+        pcx: PatCtxt<'pcx>,
+        sym_tab: &'pcx FnSymbolTable<'pcx>,
+    ) -> Vec<Self> {
+        let p = alternative.path;
+        match alternative.inner.deref() {
+            Choice2::_0(block) => Self::from_macro_block(with_path(p, block), pcx, sym_tab),
+            Choice2::_1(stmt) => vec![Self::from_macro_stmt(with_path(p, stmt), pcx, sym_tab)],
+        }
+    }
+
+    fn from_macro_block(
+        block: WithPath<'pcx, &'pcx pairs::MirMacroBlock<'pcx>>,
+        pcx: PatCtxt<'pcx>,
+        sym_tab: &'pcx FnSymbolTable<'pcx>,
+    ) -> Vec<Self> {
+        let p = block.path;
+        let (first, following) = block.MirMacroStmt();
+        std::iter::once(Self::from_macro_stmt(with_path(p, first), pcx, sym_tab))
+            .chain(
+                following
+                    .iter()
+                    .map(|stmt| Self::from_macro_stmt(with_path(p, stmt), pcx, sym_tab)),
+            )
+            .collect()
+    }
+
+    pub fn from_macro_stmt(
+        stmt: WithPath<'pcx, &'pcx pairs::MirMacroStmt<'pcx>>,
+        pcx: PatCtxt<'pcx>,
+        sym_tab: &'pcx FnSymbolTable<'pcx>,
+    ) -> Self {
+        let p = stmt.path;
+        match stmt.inner.deref() {
+            Choice9::_0(call_ignore_ret) => Self::from_call_ignore_ret(with_path(p, call_ignore_ret), pcx, sym_tab),
+            Choice9::_1(drop_) => Self::from_drop(with_path(p, drop_), pcx, sym_tab),
+            Choice9::_2(unreachable_) => Self::from_unreachable(with_path(p, unreachable_), pcx, sym_tab),
+            Choice9::_3(control) => Self::from_control(control),
+            Choice9::_4(assign) => Self::from_assign(with_path(p, assign), pcx, sym_tab),
+            Choice9::_5(loop_) => Self::from_loop(with_path(p, loop_), pcx, sym_tab),
+            Choice9::_6(switch_int) => Self::from_switch_int(with_path(p, switch_int), pcx, sym_tab),
+            Choice9::_7(copy_non_overlapping) => {
+                Self::from_copy_non_overlapping(with_path(p, copy_non_overlapping), pcx, sym_tab)
+            },
+            Choice9::_8(macro_) => Self::from_macro(with_path(p, macro_), pcx, sym_tab),
+        }
     }
 
     pub fn from_unreachable(
@@ -778,6 +896,7 @@ impl<'i> Cast<CoercionSource> for &'i pairs::CoercionSource<'i> {
 /// A value that can be used in an rvalue.
 ///
 /// See [`mir::Rvalue`] for more details.
+#[derive(Clone)]
 pub enum Rvalue<'pcx> {
     Any,
     Use(Operand<'pcx>),
@@ -892,6 +1011,8 @@ impl<'pcx> Rvalue<'pcx> {
 #[derive(Clone)]
 pub enum Operand<'pcx> {
     Any,
+    /// `..` in an argument list: match any number of arguments (including zero).
+    AnyArgs,
     Copy(Place<'pcx>),
     Move(Place<'pcx>),
     Constant(ConstOperand<'pcx>),
@@ -907,7 +1028,7 @@ impl<'pcx> Operand<'pcx> {
         let p = op.path;
         match op.inner.deref() {
             Choice6::_0(_any) => Self::Any,
-            Choice6::_1(_any_multiple) => Self::Any, // FIXME
+            Choice6::_1(_any_multiple) => Self::AnyArgs,
             Choice6::_2(meta_var) => Self::from_meta_var(meta_var),
             Choice6::_3(move_) => Self::from_move(WithPath::new(p, move_), pcx, fn_sym_tab),
             Choice6::_4(copy_) => Self::from_copy(WithPath::new(p, copy_), pcx, fn_sym_tab),
@@ -949,24 +1070,27 @@ impl<'pcx> Operand<'pcx> {
         fn_sym_tab: &'pcx FnSymbolTable<'pcx>,
     ) -> Self {
         let p = op.path;
+        // After adding PlaceHolder as the first alternative, Choice6 indices shift by one.
         match op.inner.deref() {
-            Choice5::_0(copy_) => Self::from_copy(WithPath::new(p, copy_.get_matched().1), pcx, fn_sym_tab),
-            Choice5::_1(move_) => Self::from_move(WithPath::new(p, move_.get_matched().1), pcx, fn_sym_tab),
-            Choice5::_2(type_path) => Self::Constant(ConstOperand::from_type_path(
+            Choice6::_0(_placeholder) => Self::Any,
+            Choice6::_1(copy_) => Self::from_copy(WithPath::new(p, copy_.get_matched().1), pcx, fn_sym_tab),
+            Choice6::_2(move_) => Self::from_move(WithPath::new(p, move_.get_matched().1), pcx, fn_sym_tab),
+            Choice6::_3(type_path) => Self::Constant(ConstOperand::from_type_path(
                 WithPath::new(p, type_path),
                 pcx,
                 fn_sym_tab,
             )),
-            Choice5::_3(lang_item) => Self::Constant(ConstOperand::from_lang_item(
+            Choice6::_4(lang_item) => Self::Constant(ConstOperand::from_lang_item(
                 WithPath::new(p, lang_item),
                 pcx,
                 fn_sym_tab,
             )),
-            Choice5::_4(meta_var) => Self::from_meta_var(meta_var),
+            Choice6::_5(meta_var) => Self::from_meta_var(meta_var),
         }
     }
 }
 
+#[derive(Clone)]
 pub struct Call<'pcx>(Operand<'pcx>, Vec<Operand<'pcx>>);
 
 impl<'pcx> Call<'pcx> {
@@ -983,6 +1107,7 @@ impl<'pcx> Call<'pcx> {
     }
 }
 
+#[derive(Clone)]
 pub enum RvalueOrCall<'pcx> {
     Rvalue(Rvalue<'pcx>),
     Call(Call<'pcx>),
@@ -1353,6 +1478,21 @@ impl<'pcx> FnPatternBodyBuilder<'pcx> {
             ),
             RawStatement::Drop(label, place) => self.mk_drop(label, place),
             RawStatement::Move(label, place) => self.mk_move(label, place),
+            RawStatement::Panic(label, mut stmts) => {
+                let first = stmts.remove(0);
+                let loc = self.mk_raw_stmt(first);
+                self.pattern.labels.insert(label, Spanned::Location(loc));
+                for stmt in stmts {
+                    self.mk_raw_stmt(stmt);
+                }
+                loc
+            },
+            RawStatement::Without(_) => {
+                unreachable!("`without!` should have been desugared at the pattern-item level")
+            },
+            RawStatement::Or(_) => {
+                unreachable!("`or!` should have been desugared at the pattern-item level")
+            },
             RawStatement::Unreachable(label) => self.mk_unreachable(label),
             RawStatement::Break => self.mk_break(),
             RawStatement::Continue => self.mk_continue(),

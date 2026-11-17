@@ -1,0 +1,22 @@
+pattern session-sig-not-arity
+
+patt {
+    // Signature-only: must match `$Pair`, not every unary function.
+    p[$T: type, $U: type] = {
+        struct $Pair {
+            $first: $T,
+            $second: $U,
+        }
+
+        fn $f1(_: $Pair) {}
+
+        fn $f2(_: $Pair) {}
+    }
+}
+
+diag {
+    p = {
+        primary(f1, f2) = "session signature slot matched on $Pair",
+        name            = "session_sig_not_arity",
+    }
+}

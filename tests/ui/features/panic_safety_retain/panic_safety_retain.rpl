@@ -8,7 +8,9 @@ patt {
         $T: type,
         $I: type,
     ] = {
-        fn $cb(_: &mut $I) -> core::option::Option<$T>;
+        // Callback: any generic function taking `&mut $I` (e.g. `Iterator::next` returning `Option`,
+        // or a retain-style `FnMut(&mut T) -> bool`). The return type is `_` to cover both patterns.
+        fn $cb(_: &mut $I) -> _;
 
         unsafe? fn retain_like_tp(..) -> _ {
             let $vec: &mut Vec<$T> = _;

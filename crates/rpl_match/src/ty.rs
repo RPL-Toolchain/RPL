@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::cmp::Ordering;
 use std::iter::zip;
 
@@ -57,6 +57,9 @@ pub struct MatchTyCtxt<'pcx, 'tcx> {
     pub const_vars: IndexVec<pat::ConstVarIdx, RefCell<FxIndexSet<Const<'tcx>>>>,
     pub ty_vars: IndexVec<pat::TyVarIdx, RefCell<FxIndexSet<ty::Ty<'tcx>>>>,
     pub adt_matches: RefCell<FxHashMap<Symbol, FxHashMap<DefId, AdtMatch<'tcx>>>>,
+    ty_var_pinned: IndexVec<pat::TyVarIdx, Cell<bool>>,
+    const_var_pinned: IndexVec<pat::ConstVarIdx, Cell<bool>>,
+    adt_def_pins: RefCell<FxHashMap<Symbol, DefId>>,
 }
 
 impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
@@ -78,7 +81,40 @@ impl<'pcx, 'tcx> MatchTyCtxt<'pcx, 'tcx> {
             ty_vars: IndexVec::from_elem(RefCell::new(FxIndexSet::default()), &meta.ty_vars),
             const_vars: IndexVec::from_elem(RefCell::new(FxIndexSet::default()), &meta.const_vars),
             adt_matches: Default::default(),
+            ty_var_pinned: IndexVec::from_elem(Cell::new(false), &meta.ty_vars),
+            const_var_pinned: IndexVec::from_elem(Cell::new(false), &meta.const_vars),
+            adt_def_pins: Default::default(),
         }
+    }
+
+    pub fn is_ty_var_pinned(&self, idx: pat::TyVarIdx) -> bool {
+        self.ty_var_pinned[idx].get()
+    }
+
+    pub fn pin_ty_var(&self, idx: pat::TyVarIdx, ty: ty::Ty<'tcx>) {
+        let mut set = self.ty_vars[idx].borrow_mut();
+        set.clear();
+        set.insert(ty);
+        self.ty_var_pinned[idx].set(true);
+    }
+
+    pub fn pin_const_var(&self, idx: pat::ConstVarIdx, konst: Const<'tcx>) {
+        let mut set = self.const_vars[idx].borrow_mut();
+        set.clear();
+        set.insert(konst);
+        self.const_var_pinned[idx].set(true);
+    }
+
+    fn accept_const_var(&self, idx: pat::ConstVarIdx, konst: Const<'tcx>) -> bool {
+        if self.const_var_pinned[idx].get() {
+            return self.const_vars[idx].borrow().iter().next() == Some(&konst);
+        }
+        self.const_vars[idx].borrow_mut().insert(konst);
+        true
+    }
+
+    pub fn pin_adt_def(&self, adt_pat: Symbol, def_id: DefId) {
+        self.adt_def_pins.borrow_mut().insert(adt_pat, def_id);
     }
 }
 
@@ -101,6 +137,19 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchTyCtxt<'pcx, 'tcx> {
     }
 
     fn match_ty_var(&self, ty_var: pat::TyVar, ty: ty::Ty<'tcx>) -> bool {
+        if self.ty_var_pinned[ty_var.idx].get() {
+            let pinned = self.ty_vars[ty_var.idx].borrow().iter().next().copied();
+            if pinned == Some(ty) {
+                return true;
+            }
+            // SharedEnv may pin a concrete type from a signature slot (e.g. `$T = f64`
+            // from `$isnan`), while MIR of a generic method still sees `T`. Treat a
+            // type parameter as standing for the pinned concrete type.
+            if pinned.is_some_and(|p| !matches!(p.kind(), ty::Param(_))) && matches!(ty.kind(), ty::Param(_)) {
+                return true;
+            }
+            return false;
+        }
         self.ty_vars[ty_var.idx].borrow_mut().insert(ty);
         true
     }
@@ -111,17 +160,13 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchTyCtxt<'pcx, 'tcx> {
                 let ty = param.find_ty_from_env(self.typing_env.param_env);
                 self.match_ty(const_var.ty, ty) && {
                     // We can't convert a const generic param into a `mir::Const`
-                    self.const_vars[const_var.idx].borrow_mut().insert(Const::Param(param));
-                    true
+                    self.accept_const_var(const_var.idx, Const::Param(param))
                 }
             },
             ty::ConstKind::Value(value) => {
                 self.match_ty(const_var.ty, value.ty) && {
                     let const_value = self.tcx.valtree_to_const_val(value);
-                    self.const_vars[const_var.idx]
-                        .borrow_mut()
-                        .insert(Const::MIR(mir::Const::from_value(const_value, value.ty)));
-                    true
+                    self.accept_const_var(const_var.idx, Const::MIR(mir::Const::from_value(const_value, value.ty)))
                 }
             },
             _ => false,
@@ -130,20 +175,68 @@ impl<'pcx, 'tcx> MatchTy<'pcx, 'tcx> for MatchTyCtxt<'pcx, 'tcx> {
     #[instrument(level = "trace", skip(self), ret)]
     fn match_mir_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool {
         if self.match_ty(const_var.ty, konst.ty()) {
-            self.const_vars[const_var.idx].borrow_mut().insert(Const::MIR(konst));
-            return true;
+            return self.accept_const_var(const_var.idx, Const::MIR(konst));
         }
         false
     }
     fn match_adt_matches(&self, pat: Symbol, adt_match: AdtMatch<'tcx>) -> bool {
+        let did = adt_match.adt.did();
+        if let Some(&pinned) = self.adt_def_pins.borrow().get(&pat)
+            && pinned != did
+        {
+            return false;
+        }
         // Keep the first AdtMatch for this DefId so FieldPat bindings accumulated during
         // statement matching are not wiped when the ADT type is re-matched.
         self.adt_matches
             .borrow_mut()
             .entry(pat)
             .or_default()
-            .entry(adt_match.adt.did())
+            .entry(did)
             .or_insert(adt_match);
+        true
+    }
+
+    fn bind_adtpat_substs(&self, adt_pat: &pat::Adt<'pcx>, args: ty::GenericArgsRef<'tcx>) -> bool {
+        use pat::visitor::PatternVisitor;
+        use rustc_data_structures::fx::FxHashSet;
+
+        struct Collect {
+            vars: Vec<pat::TyVar>,
+            seen: FxHashSet<pat::TyVarIdx>,
+        }
+
+        impl PatternVisitor<'_> for Collect {
+            fn visit_ty_var(&mut self, ty_var: &pat::TyVar) {
+                if self.seen.insert(ty_var.idx) {
+                    self.vars.push(ty_var.clone());
+                }
+            }
+        }
+
+        let mut collect = Collect {
+            vars: Vec::new(),
+            seen: FxHashSet::default(),
+        };
+        match &adt_pat.kind {
+            pat::AdtKind::Struct(variant) => {
+                for field in variant.fields.values() {
+                    collect.visit_ty(field.ty);
+                }
+            },
+            pat::AdtKind::Enum(variants) => {
+                for variant in variants.values() {
+                    for field in variant.fields.values() {
+                        collect.visit_ty(field.ty);
+                    }
+                }
+            },
+        }
+        for (ty_var, ty) in collect.vars.iter().zip(args.types()) {
+            if !self.match_ty_var(ty_var.clone(), ty) {
+                return false;
+            }
+        }
         true
     }
 
@@ -171,6 +264,15 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
     fn match_mir_const_var(&self, const_var: pat::ConstVar<'pcx>, konst: mir::Const<'tcx>) -> bool;
     #[must_use]
     fn match_adt_matches(&self, pat: Symbol, adt_match: AdtMatch<'tcx>) -> bool;
+
+    /// Bind AdtPat field ty-vars from the rustc type's generic arguments (source-field order).
+    ///
+    /// Default: no-op (MIR `MatchCtxt` keeps FieldPat as the authority).
+    /// [`MatchTyCtxt`] (signature / probe) uses this so `Pair<u8, u16>` commits `$T`/`$U`.
+    /// Returns `false` when a pinned ty-var disagrees with the corresponding subst.
+    fn bind_adtpat_substs(&self, _adt_pat: &pat::Adt<'pcx>, _args: ty::GenericArgsRef<'tcx>) -> bool {
+        true
+    }
 
     #[instrument(level = "trace", skip(self), ret)]
     fn match_ty(&self, ty_pat: pat::Ty<'pcx>, ty: ty::Ty<'tcx>) -> bool {
@@ -248,10 +350,12 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
                 .map(|ty_pat| self.match_ty(ty_pat, ty))
                 .unwrap_or(false)
             },
-            (pat::TyKind::AdtPat(pat), ty::Adt(adt, _)) => {
+            (pat::TyKind::AdtPat(pat), ty::Adt(adt, args)) => {
                 if let Some(adt_pat) = self.pat().get_adt(pat)
-                    && let Some(adt_match) = self.match_adt(adt_pat, adt) {
-                        self.match_adt_matches(pat, adt_match)
+                    && let Some(adt_match) = self.match_adt(adt_pat, adt, args)
+                    && self.bind_adtpat_substs(adt_pat, args)
+                {
+                    self.match_adt_matches(pat, adt_match)
                 } else {
                     false
                 }
@@ -316,12 +420,17 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
         matched
     }
 
-    #[instrument(level = "trace", skip(self), ret)]
-    fn match_adt(&self, adt_pat: &pat::Adt<'pcx>, adt: ty::AdtDef<'tcx>) -> Option<AdtMatch<'tcx>> {
+    #[instrument(level = "trace", skip(self, args), ret)]
+    fn match_adt(
+        &self,
+        adt_pat: &pat::Adt<'pcx>,
+        adt: ty::AdtDef<'tcx>,
+        args: ty::GenericArgsRef<'tcx>,
+    ) -> Option<AdtMatch<'tcx>> {
         // Structure + unique commits; ambiguous fields stay for FieldPat.
         // Use caller TypingEnv so predicates like is_not_unpin do not fail-open.
         MatchAdtCtxt::with_typing_env(self.tcx(), self.pcx(), self.pat(), adt_pat, self.typing_env())
-            .match_adt_for_fn_mir(adt)
+            .match_adt_for_fn_mir(adt, args)
     }
 
     #[instrument(level = "trace", skip(self), ret)]
@@ -329,14 +438,18 @@ pub(crate) trait MatchTy<'pcx, 'tcx> {
         match (konst_pat, konst.kind()) {
             (pat::Const::ConstVar(const_var), _) => self.match_ty_const_var(const_var, konst),
             //(pat::Const::Value(_value_pat), ty::Value(_ty, ty::ValTree::Leaf(_value))) => todo!(),
-            (
-                pat::Const::Value(_value_pat),
-                ty::ConstKind::Value(ty::Value {
-                    ty: _ty,
-                    valtree: _valtree,
-                }),
-            ) if matches!(*_valtree, ValTreeKind::Leaf(_val)) => {
-                todo!()
+            (pat::Const::Value(value_pat), ty::ConstKind::Value(ty::Value { ty: konst_ty, valtree }))
+                if let ValTreeKind::Leaf(scalar) = *valtree =>
+            {
+                // Concrete integer const generic (e.g. `[u8; 4]`): match width/signedness, then bits.
+                (match (value_pat.ty, *konst_ty.kind()) {
+                    (pat::IntTy::AnyInt, ty::Int(_) | ty::Uint(_)) => true,
+                    (pat::IntTy::NegInt(ty_pat), ty::Int(ty)) => ty_pat == ty,
+                    (pat::IntTy::Int(ty_pat), ty::Int(ty)) => ty_pat == ty,
+                    (pat::IntTy::Uint(ty_pat), ty::Uint(ty)) => ty_pat == ty,
+                    (pat::IntTy::Bool, ty::Bool) => true,
+                    _ => false,
+                }) && value_pat.normalize(self.tcx().data_layout.pointer_size.bytes()) == scalar.to_bits_unchecked()
             },
             (
                 // pat::Const::ConstVar(_)

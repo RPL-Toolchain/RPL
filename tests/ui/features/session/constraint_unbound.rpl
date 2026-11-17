@@ -1,0 +1,33 @@
+pattern session-constraint-unbound
+
+patt {
+    p[$T: type, $U: type] = {
+        struct $Pair {
+            $first: $T,
+            $second: $U,
+        }
+
+        // Mentions `$U` which this body never binds. `Never` would make
+        // `!is_primitive($U)` succeed; unbound must fail instead.
+        fn $f1(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            let $x: $T = copy (*$p).$first;
+        } where {
+            !is_primitive($U),
+        }
+
+        fn $f2(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            let $y: $U = copy (*$p).$second;
+        }
+    }
+}
+
+diag {
+    p = {
+        primary(read) = "session constraint unbound metavar should not match",
+        name          = "session_constraint_unbound",
+    }
+}

@@ -1,0 +1,31 @@
+pattern session-shared-ty-hit
+
+patt {
+    p[$T: type, $U: type] = {
+        struct $Pair {
+            $first: $T,
+            $second: $U,
+        }
+
+        fn $f1(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            // Only `$first` is used; `$second` should stay unbound without inventing a second solution.
+            let $x: $T = copy (*$p).$first;
+        }
+
+        fn $f2(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            let $x: $T = copy (*$p).$first;
+        }
+    }
+}
+
+diag {
+    p = {
+        primary(read) = "session shared type variables matched",
+        note          = "struct and both functions assigned in one MatchSession",
+        name          = "session_shared_ty_hit",
+    }
+}

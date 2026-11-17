@@ -1,0 +1,10 @@
+error: value produced before this iteration wrote it
+  --> tests/ui/gaps/loop_carried/loop_carried.rs:16:17
+   |
+LL |         let t = s;
+   |                 ^
+   |
+   = note: `#[deny(rpl::loop_carried)]` on by default
+
+error: aborting due to 1 previous error
+

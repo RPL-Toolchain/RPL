@@ -1,0 +1,16 @@
+error: call to `Vec::set_len` detected
+  --> tests/ui/features/inlined_call_multi/inlined_call_multi.rs:13:11
+   |
+LL |         v.set_len(1);
+   |           ^^^^^^^^^^ `set_len` called here
+   |
+   = note: `#[deny(rpl::inlined_set_len_multi)]` on by default
+
+error: call to `Vec::set_len` detected
+  --> tests/ui/features/inlined_call_multi/inlined_call_multi.rs:15:11
+   |
+LL |         v.set_len(2);
+   |           ^^^^^^^^^^ `set_len` called here
+
+error: aborting due to 2 previous errors
+

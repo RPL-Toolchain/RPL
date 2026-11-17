@@ -14,5 +14,5 @@ pub use matching::SessionMatching;
 pub use multi_matched::{MultiMatched, OwnedLintMatch, SessionLintTarget};
 pub use slot::{
     AdtSlotCandidate, AdtSlotDesc, CrateAdtItem, CrateFnItem, CrateItemIndex, FnMatchContext, FnSlotCandidate,
-    FnSlotDesc, MatchSlot, SessionResult, SlotAssignment, SlotCandidate, collect_slot_descs,
+    FnSlotDesc, MatchSlot, SessionOutcome, SessionResult, SlotAssignment, SlotCandidate, collect_slot_descs,
 };

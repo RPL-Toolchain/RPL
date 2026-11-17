@@ -1,5 +1,6 @@
 use std::fmt;
 
+use rpl_constraints::attributes::Visibility;
 use rustc_middle::mir;
 
 use super::*;
@@ -234,6 +235,11 @@ impl fmt::Display for Adt<'_> {
 impl fmt::Display for Variant<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (name, field) in &self.fields {
+            match field.vis {
+                Visibility::Unspecified => {},
+                Visibility::Public => f.write_str("pub ")?,
+                Visibility::Restricted => f.write_str("pub(restricted) ")?,
+            }
             write!(f, "${name}: {ty:?}, ", ty = field.ty)?;
         }
         Ok(())

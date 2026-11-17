@@ -1,0 +1,13 @@
+error: lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
+  --> tests/ui/cve/cve_2018_20991/cve_2018_20991.rs:688:35
+   |
+LL |             ptr::copy(ptr, ptr.offset(lower_size_bound as isize), old_len - index);
+   |             ---------------------------------------------------------------------- lifetime bypass here
+LL |             for (off, element) in iter.enumerate() {
+   |                                   ^^^^^^^^^^^^^^^^ unresolvable generic or `drop_in_place` here
+   |
+   = help: restore container invariants (or use a drop guard) before calling code that may panic
+   = note: `#[deny(rpl::panic_safety_strong)]` on by default
+
+error: aborting due to 1 previous error
+

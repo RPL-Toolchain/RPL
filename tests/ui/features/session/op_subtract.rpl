@@ -1,0 +1,34 @@
+pattern session-op-subtract
+
+patt {
+    #[diag = "hit"]
+    hit[$T: type] = wide[$T = $T] - narrow[$T = $T]
+}
+
+util {
+    // Matches the copy of `$x` even when the body also has an extra local.
+    wide[$T: type] = {
+        fn $f(..) -> _ {
+            let $x: $T = _;
+            'use:
+            let $y: $T = copy $x;
+        }
+    }
+
+    // Same function, extra unlabeled local. Label sites still align with `wide`.
+    narrow[$T: type] = {
+        fn $f(..) -> _ {
+            let $x: $T = _;
+            let $z: i32 = _;
+            'use:
+            let $y: $T = copy $x;
+        }
+    }
+}
+
+diag {
+    hit = {
+        primary(use) = "session op subtract should not fire",
+        name          = "session_op_subtract",
+    }
+}

@@ -1,0 +1,38 @@
+error: calling `set_len()` immediately after reserving a buffer creates uninitialized values
+  --> tests/ui/cve/cve_2021_30455/get_or_insert.rs:16:26
+   |
+LL |         let mut values = Vec::with_capacity(cap);
+   |                          ^^^^^^^^^^^^^^^^^^^^^^^
+...
+LL |             values.set_len(cap);
+   |             ^^^^^^^^^^^^^^^^^^^
+   |
+   = help: initialize the buffer or wrap the content in `MaybeUninit`
+   = note: `#[deny(rpl::uninit_vec)]` on by default
+
+error: it violates the precondition of `Vec::set_len` to extend a `Vec`'s length without initializing its content in advance
+  --> tests/ui/cve/cve_2021_30455/get_or_insert.rs:20:13
+   |
+LL |         let mut values = Vec::with_capacity(cap);
+   |                          ----------------------- `Vec` created here
+...
+LL |             values.set_len(cap);
+   |             ^^^^^^^^^^^^^^^^^^^ `Vec::set_len` called here
+   |
+   = help: before calling `set_len` to extend its length, make sure all elements are initialized, using such as `spare_capacity_mut` or `as_mut_ptr`
+   = note: `#[deny(rpl::set_len_uninitialized)]` on by default
+
+error: weak lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
+  --> tests/ui/cve/cve_2021_30455/get_or_insert.rs:37:35
+   |
+LL |                 let space = self.values.get_unchecked_mut(id);
+   |                             --------------------------------- lifetime bypass here
+LL |                 ptr::write(space, f());
+   |                                   ^^^ unresolvable generic or `drop_in_place` here
+   |
+   = help: restore container invariants (or use a drop guard) before calling code that may panic
+   = note: `-D rpl::panic-safety-weak` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(rpl::panic_safety_weak)]`
+
+error: aborting due to 3 previous errors
+

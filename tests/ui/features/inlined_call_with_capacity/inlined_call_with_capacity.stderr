@@ -1,0 +1,26 @@
+error: inlined `Vec::with_capacity` detected
+  --> tests/ui/features/inlined_call_with_capacity/inlined_call_with_capacity.rs:10:5
+   |
+LL |     Vec::with_capacity(10)
+   |     ^^^^^^^^^^^^^^^^^^^^^^ `with_capacity` called here
+   |
+   = note: `#[deny(rpl::inlined_with_capacity)]` on by default
+
+error: inlined `Vec::with_capacity` detected
+  --> tests/ui/features/inlined_call_with_capacity/inlined_call_with_capacity.rs:10:5
+   |
+LL |     Vec::with_capacity(10)
+   |     ^^^^^^^^^^^^^^^^^^^^^^ `with_capacity` called here
+   |
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: inlined `Vec::with_capacity` detected
+  --> tests/ui/features/inlined_call_with_capacity/inlined_call_with_capacity.rs:10:5
+   |
+LL |     Vec::with_capacity(10)
+   |     ^^^^^^^^^^^^^^^^^^^^^^ `with_capacity` called here
+   |
+   = note: duplicate diagnostic emitted due to `-Z deduplicate-diagnostics=no`
+
+error: aborting due to 3 previous errors
+

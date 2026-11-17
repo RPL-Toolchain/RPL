@@ -1,0 +1,10 @@
+error: flow from a branch that cannot reach this read
+  --> tests/ui/gaps/control_dep/control_dep.rs:18:16
+   |
+LL |         return x;
+   |                ^
+   |
+   = note: `#[deny(rpl::control_dep)]` on by default
+
+error: aborting due to 1 previous error
+

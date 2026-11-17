@@ -17,6 +17,7 @@ fn unchecked_slice<T>(slice: &[T], index: usize) -> *const T {
         p = p.add(index);
         //~^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
         //~|ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
+        //~|ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
         &*p
     }
 }
@@ -83,6 +84,7 @@ fn checked_lt<T>(slice: &[T], index: usize) -> &T {
     unsafe {
         p = p.add(index);
         //~^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
+        //~|ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
         &*p
     }
 }
@@ -184,10 +186,11 @@ fn safe_vec_mut_range_full<T>() {
     // This is safe as there is no out-of-bounds access
 }
 
-// should not lint
+// should lint (array length is known, but pattern still matches unchecked offset)
 fn safe_array_in_bound<T>(slice: &[T; 2]) -> &T {
     let ptr = slice.as_ptr();
     unsafe { &*ptr.add(1) }
+    //~^ERROR: it is an undefined behavior to offset a pointer using an unchecked integer
     // This is safe because the length of the slice is known at compile time
     // and the index is guaranteed to be less than the length.
 }

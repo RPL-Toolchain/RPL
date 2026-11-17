@@ -1,6 +1,7 @@
 pattern allow-unchecked
 
 patt {
+    #[deduplicate]
     unchecked_cast_write[$T: type] = 
         alloc_cast_write[]
         - alloc_check_cast_write[]
@@ -8,6 +9,7 @@ patt {
         - alloc_cast_check_as_write[]
         - alloc_check_as_cast_write[]
 
+    #[diag = "alloc_misaligned_cast"]
     alloc_misaligned_cast[
         $T: type where is_all_safe_trait(self),
         $alignment: const(usize),
@@ -25,6 +27,7 @@ patt {
         } where {
             maybe_misaligned($T, $alignment)
         }
+
 
     #[diag = "use_after_realloc"]
     use_after_realloc_deref_const[

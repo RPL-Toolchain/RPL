@@ -1,23 +1,10 @@
-//@check-pass: no pattern yet
 //@compile-flags: -Z inline-mir=false
-// Experimental: unified $poison→$sink; stderr captures current over-approx (see CVE note).
 
-//! Minimal CVE-2021-30456 / id-map `get_or_insert_with` — unified poison→sink experiment.
-//! `$poison` = mark_occupied, `$sink` = call_f (may_panic).
+//! CVE-2021-30456-shaped: `get_unchecked_mut` (weak) then user `F`.
 
 #![allow(dead_code)]
 
 use std::ptr;
-
-#[inline(never)]
-fn mark_occupied(slot: &mut bool) {
-    *slot = true;
-}
-
-#[inline(never)]
-fn call_f<T, F: FnOnce() -> T>(f: F) -> T {
-    f()
-}
 
 struct IdMap<T> {
     occupied: Vec<bool>,
@@ -26,9 +13,16 @@ struct IdMap<T> {
 
 impl<T> IdMap<T> {
     fn with_capacity(cap: usize) -> Self {
+        let mut values = Vec::with_capacity(cap);
+        //~^ uninit_vec
+        // false positive above
+        unsafe {
+            values.set_len(cap);
+            //~^ set_len_uninitialized
+        }
         Self {
             occupied: vec![false; cap],
-            values: Vec::with_capacity(cap),
+            values,
         }
     }
 
@@ -36,47 +30,15 @@ impl<T> IdMap<T> {
     where
         F: FnOnce() -> T,
     {
-        if id >= self.occupied.len() {
-            self.occupied.resize(id + 1, false);
-        }
         if !self.occupied[id] {
-            mark_occupied(&mut self.occupied[id]);
-            if self.values.capacity() < id + 1 {
-                self.values.reserve(id + 1);
-            }
+            self.occupied[id] = true;
             unsafe {
-                let space = self.values.as_mut_ptr().add(id);
-                let val = call_f(f);
-                ptr::write(space, val);
-                &mut *space
+                let space = self.values.get_unchecked_mut(id);
+                ptr::write(space, f());
+                //~^ ERROR: weak lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
             }
-        } else {
-            unsafe { &mut *self.values.as_mut_ptr().add(id) }
         }
-    }
-
-    /// TN: user code runs before occupancy is marked.
-    fn get_or_insert_with_safe<F>(&mut self, id: usize, f: F) -> &mut T
-    where
-        F: FnOnce() -> T,
-    {
-        if id >= self.occupied.len() {
-            self.occupied.resize(id + 1, false);
-        }
-        if !self.occupied[id] {
-            if self.values.capacity() < id + 1 {
-                self.values.reserve(id + 1);
-            }
-            unsafe {
-                let space = self.values.as_mut_ptr().add(id);
-                let val = call_f(f);
-                ptr::write(space, val);
-                mark_occupied(&mut self.occupied[id]);
-                &mut *space
-            }
-        } else {
-            unsafe { &mut *self.values.as_mut_ptr().add(id) }
-        }
+        unsafe { self.values.get_unchecked_mut(id) }
     }
 }
 
@@ -93,8 +55,6 @@ impl<T> Drop for IdMap<T> {
 }
 
 fn main() {
-    let mut map = IdMap::<u8>::with_capacity(1);
-    let _ = map.get_or_insert_with(0, || 42);
-    let mut map2 = IdMap::<u8>::with_capacity(1);
-    let _ = map2.get_or_insert_with_safe(0, || 7);
+    let mut map = IdMap::<String>::with_capacity(1);
+    let _ = map.get_or_insert_with(0, || String::from("x"));
 }

@@ -1,0 +1,10 @@
+error: session optional fn _ matched required slot
+  --> tests/ui/features/session/optional_fn_underscore.rs:15:5
+   |
+LL |     p.first
+   |     ^^^^^^^
+   |
+   = note: `#[deny(rpl::session_optional_fn_underscore)]` on by default
+
+error: aborting due to 1 previous error
+

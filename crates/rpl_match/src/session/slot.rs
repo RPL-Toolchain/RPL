@@ -10,7 +10,7 @@ use crate::matches::artifact::NormalizedMatched;
 use crate::session::bindings::BindingSnapshot;
 
 /// Identifies a pattern slot within a [`MatchSession`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum MatchSlot {
     /// Function pattern at index in `RustItems.fns.all_fns`.
     Fn(usize),
@@ -48,6 +48,7 @@ pub struct AdtSlotCandidate<'tcx> {
 
 /// Union of slot-specific candidates.
 #[derive(Debug, Clone)]
+#[allow(clippy::large_enum_variant)] // FIXME: box the `Fn` variant if this shows up in profiles.
 pub enum SlotCandidate<'tcx> {
     Fn(FnSlotCandidate<'tcx>),
     Adt(AdtSlotCandidate<'tcx>),
@@ -77,6 +78,23 @@ pub struct SessionResult<'tcx> {
     pub bindings: super::bindings::MetaBindings<'tcx>,
     /// Primary function context for single-slot diagnostics (first fn assignment).
     pub primary_fn: Option<FnMatchContext<'tcx>>,
+}
+
+/// Session match output, including whether [`super::config::SessionConfig::max_results`] stopped
+/// the search.
+#[derive(Debug, Clone)]
+pub struct SessionOutcome<'tcx> {
+    pub results: Vec<SessionResult<'tcx>>,
+    pub truncated: bool,
+}
+
+impl SessionOutcome<'_> {
+    pub fn empty() -> Self {
+        Self {
+            results: Vec::new(),
+            truncated: false,
+        }
+    }
 }
 
 impl<'tcx> SessionResult<'tcx> {
@@ -129,10 +147,55 @@ impl<'tcx> SessionResult<'tcx> {
             })
     }
 
-    /// Key for [`PatternOperation`](rpl_context::pat::PatternOperation) negative filtering:
-    /// compare matches within the same function using full [`NormalizedMatched`] equality.
-    pub fn operation_match_key(&self) -> Option<(LocalDefId, &NormalizedMatched<'tcx>)> {
-        self.primary_fn_candidate().map(|c| (c.def_id, &c.normalized))
+    /// Whether this result can participate in
+    /// [`PatternOperation`](rpl_context::pat::PatternOperation) subtraction (`p - q`). Results
+    /// with no function slot are never filtered.
+    pub fn has_operation_key(&self) -> bool {
+        self.primary_fn_candidate().is_some()
+    }
+
+    /// Negative filter for `p - q`: mapped SharedEnv, alignable slot DefIds, and
+    /// [`NormalizedMatched`] on Fn slots present on both sides.
+    ///
+    /// Slots present on only one side (e.g. a single-fn negative vs a multi-fn positive)
+    /// are ignored for alignment, matching the multi-instance contract.
+    pub fn subtracted_by(&self, neg: &Self) -> bool {
+        let Some(pos_primary) = self.primary_fn_candidate() else {
+            return false;
+        };
+        let Some(neg_primary) = neg.primary_fn_candidate() else {
+            return false;
+        };
+        if pos_primary.def_id != neg_primary.def_id {
+            return false;
+        }
+        if !self.bindings.equivalent_to(&neg.bindings) {
+            return false;
+        }
+        for a in &self.assignments {
+            let Some(neg_a) = neg.assignments.iter().find(|b| b.slot == a.slot) else {
+                continue;
+            };
+            if assignment_def_id(a) != assignment_def_id(neg_a) {
+                return false;
+            }
+            // Different MIR subgraphs must not subtract each other. Compare only the columns
+            // shared between positive and negative, so a fragment-local label (e.g. `'reset` in
+            // `without!('reset: ...)`) does not block the subtraction.
+            if let (SlotCandidate::Fn(pos_fn), SlotCandidate::Fn(neg_fn)) = (&a.candidate, &neg_a.candidate)
+                && !pos_fn.normalized.same_common_columns(&neg_fn.normalized)
+            {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+fn assignment_def_id(a: &SlotAssignment<'_>) -> LocalDefId {
+    match &a.candidate {
+        SlotCandidate::Fn(c) => c.def_id,
+        SlotCandidate::Adt(c) => c.def_id,
     }
 }
 
@@ -169,15 +232,13 @@ pub fn collect_slot_descs<'pcx>(
         })
         .collect();
 
-    let mut next_idx = fn_slots.len();
-    for impl_pat in rust_items.impls.values() {
-        for fn_pat in impl_pat.fns.values() {
+    for (&impl_name, impl_pat) in &rust_items.impls {
+        for (&fn_name, fn_pat) in &impl_pat.fns {
             fn_slots.push(FnSlotDesc {
-                slot: MatchSlot::Fn(next_idx),
+                slot: MatchSlot::ImplFn { impl_name, fn_name },
                 fn_pat,
                 optional: fn_pat.name.as_str() == "_",
             });
-            next_idx += 1;
         }
     }
 
@@ -249,9 +310,8 @@ impl CrateItemIndex {
                 _span: rustc_span::Span,
                 def_id: LocalDefId,
             ) -> Self::Result {
-                if !self.tcx.is_mir_available(def_id) {
-                    return rustc_hir::intravisit::walk_fn(self, kind, decl, _body_id, def_id);
-                }
+                // Index even when MIR is unavailable (e.g. some foreign/ABI cases) so
+                // signature-only slots can still match. MIR matching skips these later.
                 let (fn_name, header) = match kind {
                     rustc_hir::intravisit::FnKind::ItemFn(name, _, fn_header) => (Some(name.name), Some(fn_header)),
                     rustc_hir::intravisit::FnKind::Method(name, fn_sig) => (Some(name.name), Some(fn_sig.header)),
@@ -264,6 +324,19 @@ impl CrateItemIndex {
                     fn_name,
                 });
                 rustc_hir::intravisit::walk_fn(self, kind, decl, _body_id, def_id)
+            }
+
+            fn visit_foreign_item(&mut self, item: &'tcx rustc_hir::ForeignItem<'tcx>) -> Self::Result {
+                if let rustc_hir::ForeignItemKind::Fn(sig, ..) = item.kind {
+                    let def_id = item.owner_id.def_id;
+                    self.index.fns.push(CrateFnItem {
+                        def_id,
+                        header: None,
+                        has_self: sig.decl.implicit_self.has_implicit_self(),
+                        fn_name: Some(item.ident.name),
+                    });
+                }
+                rustc_hir::intravisit::walk_foreign_item(self, item)
             }
         }
 

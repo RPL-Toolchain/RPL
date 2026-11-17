@@ -1,25 +1,10 @@
-//@check-pass: no pattern yet
 //@compile-flags: -Z inline-mir=false
-// Experimental: unified $poison→$sink; stderr captures current over-approx (see CVE note).
 
-//! Minimal CVE-2021-30455 / id-map `Clone::clone_from` — unified poison→sink experiment.
-//! `$poison` = drop_one, `$sink` = clone_t (may_panic via local generic).
+//! CVE-2021-30455-shaped: `ptr::read` then unresolvable `clone`.
 
 #![allow(dead_code)]
 
 use std::ptr;
-
-#[inline(never)]
-fn drop_one<T>(p: *mut T) {
-    unsafe {
-        ptr::drop_in_place(p);
-    }
-}
-
-#[inline(never)]
-fn clone_t<T: Clone>(x: &T) -> T {
-    x.clone()
-}
 
 struct IdMap<T> {
     occupied: Vec<bool>,
@@ -46,16 +31,6 @@ impl<T> IdMap<T> {
         }
         self.occupied[id] = true;
     }
-
-    fn drop_values(&mut self) {
-        for (id, live) in self.occupied.iter().enumerate() {
-            if *live {
-                unsafe {
-                    drop_one(self.values.as_mut_ptr().add(id));
-                }
-            }
-        }
-    }
 }
 
 impl<T: Clone> Clone for IdMap<T> {
@@ -66,15 +41,25 @@ impl<T: Clone> Clone for IdMap<T> {
     }
 
     fn clone_from(&mut self, other: &Self) {
-        self.drop_values();
+        for (id, live) in self.occupied.iter().enumerate() {
+            if *live {
+                unsafe {
+                    ptr::drop_in_place(self.values.as_mut_ptr().add(id));
+                }
+            }
+        }
         self.occupied = other.occupied.clone();
         let cap = other.values.capacity();
         self.values.reserve(cap);
         unsafe {
             for (id, live) in self.occupied.iter().enumerate() {
                 if *live {
-                    let cloned = clone_t(&*other.values.as_ptr().add(id));
+                    let src = ptr::read(other.values.as_ptr().add(id));
+                    let cloned = (<T as Clone>::clone)(&src);
+                    //~^ ERROR: lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
+                    //~| ERROR: weak lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
                     ptr::write(self.values.as_mut_ptr().add(id), cloned);
+                    std::mem::forget(src);
                 }
             }
         }
@@ -83,7 +68,13 @@ impl<T: Clone> Clone for IdMap<T> {
 
 impl<T> Drop for IdMap<T> {
     fn drop(&mut self) {
-        self.drop_values();
+        for (id, live) in self.occupied.iter().enumerate() {
+            if *live {
+                unsafe {
+                    ptr::drop_in_place(self.values.as_mut_ptr().add(id));
+                }
+            }
+        }
     }
 }
 

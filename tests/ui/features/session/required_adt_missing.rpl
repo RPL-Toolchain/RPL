@@ -1,0 +1,29 @@
+pattern session-required-adt-missing
+
+patt {
+    p[$T: type, $U: type] = {
+        struct $Pair {
+            $first: $T,
+            $second: $U,
+        }
+
+        fn $f1(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            let $x: $T = copy (*$p).$first;
+        }
+
+        fn $f2(..) -> _ {
+            let $p: &$Pair;
+            'read:
+            let $x: $T = copy (*$p).$first;
+        }
+    }
+}
+
+diag {
+    p = {
+        primary(read) = "session required ADT missing should not match",
+        name          = "session_required_adt_missing",
+    }
+}

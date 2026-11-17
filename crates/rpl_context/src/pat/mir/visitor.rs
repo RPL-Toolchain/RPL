@@ -183,7 +183,7 @@ pub trait PatternVisitor<'pcx>: Sized {
     }
     fn super_operand(&mut self, operand: &Operand<'pcx>, location: Location) {
         match operand {
-            Operand::Any => {},
+            Operand::Any | Operand::AnyArgs => {},
             &Operand::Copy(place) => {
                 self.visit_place(
                     place,

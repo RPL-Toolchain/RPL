@@ -1,26 +1,10 @@
-//@check-pass: no pattern yet
 //@compile-flags: -Z inline-mir=false
-// Experimental: unified $poison→$sink; see CVE note (also fires unexpectedly — not a clean miss).
 
-//! Minimal CVE-2021-30457 / id-map `remove_set` — unified poison→sink experiment.
-//! `$poison` = drop_one, `$sink` = clear_occupied.
-//! clear_occupied typically does *not* may_panic → expect miss (documents unified-shape limit).
+//! CVE-2021-30457-shaped: `get_unchecked_mut` (weak) then `drop_in_place`.
 
 #![allow(dead_code)]
 
 use std::ptr;
-
-#[inline(never)]
-fn drop_one<T>(p: *mut T) {
-    unsafe {
-        ptr::drop_in_place(p);
-    }
-}
-
-#[inline(never)]
-fn clear_occupied(slot: &mut bool) {
-    *slot = false;
-}
 
 struct IdMap<T> {
     occupied: Vec<bool>,
@@ -39,8 +23,13 @@ impl<T> IdMap<T> {
         if id >= self.occupied.len() {
             self.occupied.resize(id + 1, false);
         }
-        if self.values.capacity() < id + 1 {
-            self.values.reserve(id + 1);
+        if self.values.len() <= id {
+            self.values.reserve(id + 1 - self.values.len());
+            //~^ uninit_vec
+            // false positive above
+            unsafe {
+                self.values.set_len(id + 1);
+            }
         }
         unsafe {
             ptr::write(self.values.as_mut_ptr().add(id), val);
@@ -53,9 +42,10 @@ impl<T> IdMap<T> {
         for id in 0..n {
             if self.occupied[id] && to_remove[id] {
                 unsafe {
-                    drop_one(self.values.as_mut_ptr().add(id));
+                    ptr::drop_in_place(self.values.get_unchecked_mut(id));
+                    //~^ ERROR: weak lifetime-bypassing operation reaches potentially panicking / unresolvable generic code
                 }
-                clear_occupied(&mut self.occupied[id]);
+                self.occupied[id] = false;
             }
         }
     }
@@ -66,7 +56,7 @@ impl<T> Drop for IdMap<T> {
         for (id, live) in self.occupied.iter().enumerate() {
             if *live {
                 unsafe {
-                    drop_one(self.values.as_mut_ptr().add(id));
+                    ptr::drop_in_place(self.values.as_mut_ptr().add(id));
                 }
             }
         }

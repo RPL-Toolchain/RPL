@@ -363,9 +363,111 @@ impl<'i> CheckFnCtxt<'i, '_> {
                 self.check_mir_copy_non_overlapping(mctx, mir_copy_non_overlapping.get_matched().0);
             },
             Choice9::_8(mir_macro) => {
-                let place = mir_macro.get_matched().0.MirPlace();
+                self.check_mir_macro(mctx, mir_macro.get_matched().0);
+            },
+        }
+    }
+
+    fn check_mir_macro(&mut self, mctx: &MetaContext<'i>, mir_macro: &'i pairs::MirMacro<'i>) {
+        match mir_macro.deref() {
+            Choice4::_0(move_) => {
+                let (_, _, _, _, place, _) = move_.get_matched();
                 self.check_mir_place(mctx, place);
             },
+            Choice4::_1(without_) => {
+                let (_, _, _, fragment, _) = without_.get_matched();
+                self.check_mir_macro_fragment(mctx, fragment);
+            },
+            Choice4::_2(or_) => {
+                let (_, _, _, alternatives, _) = or_.get_matched();
+                self.check_mir_macro_alternatives(mctx, alternatives);
+            },
+            Choice4::_3(panic_) => {
+                let (_, _, _, _, fragment, _) = panic_.get_matched();
+                self.check_panic_fragment(mctx, fragment);
+            },
+        }
+    }
+
+    /// A `panic!` fragment may contain plain statements and nested `panic!`/`move!`, but not
+    /// `without!`/`or!` (which are pattern-level operations).
+    fn check_panic_fragment(&mut self, mctx: &MetaContext<'i>, fragment: &'i pairs::MirMacroFragment<'i>) {
+        let (first, following) = fragment.MirMacroStmt();
+        self.check_mir_macro_stmt_in_panic(mctx, first);
+        for stmt in following {
+            self.check_mir_macro_stmt_in_panic(mctx, stmt);
+        }
+    }
+
+    fn check_mir_macro_stmt_in_panic(&mut self, mctx: &MetaContext<'i>, stmt: &'i pairs::MirMacroStmt<'i>) {
+        if let Choice9::_8(mir_macro) = stmt.deref() {
+            match mir_macro.deref() {
+                Choice4::_1(_) | Choice4::_2(_) => {
+                    let name = match mir_macro.deref() {
+                        Choice4::_1(_) => "without!",
+                        _ => "or!",
+                    };
+                    self.errors.push(RPLMetaError::BodyMacroInPanicFragment {
+                        name,
+                        span: SpanWrapper::new(mir_macro.span, mctx.get_active_path()),
+                    });
+                },
+                _ => self.check_mir_macro(mctx, mir_macro),
+            }
+        } else {
+            self.check_mir_macro_stmt(mctx, stmt);
+        }
+    }
+
+    fn check_mir_macro_fragment(&mut self, mctx: &MetaContext<'i>, fragment: &'i pairs::MirMacroFragment<'i>) {
+        let (first, following) = fragment.MirMacroStmt();
+        self.check_mir_macro_stmt(mctx, first);
+        for stmt in following {
+            self.check_mir_macro_stmt(mctx, stmt);
+        }
+    }
+
+    fn check_mir_macro_alternatives(
+        &mut self,
+        mctx: &MetaContext<'i>,
+        alternatives: &'i pairs::MirMacroAlternatives<'i>,
+    ) {
+        let (first, following) = alternatives.MirMacroAlternative();
+        self.check_mir_macro_alternative(mctx, first);
+        for alternative in following {
+            self.check_mir_macro_alternative(mctx, alternative);
+        }
+    }
+
+    fn check_mir_macro_alternative(&mut self, mctx: &MetaContext<'i>, alternative: &'i pairs::MirMacroAlternative<'i>) {
+        match alternative.deref() {
+            Choice2::_0(block) => self.check_mir_macro_block(mctx, block),
+            Choice2::_1(stmt) => self.check_mir_macro_stmt(mctx, stmt),
+        }
+    }
+
+    fn check_mir_macro_block(&mut self, mctx: &MetaContext<'i>, block: &'i pairs::MirMacroBlock<'i>) {
+        let (first, following) = block.MirMacroStmt();
+        self.check_mir_macro_stmt(mctx, first);
+        for stmt in following {
+            self.check_mir_macro_stmt(mctx, stmt);
+        }
+    }
+
+    fn check_mir_macro_stmt(&mut self, mctx: &MetaContext<'i>, stmt: &'i pairs::MirMacroStmt<'i>) {
+        match stmt.deref() {
+            Choice9::_0(call) => self.check_mir_call(mctx, call.MirCall()),
+            Choice9::_1(drop_) => self.check_mir_place(mctx, drop_.MirPlace()),
+            Choice9::_2(_unreachable) => {},
+            Choice9::_3(control) => self.check_mir_control(mctx, control),
+            Choice9::_4(assign) => {
+                self.check_mir_place(mctx, assign.MirPlace());
+                self.check_mir_rvalue_or_call(mctx, assign.MirRvalueOrCall());
+            },
+            Choice9::_5(mir_loop) => self.check_mir_loop(mctx, mir_loop),
+            Choice9::_6(switch_int) => self.check_mir_switch_int(mctx, switch_int),
+            Choice9::_7(copy_non_overlapping) => self.check_mir_copy_non_overlapping(mctx, copy_non_overlapping),
+            Choice9::_8(mir_macro) => self.check_mir_macro(mctx, mir_macro),
         }
     }
 
@@ -502,11 +604,12 @@ impl<'i> CheckFnCtxt<'i, '_> {
 
     fn check_mir_fn_operand(&mut self, mctx: &MetaContext<'i>, fn_operand: &'i pairs::MirFnOperand<'i>) {
         match fn_operand.deref() {
-            Choice5::_0(copy_) => self.check_mir_place(mctx, copy_.get_matched().1.MirPlace()),
-            Choice5::_1(move_) => self.check_mir_place(mctx, move_.get_matched().1.MirPlace()),
-            Choice5::_2(ty_path) => self.check_type_path(mctx, ty_path),
-            Choice5::_3(lang_item) => self.check_lang_item_with_args(mctx, lang_item),
-            Choice5::_4(_ident) => self.check_mir_fn_pat(mctx),
+            Choice6::_0(_placeholder) => {},
+            Choice6::_1(copy_) => self.check_mir_place(mctx, copy_.get_matched().1.MirPlace()),
+            Choice6::_2(move_) => self.check_mir_place(mctx, move_.get_matched().1.MirPlace()),
+            Choice6::_3(ty_path) => self.check_type_path(mctx, ty_path),
+            Choice6::_4(lang_item) => self.check_lang_item_with_args(mctx, lang_item),
+            Choice6::_5(_ident) => self.check_mir_fn_pat(mctx),
         }
     }
 
@@ -816,7 +919,7 @@ impl<'i> CheckVariantCtxt<'i, '_> {
     }
 
     fn check_field(&mut self, mctx: &MetaContext<'i>, field: &'i pairs::Field<'i>) {
-        let (ident, _, ty) = field.get_matched();
+        let (_, ident, _, ty) = field.get_matched();
         self.variant_def.add_field(mctx, ident, ty, self.errors);
         self.check_meta_var(mctx, ident);
         self.check_type(mctx, ty);

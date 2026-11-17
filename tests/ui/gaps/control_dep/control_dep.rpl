@@ -1,0 +1,19 @@
+pattern control-dep
+
+patt {
+    control_dep = fn _(..) -> _ {
+        let $x: u8 = _;
+        'write:
+        $x = const 1_u8;
+        'read:
+        _ = copy $x;
+    }
+}
+
+diag {
+    control_dep = {
+        primary(read) = "flow from a branch that cannot reach this read",
+        name         = "control_dep",
+        level        = "deny",
+    }
+}

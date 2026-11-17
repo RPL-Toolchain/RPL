@@ -1,0 +1,24 @@
+pattern or-macro
+
+patt {
+    use std::vec::Vec;
+
+    set_len_zero_or_one[
+        $T: type,
+    ] = fn _ (..) -> _ {
+        let $vec: &mut Vec<$T> = _;
+        or!(
+            'sink: _ = Vec::set_len(copy $vec, const 0usize),
+            'sink: _ = Vec::set_len(copy $vec, const 1usize)
+        );
+    }
+}
+
+diag {
+    set_len_zero_or_one = {
+        primary(sink) = "`Vec::set_len` called with 0 or 1",
+        label(sink)   = "`set_len` called here",
+        name          = "set_len_zero_or_one",
+        level         = "deny",
+    }
+}

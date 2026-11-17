@@ -16,18 +16,25 @@ fn base_case() {
 }
 
 #[cfg_attr(test, test)]
-fn cross_function_null_ptr() {
+fn cross_function_const_null_ptr() {
     const fn const_null_ptr<T>() -> *const T {
         std::ptr::null()
     }
-    fn null_ptr<T>() -> *const T {
-        std::ptr::null()
-    }
+
     unsafe {
         let x: fn() = std::mem::transmute(const_null_ptr::<u64>());
         //~[inline]^ transmute_null_to_fn
         dbg!(x);
+    }
+}
 
+#[cfg_attr(test, test)]
+fn cross_function_null_ptr() {
+    fn null_ptr<T>() -> *const T {
+        std::ptr::null()
+    }
+
+    unsafe {
         let x: fn() = std::mem::transmute(null_ptr::<u64>());
         //~[inline]^ transmute_null_to_fn
         dbg!(x);
@@ -35,14 +42,17 @@ fn cross_function_null_ptr() {
 }
 
 #[cfg_attr(test, test)]
-fn cross_statement() {
+fn cross_statement_zero() {
     let null_ptr = 0 as *const u64;
     unsafe {
         let x: fn() = std::mem::transmute(null_ptr);
         //~^ transmute_null_to_fn
         dbg!(x);
     }
+}
 
+#[cfg_attr(test, test)]
+fn cross_statement_null_ptr() {
     let null_ptr = std::ptr::null::<u64>();
     unsafe {
         let x: fn() = std::mem::transmute(null_ptr);
@@ -54,5 +64,7 @@ fn cross_statement() {
 pub(crate) fn main() {
     base_case();
     cross_function_null_ptr();
-    cross_statement();
+    cross_function_const_null_ptr();
+    cross_statement_zero();
+    cross_statement_null_ptr();
 }

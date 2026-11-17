@@ -1,0 +1,14 @@
+error: length poisoned before a potentially panicking call (panic! macro)
+  --> tests/ui/features/panic_macro/panic_macro.rs:19:13
+   |
+LL |         buf.set_len(0);
+   |         -------------- `set_len` called here
+LL |     }
+LL |     let _ = take_next(iter);
+   |             ^^^^^^^^^^^^^^^ potentially panicking call here
+   |
+   = help: do not call user code while container length/invariants are temporarily broken; use a drop guard or restore length first
+   = note: `#[deny(rpl::set_len_then_callback_macro)]` on by default
+
+error: aborting due to 1 previous error
+

@@ -13,7 +13,7 @@ use rustc_middle::{mir, ty};
 use rustc_span::Symbol;
 
 use crate::graph::{MirControlFlowGraph, MirDataDepGraph, PatControlFlowGraph, PatDataDepGraph};
-use crate::matches::{Matched, matches};
+use crate::matches::Matched;
 use crate::statement::MatchStatement;
 use crate::ty::MatchTy as _;
 use crate::{MatchPlaceCtxt, MatchTyCtxt};
@@ -93,7 +93,13 @@ impl<'a, 'pcx, 'tcx> CheckMirCtxt<'a, 'pcx, 'tcx> {
         pat_name = ?self.pat_name,
     ))]
     pub fn check(&self) -> Vec<Matched<'tcx>> {
-        matches(self)
+        let mut out = Vec::new();
+        self.check_with(|m| out.push(m.clone()));
+        out
+    }
+
+    pub fn check_with<'s>(&'s self, on_match: impl FnMut(&Matched<'tcx>) + 's) {
+        crate::matches::matches_with(self, on_match);
     }
     /*
     pub fn check(&self) {

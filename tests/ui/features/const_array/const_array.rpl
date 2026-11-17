@@ -1,0 +1,17 @@
+pattern const-array
+
+patt {
+    array_seen = fn _ (..) -> _ {
+        'decl:
+        let $arr: [u8; 4] = _;
+    }
+}
+
+diag {
+    array_seen = {
+        primary(decl) = "fixed [u8; 4] array seen",
+        label(decl)   = "array of length 4",
+        name          = "const_array_len4",
+        level         = "deny",
+    }
+}

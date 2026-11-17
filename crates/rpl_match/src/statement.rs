@@ -15,6 +15,7 @@ use rustc_span::Symbol;
 
 use crate::MatchFnCtxt;
 use crate::graph::{MirControlFlowGraph, MirDataDepGraph, PatControlFlowGraph, PatDataDepGraph};
+use crate::predicate_evaluator::inlined_instances;
 use crate::ty::MatchTy;
 
 fn iter_place_proj_and_ty<'pcx, 'tcx>(
@@ -75,7 +76,7 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
     fn match_statement_or_terminator(&self, pat: pat::Location, loc: mir::Location) -> bool {
         let block_pat = &self.mir_pat()[pat.block];
         let block = &self.body()[loc.block];
-        match (
+        let matched = match (
             pat.statement_index < block_pat.statements.len(),
             loc.statement_index < block.statements.len(),
         ) {
@@ -101,7 +102,73 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
                 );
                 false
             },
+        };
+        // A call whose callee was inlined no longer appears as a `Call` in MIR; fall back to
+        // matching against the surviving statements via rustc's inlined-scope metadata.
+        matched || self.match_inlined_call(pat, loc)
+    }
+
+    /// Match a pattern call (`_ = f(..)` / `_ = $f(..)`) against a target location whose code was
+    /// *inlined from* the callee `f`, so the call itself no longer appears in MIR.
+    ///
+    /// Only the wildcard-argument case is supported for now. Binding the arguments would require
+    /// mapping the inlined function's parameter locals, which is future work (see
+    /// [`Self::match_inlined_args`]).
+    fn match_inlined_call(&self, pat: pat::Location, loc: mir::Location) -> bool {
+        // Calls compile to terminators, not statements.
+        let block_pat = &self.mir_pat()[pat.block];
+        if pat.statement_index < block_pat.statements.len() {
+            return false;
         }
+        let pat::TerminatorKind::Call {
+            func,
+            args,
+            destination,
+            ..
+        } = block_pat.terminator()
+        else {
+            return false;
+        };
+
+        // Find the inlined function that the pattern's callee matches.
+        let Some(inst) = inlined_instances(self.body(), loc)
+            .into_iter()
+            .find(|inst| self.match_inlined_func(func, *inst))
+        else {
+            return false;
+        };
+
+        self.match_inlined_args(args, destination.as_ref(), inst)
+    }
+
+    /// Match a pattern call callee against an inlined function `Instance`.
+    fn match_inlined_func(&self, func: &pat::Operand<'pcx>, inst: ty::Instance<'tcx>) -> bool {
+        match func {
+            pat::Operand::FnPat(fn_pat) => self.match_fn_pat(*fn_pat, inst.def_id()),
+            pat::Operand::Constant(pat::ConstOperand::ZeroSized(path)) => {
+                self.ty().match_path_with_args(*path, inst.def_id(), inst.args)
+            },
+            // `Any`, places, and non-function constants don't name a specific callee.
+            _ => false,
+        }
+    }
+
+    /// Match a call's arguments and destination after inlining. Wildcards only for now; future
+    /// work can bind `args`/`destination` to the inlined function's parameter/return locals via
+    /// `inst` (kept as a parameter to avoid blocking that extension).
+    fn match_inlined_args(
+        &self,
+        args: &[pat::Operand<'pcx>],
+        destination: Option<&pat::Place<'pcx>>,
+        _inst: ty::Instance<'tcx>,
+    ) -> bool {
+        let args_wildcard = args
+            .iter()
+            .all(|a| matches!(a, pat::Operand::Any | pat::Operand::AnyArgs));
+        if !args_wildcard {
+            return false;
+        }
+        destination.is_none_or(|d| matches!(d.base, pat::PlaceBase::Any) && d.projection.is_empty())
     }
 
     #[instrument(level = "trace", skip(self), ret)]
@@ -252,7 +319,7 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
                 },
             ) => {
                 self.match_operand(func_pat, func)
-                    && self.match_spanned_operands(args_pat, args)
+                    && self.match_call_args(args_pat, args)
                     && destination_pat.is_none_or(|destination_pat| self.match_place(destination_pat, destination))
             },
             (
@@ -522,6 +589,7 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
                 }),
             ) if let &ty::FnDef(fn_did, _args) = ty.kind() => self.match_fn_pat(fn_pat, fn_did),
             (pat::Operand::Any, mir::Operand::Copy(_) | mir::Operand::Move(_) | mir::Operand::Constant(_)) => true,
+            (pat::Operand::AnyArgs, _) => true,
             (
                 pat::Operand::Copy(_) | pat::Operand::Move(_) | pat::Operand::Constant(_) | pat::Operand::FnPat(_),
                 mir::Operand::Copy(_) | mir::Operand::Move(_) | mir::Operand::Constant(_),
@@ -551,7 +619,22 @@ pub(crate) trait MatchStatement<'pcx, 'tcx> {
             && zip(pat, operands).all(|(operand_pat, operand)| self.match_operand(operand_pat, &operand.node))
     }
 
+    /// Match call arguments; a lone `..` (`AnyArgs`) matches any arity.
+    fn match_call_args(
+        &self,
+        pat: &[pat::Operand<'pcx>],
+        operands: &[rustc_span::source_map::Spanned<mir::Operand<'tcx>>],
+    ) -> bool {
+        if pat.len() == 1 && matches!(pat[0], pat::Operand::AnyArgs) {
+            return true;
+        }
+        self.match_spanned_operands(pat, operands)
+    }
+
     fn match_operands(&self, operands_pat: &[pat::Operand<'pcx>], operands: &[mir::Operand<'tcx>]) -> bool {
+        if operands_pat.len() == 1 && matches!(operands_pat[0], pat::Operand::AnyArgs) {
+            return true;
+        }
         operands_pat.len() == operands.len()
             && zip(operands_pat, operands).all(|(operand_pat, operand)| self.match_operand(operand_pat, operand))
     }

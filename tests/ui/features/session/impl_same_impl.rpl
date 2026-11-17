@@ -1,0 +1,29 @@
+pattern session-impl-same-impl
+
+patt {
+    p[$T: type] = {
+        struct $S {
+            $first: $T,
+        }
+
+        impl $S {
+            fn $a(..) -> _ {
+                let $p: &$S;
+                'a:
+                let $x: $T = copy (*$p).$first;
+            }
+            fn $b(..) -> _ {
+                let $p: &$S;
+                'b:
+                let $y: $T = copy (*$p).$first;
+            }
+        }
+    }
+}
+
+diag {
+    p = {
+        primary(a, b) = "session impl methods matched on the same impl",
+        name          = "session_impl_same_impl",
+    }
+}
