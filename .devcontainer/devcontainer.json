@@ -1,0 +1,13 @@
+{
+    "name": "rpl-dev",
+    "image": "mcr.microsoft.com/devcontainers/rust:latest",
+    "remoteUser": "vscode",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "containerEnv": {
+        "SHELL": "/bin/zsh"
+    },
+    "mounts": [
+        "source=cargo-registry,target=/usr/local/cargo/registry,type=volume",
+        "source=cargo-git,target=/usr/local/cargo/git,type=volume"
+    ],
+}

@@ -1,0 +1,20 @@
+{
+    "lsp": {
+        "rust-analyzer": {
+            "initialization_options": {
+                "rustc": {
+                    "source": "discover",
+                },
+                "linkedProjects": [
+                    "./Cargo.toml",
+                    "./tests/ui/cross-stmt-and-func-comparison-with-clippy/Cargo.toml",
+                ],
+                "diagnostics": {
+                    "disabled": [
+                        "macro-error"
+                    ],
+                }
+            }
+        }
+    }
+}
